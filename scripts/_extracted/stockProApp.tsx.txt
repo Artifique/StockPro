@@ -1,0 +1,445 @@
+export default function StockProApp() {
+  // State - always initialize with null/defaults for SSR consistency
+  const [user, setUser] = useState<typeof MOCK_USERS[0] | null>(null);
+  const [darkMode, setDarkMode] = useState(false);
+  const [language, setLanguage] = useState("fr");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeRoute, setActiveRoute] = useState("dashboard");
+  const onboardingModal = useDisclosure();
+  const [globalSearch, setGlobalSearch] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Favorites and recently viewed products
+  const [favoriteProducts, setFavoriteProducts] = useState<number[]>([]);
+  const [recentlyViewedProducts, setRecentlyViewedProducts] = useState<number[]>([]);
+
+  // Load saved user from localStorage after mount (client-side only)
+  // Using requestAnimationFrame to defer state updates and avoid cascading renders
+  useEffect(() => {
+    const loadSavedData = () => {
+      const updates: (() => void)[] = [];
+
+      const savedUser = localStorage.getItem("stockpro_user");
+      if (savedUser) {
+        try {
+          const userData = JSON.parse(savedUser);
+          updates.push(() => setUser(userData));
+        } catch {
+          localStorage.removeItem("stockpro_user");
+        }
+      }
+
+      // Load user preferences
+      const savedDarkMode = localStorage.getItem("stockpro_darkMode");
+      if (savedDarkMode !== null) {
+        updates.push(() => setDarkMode(savedDarkMode === "true"));
+      }
+
+      const savedSidebarCollapsed = localStorage.getItem("stockpro_sidebar_collapsed");
+      if (savedSidebarCollapsed !== null) {
+        updates.push(() => setSidebarCollapsed(savedSidebarCollapsed === "true"));
+      }
+
+      // Load favorites
+      const savedFavorites = localStorage.getItem("stockpro_favorites");
+      if (savedFavorites) {
+        try {
+          const favorites = JSON.parse(savedFavorites);
+          updates.push(() => setFavoriteProducts(favorites));
+        } catch {
+          localStorage.removeItem("stockpro_favorites");
+        }
+      }
+
+      // Load recently viewed
+      const savedRecentlyViewed = localStorage.getItem("stockpro_recently_viewed");
+      if (savedRecentlyViewed) {
+        try {
+          const recent = JSON.parse(savedRecentlyViewed);
+          updates.push(() => setRecentlyViewedProducts(recent));
+        } catch {
+          localStorage.removeItem("stockpro_recently_viewed");
+        }
+      }
+
+      updates.push(() => setIsLoading(false));
+
+      // Apply all updates in a batch after the current render
+      requestAnimationFrame(() => {
+        updates.forEach(update => update());
+      });
+    };
+
+    loadSavedData();
+  }, []);
+
+  // Persist darkMode preference
+  useEffect(() => {
+    if (!isLoading) {
+      localStorage.setItem("stockpro_darkMode", darkMode.toString());
+    }
+  }, [darkMode, isLoading]);
+
+  // Persist sidebar collapsed state
+  useEffect(() => {
+    if (!isLoading) {
+      localStorage.setItem("stockpro_sidebar_collapsed", sidebarCollapsed.toString());
+    }
+  }, [sidebarCollapsed, isLoading]);
+
+  // Persist favorites
+  useEffect(() => {
+    if (!isLoading) {
+      localStorage.setItem("stockpro_favorites", JSON.stringify(favoriteProducts));
+    }
+  }, [favoriteProducts, isLoading]);
+
+  // Persist recently viewed
+  useEffect(() => {
+    if (!isLoading) {
+      localStorage.setItem("stockpro_recently_viewed", JSON.stringify(recentlyViewedProducts));
+    }
+  }, [recentlyViewedProducts, isLoading]);
+
+  // Toggle favorite product
+  const toggleFavorite = useCallback((productId: number) => {
+    setFavoriteProducts(prev =>
+      prev.includes(productId)
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+  }, []);
+
+  // Add to recently viewed
+  const addToRecentlyViewed = useCallback((productId: number) => {
+    setRecentlyViewedProducts(prev => {
+      const filtered = prev.filter(id => id !== productId);
+      return [productId, ...filtered].slice(0, 10); // Keep max 10 items
+    });
+  }, []);
+
+  // Check for first-time user onboarding
+  useEffect(() => {
+    if (user) {
+      const hasSeenOnboarding = localStorage.getItem("stockpro_onboarding_seen");
+      if (!hasSeenOnboarding) {
+        // Show onboarding immediately after login for first-time users
+        setTimeout(() => onboardingModal.open(), 300);
+      }
+    }
+  }, [user, onboardingModal.open]);
+
+  // Global search functionality - using useMemo instead of useEffect+setState
+  const searchResults = useMemo(() => {
+    if (!globalSearch.trim()) {
+      return [];
+    }
+
+    const query = globalSearch.toLowerCase();
+    const results: { type: string; items: unknown[] }[] = [];
+
+    // Search products
+    const productResults = MOCK_PRODUCTS.filter(
+      (p) => p.nom.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query)
+    ).slice(0, 5);
+    if (productResults.length > 0) {
+      results.push({ type: "Produits", items: productResults });
+    }
+
+    // Search clients
+    const clientResults = MOCK_CLIENTS.filter(
+      (c) => c.nom.toLowerCase().includes(query) || c.email.toLowerCase().includes(query)
+    ).slice(0, 5);
+    if (clientResults.length > 0) {
+      results.push({ type: "Clients", items: clientResults });
+    }
+
+    // Search suppliers
+    const supplierResults = MOCK_FOURNISSEURS.filter(
+      (f) => f.nom.toLowerCase().includes(query) || f.contact.toLowerCase().includes(query)
+    ).slice(0, 3);
+    if (supplierResults.length > 0) {
+      results.push({ type: "Fournisseurs", items: supplierResults });
+    }
+
+    return results;
+  }, [globalSearch]);
+
+  // Apply dark mode
+  useEffect(() => {
+    if (darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+  }, [darkMode]);
+
+  // Handle login
+  const handleLogin = (loggedInUser: typeof MOCK_USERS[0]) => {
+    setUser(loggedInUser);
+    setActiveRoute("dashboard");
+    // Log de la connexion
+    addLog("LOGIN", loggedInUser.nom, loggedInUser.role, `Connexion réussie`, { device: navigator.userAgent.split(' ').slice(-2).join(' ') });
+    setTimeout(() => {
+      showToast(`Bienvenue, ${loggedInUser.nom} !`, "success");
+    }, 500);
+  };
+
+  // Handle logout
+  const handleLogout = () => {
+    if (user) {
+      // Log de la déconnexion
+      addLog("LOGOUT", user.nom, user.role, "Déconnexion", {});
+    }
+    localStorage.removeItem("stockpro_user");
+    localStorage.removeItem("stockpro_token");
+    setUser(null);
+  };
+
+  // Page titles
+  const pageTitles: Record<string, string> = {
+    dashboard: "Dashboard",
+    pos: "Point de Vente",
+    produits: "Produits",
+    stock: "Gestion du Stock",
+    clients: "Clients",
+    fournisseurs: "Fournisseurs",
+    achats: "Achats & Commandes",
+    facturation: "Facturation",
+    retours: "Retours & Échanges",
+    rapports: "Rapports",
+    parametres: "Paramètres",
+  };
+
+  // Show loading state during hydration
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+        <div className="text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 mb-4 animate-pulse">
+            <Package className="w-8 h-8 text-white" />
+          </div>
+          <div className="h-4 w-32 mx-auto bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+        </div>
+      </div>
+    );
+  }
+
+  // Show login page if not authenticated
+  if (!user) {
+    return <LoginPage onLogin={handleLogin} />;
+  }
+
+  // Main app layout
+  return (
+    <div className={`min-h-screen bg-slate-50 dark:bg-slate-900 ${darkMode ? "dark" : ""}`}>
+      {/* Sidebar */}
+      <Sidebar
+        collapsed={sidebarCollapsed}
+        setCollapsed={setSidebarCollapsed}
+        activeRoute={activeRoute}
+        setActiveRoute={setActiveRoute}
+        user={user}
+        mobileOpen={mobileMenuOpen}
+        setMobileOpen={setMobileMenuOpen}
+      />
+
+      {/* Header */}
+      <Header
+        user={user}
+        sidebarCollapsed={sidebarCollapsed}
+        setMobileOpen={setMobileMenuOpen}
+        darkMode={darkMode}
+        setDarkMode={setDarkMode}
+        language={language}
+        setLanguage={setLanguage}
+        onLogout={handleLogout}
+        pageTitle={pageTitles[activeRoute] || "Dashboard"}
+        globalSearch={globalSearch}
+        setGlobalSearch={setGlobalSearch}
+        searchResults={searchResults}
+        setActiveRoute={setActiveRoute}
+      />
+
+      {/* Onboarding Modal */}
+      {onboardingModal.isOpen && (
+        <OnboardingModal
+          user={user}
+          onClose={() => {
+            onboardingModal.close();
+            localStorage.setItem("stockpro_onboarding_seen", "true");
+          }}
+        />
+      )}
+
+      {/* Main Content */}
+      <main
+        className={`pt-16 min-h-screen transition-all duration-300 ${sidebarCollapsed ? "lg:pl-[72px]" : "lg:pl-[260px]"
+          }`}
+      >
+        <div className="p-4 lg:p-6 pb-24 lg:pb-20">
+          <AnimatePresence mode="wait">
+            {activeRoute === "dashboard" && (
+              <PageTransition key="dashboard">
+                <DashboardPage
+                  onNavigate={setActiveRoute}
+                  favoriteProducts={favoriteProducts}
+                  recentlyViewedProducts={recentlyViewedProducts}
+                  onToggleFavorite={toggleFavorite}
+                  onViewProduct={addToRecentlyViewed}
+                />
+              </PageTransition>
+            )}
+            {activeRoute === "pos" && (
+              <PageTransition key="pos">
+                <POSPage />
+              </PageTransition>
+            )}
+            {activeRoute === "produits" && (
+              <PageTransition key="produits">
+                <ProduitsPage
+                  favoriteProducts={favoriteProducts}
+                  onToggleFavorite={toggleFavorite}
+                  onViewProduct={addToRecentlyViewed}
+                />
+              </PageTransition>
+            )}
+            {activeRoute === "stock" && (
+              <PageTransition key="stock">
+                <StockPage />
+              </PageTransition>
+            )}
+            {activeRoute === "clients" && (
+              <PageTransition key="clients">
+                <ClientsPage />
+              </PageTransition>
+            )}
+            {activeRoute === "fournisseurs" && (
+              <PageTransition key="fournisseurs">
+                <FournisseursPage onNavigate={setActiveRoute} />
+              </PageTransition>
+            )}
+            {activeRoute === "achats" && (
+              <PageTransition key="achats">
+                <AchatsPage />
+              </PageTransition>
+            )}
+            {activeRoute === "facturation" && (
+              <PageTransition key="facturation">
+                <FacturationPage />
+              </PageTransition>
+            )}
+            {activeRoute === "retours" && (
+              <PageTransition key="retours">
+                <RetoursPage />
+              </PageTransition>
+            )}
+            {activeRoute === "rapports" && (
+              <PageTransition key="rapports">
+                <RapportsPage />
+              </PageTransition>
+            )}
+            {activeRoute === "parametres" && (
+              <PageTransition key="parametres">
+                <ParametresPage currentUser={user} />
+              </PageTransition>
+            )}
+            {activeRoute === "profil" && (
+              <PageTransition key="profil">
+                <ProfilePage user={user} onLogout={() => {
+                  localStorage.removeItem("stockpro_user");
+                  localStorage.removeItem("stockpro_token");
+                  setUser(null);
+                  setActiveRoute("dashboard");
+                  showToast("Déconnexion réussie", "success");
+                }} />
+              </PageTransition>
+            )}
+          </AnimatePresence>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer
+        className={`fixed bottom-0 right-0 h-12 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 hidden lg:flex items-center justify-between px-6 text-sm text-slate-500 dark:text-slate-400 transition-all duration-300 z-20 ${sidebarCollapsed ? "lg:left-[72px]" : "lg:left-[260px]"
+          } left-0`}
+      >
+        <div className="flex items-center gap-2">
+          <Package className="w-4 h-4 text-indigo-500" />
+          <span>StockPro Manager v1.0</span>
+        </div>
+        <div className="flex items-center gap-4">
+          <span className="hidden sm:inline">© 2024 Tous droits réservés</span>
+          <span className="text-slate-400">|</span>
+          <span className="flex items-center gap-1">
+            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse"></span>
+            Système actif
+          </span>
+        </div>
+      </footer>
+
+      {/* Mobile Bottom Navigation */}
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-around z-30 px-2">
+        {(() => {
+          // Define mobile nav items with role restrictions
+          const allMobileItems = [
+            { id: "dashboard", icon: LayoutDashboard, label: "Accueil", roles: ["Super Admin", "Gérant", "Caissier", "Responsable Stock", "Comptable"] },
+            { id: "pos", icon: ShoppingCart, label: "POS", roles: ["Super Admin", "Gérant", "Caissier", "Responsable Stock"] },
+            { id: "produits", icon: Package, label: "Produits", roles: ["Super Admin", "Gérant", "Caissier", "Responsable Stock"] },
+            { id: "clients", icon: Users, label: "Clients", roles: ["Super Admin", "Gérant", "Caissier"] },
+            { id: "menu", icon: Menu, label: "Menu", roles: ["Super Admin", "Gérant", "Caissier", "Responsable Stock", "Comptable"] },
+          ];
+
+          const mobileItems = allMobileItems.filter((item) => item.roles.includes(user.role));
+
+          return mobileItems.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeRoute === item.id;
+            const isMenu = item.id === "menu";
+
+            return (
+              <button
+                key={item.id}
+                onClick={() => isMenu ? setMobileMenuOpen(true) : setActiveRoute(item.id)}
+                className={`flex flex-col items-center justify-center gap-1 p-2 rounded-lg transition-colors relative ${isActive && !isMenu
+                  ? "text-indigo-600 dark:text-indigo-400"
+                  : "text-slate-500 dark:text-slate-400"
+                  }`}
+              >
+                <Icon className="w-5 h-5" />
+                <span className="text-xs font-medium">{item.label}</span>
+                {isActive && !isMenu && (
+                  <span className="absolute bottom-1 w-1 h-1 bg-indigo-600 rounded-full" />
+                )}
+              </button>
+            );
+          });
+        })()}
+      </nav>
+
+      {/* Toast Notifications */}
+      <ToastContainer />
+
+      {/* Network Status Indicator */}
+      <NetworkStatus />
+
+      {/* Floating Help Button */}
+      <FloatingHelpButton currentPage={activeRoute} />
+
+      {/* Quick Actions FAB */}
+      <QuickActionsFAB
+        userRole={user.role}
+        onNavigate={setActiveRoute}
+        onToggleTheme={() => setDarkMode(!darkMode)}
+        darkMode={darkMode}
+      />
+
+      {/* Scroll to Top Button */}
+      <ScrollToTop />
+
+      {/* Keyboard Shortcuts Help Modal */}
+      <KeyboardShortcutsHelp />
+    </div>
+  );
+}

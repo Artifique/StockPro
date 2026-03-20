@@ -1,0 +1,762 @@
+"use client";
+
+import React, { useState, useMemo } from "react";
+import { motion } from "framer-motion";
+import {
+  Package,
+  X,
+  Search,
+  Eye,
+  Edit,
+  Trash2,
+  Plus,
+  Filter,
+  Heart,
+} from "lucide-react";
+import {
+  CATEGORIES,
+  MOCK_PRODUCTS,
+  UNITES_MESURE,
+} from "@/data/stock-mock";
+import { formatCurrency } from "@/lib/format";
+import { Badge, Button, Card, DataTable, Input, Modal } from "@/components/ui";
+import { showToast } from "@/lib/app-toast";
+import { useDisclosure } from "@/hooks/use-disclosure";
+import { Select, ConfirmDialog } from "@/components/stock-pro/primitives";
+
+export const ProduitsPage: React.FC<{
+  favoriteProducts?: number[];
+  onToggleFavorite?: (productId: number) => void;
+  onViewProduct?: (productId: number) => void;
+}> = ({ favoriteProducts = [], onToggleFavorite, onViewProduct }) => {
+  const addModal = useDisclosure();
+  const editModal = useDisclosure();
+  const deleteDialog = useDisclosure();
+  const detailsModal = useDisclosure();
+  const [selectedCategorie, setSelectedCategorie] = useState("");
+  const [selectedStatut, setSelectedStatut] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [produits, setProduits] = useState(MOCK_PRODUCTS);
+  const [selectedProduct, setSelectedProduct] = useState<typeof MOCK_PRODUCTS[0] | null>(null);
+  const [editFormData, setEditFormData] = useState({
+    nom: "", categorie: "", prixAchat: 0, prixVente: 0, stock: 0, stockMin: 0, unite: "", description: "", tva: 18
+  });
+
+  // Form state for new product
+  const [newProductCategorie, setNewProductCategorie] = useState("");
+  const [newProductUnite, setNewProductUnite] = useState("");
+
+  // Form validation state for new product - amélioration UX
+  const [newProductFormTouched, setNewProductFormTouched] = useState(false);
+  const [newProductNom, setNewProductNom] = useState("");
+  const [newProductPrixAchat, setNewProductPrixAchat] = useState("");
+  const [newProductPrixVente, setNewProductPrixVente] = useState("");
+  const [newProductStock, setNewProductStock] = useState("");
+
+  // Calculer la progression du formulaire
+  const formProgress = useMemo(() => {
+    const requiredFields = [
+      newProductNom,
+      newProductCategorie,
+      newProductPrixAchat,
+      newProductPrixVente,
+      newProductStock,
+      newProductUnite
+    ];
+    const filledFields = requiredFields.filter(field => field && field.toString().trim() !== "");
+    return Math.round((filledFields.length / requiredFields.length) * 100);
+  }, [newProductNom, newProductCategorie, newProductPrixAchat, newProductPrixVente, newProductStock, newProductUnite]);
+
+  const columns = [
+    {
+      key: "checkbox",
+      label: "",
+      render: () => null,
+    },
+    {
+      key: "image",
+      label: "Image",
+      render: () => (
+        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+          <Package className="w-5 h-5 text-slate-400" />
+        </div>
+      ),
+    },
+    { key: "nom", label: "Nom", sortable: true },
+    { key: "sku", label: "SKU", sortable: true },
+    { key: "categorie", label: "Catégorie", sortable: true },
+    {
+      key: "prixAchat",
+      label: "Prix achat",
+      sortable: true,
+      render: (value: unknown) => formatCurrency(value as number),
+    },
+    {
+      key: "prixVente",
+      label: "Prix vente",
+      sortable: true,
+      render: (value: unknown) => formatCurrency(value as number),
+    },
+    {
+      key: "stock",
+      label: "Stock",
+      sortable: true,
+      render: (value: unknown, row: Record<string, unknown>) => {
+        const stock = value as number;
+        const stockMin = row.stockMin as number;
+        let color = "text-emerald-600";
+        if (stock === 0) color = "text-rose-600";
+        else if (stock <= stockMin) color = "text-amber-600";
+        return <span className={`font-semibold ${color}`}>{stock}</span>;
+      },
+    },
+    {
+      key: "statut",
+      label: "Statut",
+      render: (_: unknown, row: Record<string, unknown>) => {
+        const stock = row.stock as number;
+        const stockMin = row.stockMin as number;
+        if (stock === 0) return <Badge variant="danger">Rupture</Badge>;
+        if (stock <= stockMin) return <Badge variant="warning">Stock faible</Badge>;
+        return <Badge variant="success">Disponible</Badge>;
+      },
+    },
+  ];
+
+  const filteredProduits = useMemo(() => {
+    let result = [...produits];
+    // Search filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      result = result.filter((p) =>
+        p.nom.toLowerCase().includes(query) ||
+        p.sku.toLowerCase().includes(query) ||
+        p.categorie.toLowerCase().includes(query)
+      );
+    }
+    // Category filter
+    if (selectedCategorie) {
+      result = result.filter((p) => p.categorie === selectedCategorie);
+    }
+    // Status filter
+    if (selectedStatut) {
+      if (selectedStatut === "rupture") {
+        result = result.filter((p) => p.stock === 0);
+      } else if (selectedStatut === "critique") {
+        result = result.filter((p) => p.stock > 0 && p.stock <= p.stockMin);
+      } else if (selectedStatut === "disponible") {
+        result = result.filter((p) => p.stock > p.stockMin);
+      }
+    }
+    return result;
+  }, [produits, searchQuery, selectedCategorie, selectedStatut]);
+
+  const activeFiltersCount = [searchQuery, selectedCategorie, selectedStatut].filter(Boolean).length;
+
+  const handleAddProduct = (data: Record<string, unknown>) => {
+    const newProduct = {
+      id: produits.length + 1,
+      nom: data.nom as string,
+      sku: `PRD-${String(produits.length + 1).padStart(3, "0")}`,
+      categorie: data.categorie as string,
+      prixAchat: data.prixAchat as number,
+      prixVente: data.prixVente as number,
+      stock: data.stock as number,
+      stockMin: data.stockMin as number,
+      unite: data.unite as string,
+      description: data.description as string,
+      tva: data.tva as number,
+      image: null,
+    };
+    setProduits([...produits, newProduct]);
+    addModal.close();
+    showToast(`Produit "${newProduct.nom}" ajouté avec succès`, "success");
+  };
+
+  const resetNewProductForm = () => {
+    setNewProductCategorie("");
+    setNewProductUnite("");
+    setNewProductNom("");
+    setNewProductPrixAchat("");
+    setNewProductPrixVente("");
+    setNewProductStock("");
+    setNewProductFormTouched(false);
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Gestion des Produits</h2>
+          <p className="text-slate-500 dark:text-slate-400">Gérez votre catalogue de produits</p>
+        </div>
+        <Button onClick={() => addModal.open()}>
+          <Plus className="w-4 h-4 mr-2" />
+          Nouveau produit
+        </Button>
+      </div>
+
+      {/* Filters */}
+      <Card padding="sm">
+        <div className="flex flex-col gap-4">
+          {/* Search and Filter Row */}
+          <div className="flex flex-wrap gap-4">
+            {/* Search Input */}
+            <div className="flex-1 min-w-[250px]">
+              <Input
+                placeholder="Rechercher par nom, SKU ou catégorie..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                icon={<Search className="w-5 h-5" />}
+              />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <Select
+                value={selectedCategorie}
+                onChange={setSelectedCategorie}
+                placeholder="Toutes les catégories"
+                options={CATEGORIES.map((c) => ({ value: c.nom, label: c.nom }))}
+              />
+            </div>
+            <div className="flex-1 min-w-[200px]">
+              <Select
+                value={selectedStatut}
+                onChange={setSelectedStatut}
+                placeholder="Tous les statuts"
+                options={[
+                  { value: "disponible", label: "Disponible" },
+                  { value: "critique", label: "Stock faible" },
+                  { value: "rupture", label: "Rupture" },
+                ]}
+              />
+            </div>
+          </div>
+          {/* Active Filters & Clear Button */}
+          {activeFiltersCount > 0 && (
+            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700">
+              <div className="flex items-center gap-2 text-sm text-slate-500">
+                <Filter className="w-4 h-4" />
+                <span>{activeFiltersCount} filtre{activeFiltersCount > 1 ? "s" : ""} actif{activeFiltersCount > 1 ? "s" : ""}</span>
+                <span className="text-slate-400">•</span>
+                <span className="text-indigo-600 dark:text-indigo-400 font-medium">{filteredProduits.length} produit{filteredProduits.length > 1 ? "s" : ""}</span>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategorie("");
+                  setSelectedStatut("");
+                }}
+              >
+                <X className="w-4 h-4 mr-1" />
+                Effacer les filtres
+              </Button>
+            </div>
+          )}
+        </div>
+      </Card>
+
+      {/* Products Table */}
+      <DataTable onToast={showToast}
+        columns={columns}
+        data={filteredProduits.map((p) => ({ ...p, checkbox: null, statut: null }))}
+        title="Liste des produits"
+        pageSize={10}
+        emptyMessage={
+          activeFiltersCount > 0
+            ? `Aucun produit ne correspond à vos filtres`
+            : "Aucun produit dans le catalogue"
+        }
+        selectable
+        actions={(row) => {
+          const product = produits.find((p) => p.nom === row.nom);
+          const isFavorite = product ? favoriteProducts.includes(product.id) : false;
+          return (
+            <div className="flex items-center justify-end gap-1">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className={`p-1.5 rounded-lg transition-colors ${isFavorite
+                  ? "text-rose-500 bg-rose-50 dark:bg-rose-900/30"
+                  : "text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30"
+                  }`}
+                title={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
+                onClick={() => {
+                  if (product) {
+                    onToggleFavorite?.(product.id);
+                    onViewProduct?.(product.id);
+                  }
+                }}
+              >
+                <Heart className={`w-4 h-4 ${isFavorite ? "fill-current" : ""}`} />
+              </motion.button>
+              <button
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                title="Voir les détails"
+                onClick={() => {
+                  setSelectedProduct(product || null);
+                  detailsModal.open();
+                  if (product) {
+                    onViewProduct?.(product.id);
+                  }
+                }}
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+              <button
+                className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                title="Modifier le produit"
+                onClick={() => {
+                  if (product) {
+                    setSelectedProduct(product);
+                    setEditFormData({
+                      nom: product.nom,
+                      categorie: product.categorie,
+                      prixAchat: product.prixAchat,
+                      prixVente: product.prixVente,
+                      stock: product.stock,
+                      stockMin: product.stockMin,
+                      unite: product.unite,
+                      description: product.description,
+                      tva: product.tva,
+                    });
+                    editModal.open();
+                  }
+                }}
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+              <button
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30"
+                title="Supprimer le produit"
+                onClick={() => {
+                  setSelectedProduct(product || null);
+                  deleteDialog.open();
+                }}
+              >
+                <Trash2 className="w-4 h-4" />
+              </button>
+            </div>
+          );
+        }}
+      />
+
+      {/* Add Product Modal */}
+      <Modal isOpen={addModal.isOpen} onClose={() => {
+        addModal.close();
+        resetNewProductForm();
+      }} title="Nouveau produit" size="lg">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            setNewProductFormTouched(true);
+            if (!newProductNom || !newProductCategorie || !newProductPrixAchat || !newProductPrixVente || !newProductStock || !newProductUnite) {
+              showToast("Veuillez remplir tous les champs obligatoires", "error");
+              return;
+            }
+            const formData = new FormData(e.currentTarget);
+            const data = Object.fromEntries(formData.entries());
+            handleAddProduct({
+              ...data,
+              nom: newProductNom,
+              categorie: newProductCategorie,
+              unite: newProductUnite,
+              prixAchat: Number(newProductPrixAchat),
+              prixVente: Number(newProductPrixVente),
+              stock: Number(newProductStock),
+              stockMin: Number(data.stockMin) || 0,
+              tva: Number(data.tva) || 18,
+            });
+            resetNewProductForm();
+          }}
+          className="space-y-4"
+        >
+          {/* Indicateur de progression du formulaire - Amélioration UX */}
+          <div className="mb-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+                Progression du formulaire
+              </span>
+              <span className={`text-xs font-bold ${formProgress === 100 ? 'text-emerald-500' : 'text-slate-400'}`}>
+                {formProgress}%
+              </span>
+            </div>
+            <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+              <motion.div
+                initial={{ width: 0 }}
+                animate={{ width: `${formProgress}%` }}
+                className={`h-full rounded-full transition-colors ${formProgress === 100
+                  ? 'bg-emerald-500'
+                  : formProgress >= 50
+                    ? 'bg-amber-500'
+                    : 'bg-rose-500'
+                  }`}
+              />
+            </div>
+            {formProgress < 100 && (
+              <p className="text-[10px] text-slate-400 mt-1">
+                {6 - Math.round(formProgress / 16.67)} champ(s) obligatoire(s) restant(s)
+              </p>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Nom du produit <span className="text-rose-500">*</span>
+              </label>
+              <Input
+                name="nom"
+                placeholder="Ex: Riz Premium 5kg"
+                value={newProductNom}
+                onChange={(e) => {
+                  setNewProductNom(e.target.value);
+                  setNewProductFormTouched(true);
+                }}
+                error={newProductFormTouched && !newProductNom ? "Le nom est requis" : undefined}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Catégorie <span className="text-rose-500">*</span>
+              </label>
+              <Select
+                value={newProductCategorie}
+                onChange={(v) => {
+                  setNewProductCategorie(v);
+                  setNewProductFormTouched(true);
+                }}
+                options={CATEGORIES.map((c) => ({ value: c.nom, label: c.nom }))}
+                placeholder="Sélectionner une catégorie"
+                required
+              />
+              {newProductFormTouched && !newProductCategorie && (
+                <p className="text-xs text-rose-500 mt-1">La catégorie est requise</p>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Prix d&apos;achat (FCFA) <span className="text-rose-500">*</span>
+              </label>
+              <Input
+                name="prixAchat"
+                type="number"
+                placeholder="Ex: 3500"
+                min={0}
+                value={newProductPrixAchat}
+                onChange={(e) => {
+                  setNewProductPrixAchat(e.target.value);
+                  setNewProductFormTouched(true);
+                }}
+                error={newProductFormTouched && !newProductPrixAchat ? "Le prix d'achat est requis" : undefined}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Prix de vente (FCFA) <span className="text-rose-500">*</span>
+              </label>
+              <Input
+                name="prixVente"
+                type="number"
+                placeholder="Ex: 4500"
+                min={0}
+                value={newProductPrixVente}
+                onChange={(e) => {
+                  setNewProductPrixVente(e.target.value);
+                  setNewProductFormTouched(true);
+                }}
+                error={newProductFormTouched && !newProductPrixVente ? "Le prix de vente est requis" : undefined}
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Stock initial <span className="text-rose-500">*</span>
+              </label>
+              <Input
+                name="stock"
+                type="number"
+                placeholder="Ex: 100"
+                min={0}
+                value={newProductStock}
+                onChange={(e) => {
+                  setNewProductStock(e.target.value);
+                  setNewProductFormTouched(true);
+                }}
+                error={newProductFormTouched && !newProductStock ? "Le stock est requis" : undefined}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Stock minimum <span className="text-slate-400 text-xs">(alerte)</span>
+              </label>
+              <Input name="stockMin" type="number" placeholder="Ex: 10" min={0} />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                Unité <span className="text-rose-500">*</span>
+              </label>
+              <Select
+                value={newProductUnite}
+                onChange={(v) => {
+                  setNewProductUnite(v);
+                  setNewProductFormTouched(true);
+                }}
+                options={UNITES_MESURE.map((u) => ({ value: u.nom, label: `${u.nom} (${u.abreviation})` }))}
+                placeholder="Sélectionner"
+                required
+              />
+              {newProductFormTouched && !newProductUnite && (
+                <p className="text-xs text-rose-500 mt-1">L'unité est requise</p>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              Description <span className="text-slate-400 text-xs">(optionnel)</span>
+            </label>
+            <textarea
+              name="description"
+              rows={3}
+              placeholder="Description du produit..."
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <Button variant="outline" onClick={() => { addModal.close(); resetNewProductForm(); }}>
+              Annuler
+            </Button>
+            <Button type="submit">Enregistrer</Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Product Modal */}
+      <Modal isOpen={editModal.isOpen} onClose={() => editModal.close()} title="Modifier le produit" size="lg">
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (selectedProduct) {
+              setProduits(produits.map((p) =>
+                p.id === selectedProduct.id
+                  ? { ...p, ...editFormData, prixAchat: Number(editFormData.prixAchat), prixVente: Number(editFormData.prixVente), stock: Number(editFormData.stock), stockMin: Number(editFormData.stockMin), tva: Number(editFormData.tva) }
+                  : p
+              ));
+              showToast(`Produit "${editFormData.nom}" modifié avec succès`, "success");
+              editModal.close();
+            }
+          }}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom du produit</label>
+              <Input
+                value={editFormData.nom}
+                onChange={(e) => setEditFormData({ ...editFormData, nom: e.target.value })}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Catégorie</label>
+              <Select
+                value={editFormData.categorie}
+                onChange={(v) => setEditFormData({ ...editFormData, categorie: v })}
+                options={CATEGORIES.map((c) => ({ value: c.nom, label: c.nom }))}
+                placeholder="Sélectionner"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prix d&apos;achat (FCFA)</label>
+              <Input
+                type="number"
+                value={editFormData.prixAchat}
+                onChange={(e) => setEditFormData({ ...editFormData, prixAchat: Number(e.target.value) })}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prix de vente (FCFA)</label>
+              <Input
+                type="number"
+                value={editFormData.prixVente}
+                onChange={(e) => setEditFormData({ ...editFormData, prixVente: Number(e.target.value) })}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Stock</label>
+              <Input
+                type="number"
+                value={editFormData.stock}
+                onChange={(e) => setEditFormData({ ...editFormData, stock: Number(e.target.value) })}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Stock minimum</label>
+              <Input
+                type="number"
+                value={editFormData.stockMin}
+                onChange={(e) => setEditFormData({ ...editFormData, stockMin: Number(e.target.value) })}
+                required
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Unité</label>
+              <Select
+                value={editFormData.unite}
+                onChange={(v) => setEditFormData({ ...editFormData, unite: v })}
+                options={UNITES_MESURE.map((u) => ({ value: u.nom, label: `${u.nom} (${u.abreviation})` }))}
+                placeholder="Sélectionner"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
+            <textarea
+              value={editFormData.description}
+              onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
+              rows={3}
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <Button variant="outline" onClick={() => editModal.close()}>
+              Annuler
+            </Button>
+            <Button type="submit">Enregistrer les modifications</Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Delete Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={deleteDialog.isOpen}
+        onClose={() => deleteDialog.close()}
+        onConfirm={() => {
+          if (selectedProduct) {
+            setProduits(produits.filter((p) => p.id !== selectedProduct.id));
+            showToast(`Produit "${selectedProduct.nom}" supprimé avec succès`, "success");
+          }
+        }}
+        title="Supprimer le produit"
+        message={`Êtes-vous sûr de vouloir supprimer "${selectedProduct?.nom}" ? Cette action est irréversible.`}
+        confirmText="Supprimer"
+        variant="danger"
+      />
+
+      {/* Product Details Modal */}
+      <Modal isOpen={detailsModal.isOpen} onClose={() => detailsModal.close()} title="Détails du produit" size="lg">
+        {selectedProduct && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="w-20 h-20 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                <Package className="w-10 h-10 text-slate-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-slate-800 dark:text-white">{selectedProduct.nom}</h3>
+                <p className="text-slate-500 dark:text-slate-400">SKU: {selectedProduct.sku}</p>
+                <Badge variant={selectedProduct.stock > selectedProduct.stockMin ? "success" : selectedProduct.stock === 0 ? "danger" : "warning"} className="mt-2">
+                  {selectedProduct.stock > selectedProduct.stockMin ? "Disponible" : selectedProduct.stock === 0 ? "Rupture" : "Stock faible"}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <Card padding="sm" className="text-center">
+                <p className="text-2xl font-bold text-slate-800 dark:text-white">{selectedProduct.stock}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Stock actuel</p>
+              </Card>
+              <Card padding="sm" className="text-center">
+                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{selectedProduct.stockMin}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Stock min.</p>
+              </Card>
+              <Card padding="sm" className="text-center">
+                <p className="text-2xl font-bold text-slate-800 dark:text-white">{formatCurrency(selectedProduct.prixAchat)}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Prix achat</p>
+              </Card>
+              <Card padding="sm" className="text-center">
+                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(selectedProduct.prixVente)}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Prix vente</p>
+              </Card>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                <p className="text-sm text-slate-500 dark:text-slate-400">Catégorie</p>
+                <p className="font-medium text-slate-800 dark:text-white">{selectedProduct.categorie}</p>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                <p className="text-sm text-slate-500 dark:text-slate-400">Unité</p>
+                <p className="font-medium text-slate-800 dark:text-white">{selectedProduct.unite}</p>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                <p className="text-sm text-slate-500 dark:text-slate-400">TVA</p>
+                <p className="font-medium text-slate-800 dark:text-white">{selectedProduct.tva}%</p>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                <p className="text-sm text-slate-500 dark:text-slate-400">Marge</p>
+                <p className="font-medium text-emerald-600 dark:text-emerald-400">
+                  {(((selectedProduct.prixVente - selectedProduct.prixAchat) / selectedProduct.prixAchat) * 100).toFixed(1)}%
+                </p>
+              </div>
+            </div>
+
+            {selectedProduct.description && (
+              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Description</p>
+                <p className="text-slate-800 dark:text-white">{selectedProduct.description}</p>
+              </div>
+            )}
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <Button variant="outline" onClick={() => detailsModal.close()}>
+                Fermer
+              </Button>
+              <Button onClick={() => {
+                detailsModal.close();
+                setEditFormData({
+                  nom: selectedProduct.nom,
+                  categorie: selectedProduct.categorie,
+                  prixAchat: selectedProduct.prixAchat,
+                  prixVente: selectedProduct.prixVente,
+                  stock: selectedProduct.stock,
+                  stockMin: selectedProduct.stockMin,
+                  unite: selectedProduct.unite,
+                  description: selectedProduct.description,
+                  tva: selectedProduct.tva,
+                });
+                editModal.open();
+              }}>
+                <Edit className="w-4 h-4 mr-2" />
+                Modifier
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 👥 CLIENTS PAGE
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

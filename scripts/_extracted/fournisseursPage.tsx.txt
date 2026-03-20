@@ -1,0 +1,381 @@
+export const FournisseursPage: React.FC<{
+  onNavigate?: (route: string, filter?: string) => void;
+}> = ({ onNavigate }) => {
+  const newFournisseurModal = useDisclosure();
+  const editFournisseurModal = useDisclosure();
+  const detailsFournisseurModal = useDisclosure();
+  const [selectedFournisseur, setSelectedFournisseur] = useState<typeof MOCK_FOURNISSEURS[0] | null>(null);
+  const [editFournisseurData, setEditFournisseurData] = useState({
+    nom: "", contact: "", telephone: "", email: "", categorie: "", adresse: ""
+  });
+
+  const columns = [
+    {
+      key: "nom",
+      label: "Fournisseur",
+      sortable: true,
+      render: (value: unknown, row: Record<string, unknown>) => (
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+            <Building className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          </div>
+          <div>
+            <p className="font-medium text-slate-800 dark:text-white">{String(value)}</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">{String(row.contact)}</p>
+          </div>
+        </div>
+      ),
+    },
+    { key: "telephone", label: "Téléphone", sortable: true },
+    { key: "email", label: "Email", sortable: true },
+    { key: "categorie", label: "Catégorie", sortable: true },
+    {
+      key: "commandeTotal",
+      label: "CA Total",
+      sortable: true,
+      render: (value: unknown) => formatCurrency(value as number),
+    },
+    {
+      key: "statut",
+      label: "Statut",
+      render: (value: unknown) => (
+        <Badge variant={value === "actif" ? "success" : "default"}>
+          {value === "actif" ? "Actif" : "Inactif"}
+        </Badge>
+      ),
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Fournisseurs</h2>
+          <p className="text-slate-500 dark:text-slate-400">Gérez vos partenaires fournisseurs</p>
+        </div>
+        <Button onClick={() => newFournisseurModal.open()}>
+          <Plus className="w-4 h-4 mr-2" />
+          Nouveau fournisseur
+        </Button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="text-center">
+          <p className="text-3xl font-bold text-slate-800 dark:text-white">{MOCK_FOURNISSEURS.length}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Total fournisseurs</p>
+        </Card>
+        <Card className="text-center">
+          <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+            {MOCK_FOURNISSEURS.filter((f) => f.statut === "actif").length}
+          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Actifs</p>
+        </Card>
+        <Card className="text-center">
+          <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+            {formatCurrency(MOCK_FOURNISSEURS.reduce((sum, f) => sum + f.commandeTotal, 0))}
+          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">CA Total</p>
+        </Card>
+        <Card className="text-center">
+          <p className="text-3xl font-bold text-sky-600 dark:text-sky-400">
+            {new Set(MOCK_FOURNISSEURS.map((f) => f.categorie)).size}
+          </p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Catégories</p>
+        </Card>
+      </div>
+
+      {/* Table */}
+      <DataTable onToast={showToast}
+        columns={columns}
+        data={MOCK_FOURNISSEURS}
+        title="Liste des fournisseurs"
+        pageSize={5}
+        actions={(row) => {
+          const fournisseur = MOCK_FOURNISSEURS.find((f) => f.nom === row.nom);
+          return (
+            <div className="flex items-center justify-end gap-1">
+              <button
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                title="Voir les détails"
+                onClick={() => {
+                  setSelectedFournisseur(fournisseur || null);
+                  detailsFournisseurModal.open();
+                }}
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+              <button
+                className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                title="Modifier le fournisseur"
+                onClick={() => {
+                  if (fournisseur) {
+                    setSelectedFournisseur(fournisseur);
+                    setEditFournisseurData({
+                      nom: fournisseur.nom,
+                      contact: fournisseur.contact,
+                      telephone: fournisseur.telephone,
+                      email: fournisseur.email,
+                      categorie: fournisseur.categorie,
+                      adresse: fournisseur.adresse,
+                    });
+                    editFournisseurModal.open();
+                  }
+                }}
+              >
+                <Edit className="w-4 h-4" />
+              </button>
+              <button
+                className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
+                title="Voir les commandes"
+                onClick={() => {
+                  if (onNavigate) {
+                    onNavigate("achats", String(row.id));
+                  } else {
+                    showToast(`Commandes de ${row.nom}`, "info");
+                  }
+                }}
+              >
+                <ClipboardList className="w-4 h-4" />
+              </button>
+            </div>
+          );
+        }}
+      />
+
+      {/* Add Modal */}
+      <Modal isOpen={newFournisseurModal.isOpen} onClose={newFournisseurModal.close} title="Nouveau fournisseur">
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            showToast("Fournisseur créé avec succès !", "success");
+            newFournisseurModal.close();
+          }}
+        >
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom de l&apos;entreprise</label>
+            <Input placeholder="Nom du fournisseur" required />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Contact</label>
+              <Input placeholder="Nom du contact" />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Téléphone</label>
+              <Input placeholder="+223 XX XX XX XX" />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+            <Input type="email" placeholder="email@exemple.com" />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Catégorie</label>
+            <Select
+              value=""
+              onChange={() => { }}
+              options={CATEGORIES.map((c) => ({ value: c.nom, label: c.nom }))}
+              placeholder="Sélectionner"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Adresse</label>
+            <textarea
+              rows={2}
+              placeholder="Adresse complète..."
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <Button variant="outline" onClick={newFournisseurModal.close}>
+              Annuler
+            </Button>
+            <Button type="submit">Enregistrer</Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Edit Fournisseur Modal */}
+      <Modal isOpen={editFournisseurModal.isOpen} onClose={editFournisseurModal.close} title="Modifier le fournisseur">
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            showToast(`Fournisseur "${editFournisseurData.nom}" modifié avec succès`, "success");
+            editFournisseurModal.close();
+          }}
+        >
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom de l&apos;entreprise</label>
+            <Input
+              value={editFournisseurData.nom}
+              onChange={(e) => setEditFournisseurData({ ...editFournisseurData, nom: e.target.value })}
+              required
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Contact</label>
+              <Input
+                value={editFournisseurData.contact}
+                onChange={(e) => setEditFournisseurData({ ...editFournisseurData, contact: e.target.value })}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Téléphone</label>
+              <Input
+                value={editFournisseurData.telephone}
+                onChange={(e) => setEditFournisseurData({ ...editFournisseurData, telephone: e.target.value })}
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+            <Input
+              type="email"
+              value={editFournisseurData.email}
+              onChange={(e) => setEditFournisseurData({ ...editFournisseurData, email: e.target.value })}
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Catégorie</label>
+            <Select
+              value={editFournisseurData.categorie}
+              onChange={(v) => setEditFournisseurData({ ...editFournisseurData, categorie: v })}
+              options={CATEGORIES.map((c) => ({ value: c.nom, label: c.nom }))}
+              placeholder="Sélectionner"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Adresse</label>
+            <textarea
+              value={editFournisseurData.adresse}
+              onChange={(e) => setEditFournisseurData({ ...editFournisseurData, adresse: e.target.value })}
+              rows={2}
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <Button variant="outline" onClick={editFournisseurModal.close}>
+              Annuler
+            </Button>
+            <Button type="submit">Enregistrer les modifications</Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Fournisseur Details Modal */}
+      <Modal isOpen={detailsFournisseurModal.isOpen} onClose={detailsFournisseurModal.close} title="Détails du fournisseur" size="lg">
+        {selectedFournisseur && (
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
+                <Building className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+              </div>
+              <div>
+                <h3 className="text-xl font-semibold text-slate-800 dark:text-white">{selectedFournisseur.nom}</h3>
+                <p className="text-slate-500 dark:text-slate-400">{selectedFournisseur.categorie}</p>
+                <Badge variant={selectedFournisseur.statut === "actif" ? "success" : "default"} className="mt-2">
+                  {selectedFournisseur.statut === "actif" ? "Actif" : "Inactif"}
+                </Badge>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                <div className="flex items-center gap-2 mb-1">
+                  <User className="w-4 h-4 text-slate-400" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Contact</p>
+                </div>
+                <p className="font-medium text-slate-800 dark:text-white">{selectedFournisseur.contact}</p>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                <div className="flex items-center gap-2 mb-1">
+                  <Phone className="w-4 h-4 text-slate-400" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Téléphone</p>
+                </div>
+                <p className="font-medium text-slate-800 dark:text-white">{selectedFournisseur.telephone}</p>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                <div className="flex items-center gap-2 mb-1">
+                  <Mail className="w-4 h-4 text-slate-400" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Email</p>
+                </div>
+                <p className="font-medium text-slate-800 dark:text-white">{selectedFournisseur.email}</p>
+              </div>
+              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                <div className="flex items-center gap-2 mb-1">
+                  <MapPin className="w-4 h-4 text-slate-400" />
+                  <p className="text-sm text-slate-500 dark:text-slate-400">Adresse</p>
+                </div>
+                <p className="font-medium text-slate-800 dark:text-white">{selectedFournisseur.adresse}</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <Card padding="sm" className="text-center">
+                <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(selectedFournisseur.commandeTotal)}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">CA Total</p>
+              </Card>
+              <Card padding="sm" className="text-center">
+                <p className="text-2xl font-bold text-slate-800 dark:text-white">
+                  {MOCK_COMMANDES.filter((c) => c.fournisseur === selectedFournisseur.nom).length}
+                </p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Commandes</p>
+              </Card>
+            </div>
+
+            {/* Recent Orders */}
+            <div>
+              <h4 className="font-medium text-slate-800 dark:text-white mb-3">Dernières commandes</h4>
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {MOCK_COMMANDES.filter((c) => c.fournisseur === selectedFournisseur.nom).slice(0, 3).map((cmd) => (
+                  <div key={cmd.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                    <div>
+                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{cmd.id}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">{cmd.date} • {cmd.produits} articles</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-slate-800 dark:text-white">{formatCurrency(cmd.montant)}</p>
+                      <Badge variant={cmd.statut === "Reçue" ? "success" : cmd.statut === "En transit" ? "info" : "warning"}>{cmd.statut}</Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <Button variant="outline" onClick={detailsFournisseurModal.close}>
+                Fermer
+              </Button>
+              <Button onClick={() => {
+                detailsFournisseurModal.close();
+                setEditFournisseurData({
+                  nom: selectedFournisseur.nom,
+                  contact: selectedFournisseur.contact,
+                  telephone: selectedFournisseur.telephone,
+                  email: selectedFournisseur.email,
+                  categorie: selectedFournisseur.categorie,
+                  adresse: selectedFournisseur.adresse,
+                });
+                editFournisseurModal.open();
+              }}>
+                <Edit className="w-4 h-4 mr-2" />
+                Modifier
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+};
+
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+// 📋 PAGE ACHATS & COMMANDES
+// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

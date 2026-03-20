@@ -1,0 +1,486 @@
+export const FacturationPage: React.FC = () => {
+  const [filterStatut, setFilterStatut] = useState("");
+  const newFactureModal = useDisclosure();
+  const factureDetailsModal = useDisclosure();
+  const productSelectModal = useDisclosure();
+  const [selectedFacture, setSelectedFacture] = useState<typeof MOCK_FACTURES[0] | null>(null);
+  const [invoiceLines, setInvoiceLines] = useState<{ product: typeof MOCK_PRODUCTS[0]; quantity: number }[]>([]);
+  const [selectedProductId, setSelectedProductId] = useState("");
+
+  const closeNewFactureModal = () => {
+    newFactureModal.close();
+    setInvoiceLines([]);
+  };
+
+  const closeProductSelectModal = () => {
+    productSelectModal.close();
+    setSelectedProductId("");
+  };
+
+  const stats = useMemo(() => {
+    const total = MOCK_FACTURES.reduce((sum, f) => sum + f.montant, 0);
+    const payees = MOCK_FACTURES.filter((f) => f.statut === "Payée").reduce((sum, f) => sum + f.montant, 0);
+    const enAttente = MOCK_FACTURES.filter((f) => f.statut === "En attente").reduce((sum, f) => sum + f.montant, 0);
+    const enRetard = MOCK_FACTURES.filter((f) => f.statut === "En retard").reduce((sum, f) => sum + f.montant, 0);
+    return { total, payees, enAttente, enRetard };
+  }, []);
+
+  const filteredFactures = useMemo(() => {
+    if (!filterStatut) return MOCK_FACTURES;
+    return MOCK_FACTURES.filter((f) => f.statut === filterStatut);
+  }, [filterStatut]);
+
+  const columns = [
+    { key: "id", label: "N° Facture", sortable: true },
+    { key: "client", label: "Client", sortable: true },
+    { key: "date", label: "Date", sortable: true },
+    { key: "echeance", label: "Échéance", sortable: true },
+    {
+      key: "montant",
+      label: "Montant",
+      sortable: true,
+      render: (value: unknown) => formatCurrency(value as number),
+    },
+    {
+      key: "statut",
+      label: "Statut",
+      sortable: true,
+      render: (value: unknown) => {
+        const statusStyles: Record<string, { variant: "success" | "warning" | "danger" | "default" }> = {
+          Payée: { variant: "success" },
+          "En attente": { variant: "warning" },
+          "En retard": { variant: "danger" },
+          Annulée: { variant: "default" },
+        };
+        const style = statusStyles[String(value)] || { variant: "default" as const };
+        return <Badge variant={style.variant}>{String(value)}</Badge>;
+      },
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      {/* Page Header */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Facturation</h2>
+          <p className="text-slate-500 dark:text-slate-400">Gérez vos factures et encaissements</p>
+        </div>
+        <Button onClick={() => newFactureModal.open()}>
+          <Plus className="w-4 h-4 mr-2" />
+          Nouvelle facture
+        </Button>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <Card className="text-center">
+          <p className="text-3xl font-bold text-slate-800 dark:text-white">{formatCurrency(stats.total)}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Total facturé</p>
+        </Card>
+        <Card className="text-center">
+          <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(stats.payees)}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Payées</p>
+        </Card>
+        <Card className="text-center">
+          <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">{formatCurrency(stats.enAttente)}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">En attente</p>
+        </Card>
+        <Card className="text-center">
+          <p className="text-3xl font-bold text-rose-600 dark:text-rose-400">{formatCurrency(stats.enRetard)}</p>
+          <p className="text-sm text-slate-500 dark:text-slate-400">En retard</p>
+        </Card>
+      </div>
+
+      {/* Filters */}
+      <Card padding="sm">
+        <div className="flex items-center gap-4">
+          <Filter className="w-5 h-5 text-slate-400" />
+          <Select
+            value={filterStatut}
+            onChange={setFilterStatut}
+            placeholder="Tous les statuts"
+            options={[
+              { value: "Payée", label: "Payée" },
+              { value: "En attente", label: "En attente" },
+              { value: "En retard", label: "En retard" },
+              { value: "Annulée", label: "Annulée" },
+            ]}
+          />
+        </div>
+      </Card>
+
+      {/* Table */}
+      <DataTable onToast={showToast}
+        columns={columns}
+        data={filteredFactures}
+        title="Liste des factures"
+        pageSize={5}
+        exportOptions
+        actions={(row) => {
+          const facture = MOCK_FACTURES.find((f) => f.id === row.id);
+          return (
+            <div className="flex items-center justify-end gap-1">
+              <button
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                title="Voir les détails"
+                onClick={() => {
+                  setSelectedFacture(facture || null);
+                  factureDetailsModal.open();
+                }}
+              >
+                <Eye className="w-4 h-4" />
+              </button>
+              <button
+                className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                title="Télécharger PDF"
+                onClick={() => {
+                  if (facture) {
+                    generateInvoicePDF(facture);
+                    showToast(`PDF ${facture.id} téléchargé !`, "success");
+                  }
+                }}
+              >
+                <Download className="w-4 h-4" />
+              </button>
+              {(row.statut === "En attente" || row.statut === "En retard") && (
+                <button
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
+                  title="Marquer comme payée"
+                  onClick={() => showToast(`Facture ${row.id} marquée comme payée !`, "success")}
+                >
+                  <Check className="w-4 h-4" />
+                </button>
+              )}
+              <button
+                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30"
+                title="Envoyer par email"
+                onClick={() => showToast(`Facture ${row.id} envoyée à ${row.client}`, "success")}
+              >
+                <Send className="w-4 h-4" />
+              </button>
+            </div>
+          );
+        }}
+      />
+
+      {/* New Invoice Modal */}
+      <Modal
+        isOpen={newFactureModal.isOpen}
+        onClose={closeNewFactureModal}
+        title="Nouvelle facture"
+        size="lg"
+      >
+        <form
+          className="space-y-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (invoiceLines.length === 0) {
+              showToast("Veuillez ajouter au moins un produit à la facture", "warning");
+              return;
+            }
+            showToast("Facture créée avec succès !", "success");
+            closeNewFactureModal();
+          }}
+        >
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Client</label>
+              <Select
+                value=""
+                onChange={() => { }}
+                options={MOCK_CLIENTS.map((c) => ({ value: String(c.id), label: c.nom }))}
+                placeholder="Sélectionner un client"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date de facture</label>
+              <Input type="date" required />
+            </div>
+          </div>
+
+          <div className="border border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-medium text-slate-700 dark:text-slate-300">Lignes de facturation</h4>
+              <Button
+                variant="outline"
+                size="sm"
+                type="button"
+                onClick={() => productSelectModal.open()}
+              >
+                <Plus className="w-4 h-4 mr-1" />
+                Ajouter un produit
+              </Button>
+            </div>
+
+            {invoiceLines.length === 0 ? (
+              <div className="text-center py-4">
+                <FileText className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+                <p className="text-sm text-slate-500 dark:text-slate-400">Aucun produit ajouté</p>
+                <p className="text-xs text-slate-400">Cliquez sur "Ajouter un produit" pour commencer</p>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {invoiceLines.map((line, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
+                        <Package className="w-5 h-5 text-slate-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{line.product.nom}</p>
+                        <p className="text-xs text-slate-500">{formatCurrency(line.product.prixVente)} x {line.quantity}</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex items-center gap-1">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (line.quantity > 1) {
+                              setInvoiceLines(invoiceLines.map((l, i) =>
+                                i === index ? { ...l, quantity: l.quantity - 1 } : l
+                              ));
+                            }
+                          }}
+                          className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600"
+                        >
+                          <Minus className="w-4 h-4 text-slate-400" />
+                        </button>
+                        <span className="w-8 text-center font-medium">{line.quantity}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setInvoiceLines(invoiceLines.map((l, i) =>
+                              i === index ? { ...l, quantity: l.quantity + 1 } : l
+                            ));
+                          }}
+                          className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600"
+                        >
+                          <Plus className="w-4 h-4 text-slate-400" />
+                        </button>
+                      </div>
+                      <p className="font-semibold text-slate-800 dark:text-white w-28 text-right">
+                        {formatCurrency(line.product.prixVente * line.quantity)}
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => setInvoiceLines(invoiceLines.filter((_, i) => i !== index))}
+                        className="p-1 rounded text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+
+                {/* Total */}
+                <div className="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-slate-600">
+                  <span className="font-medium text-slate-700 dark:text-slate-300">Total TTC</span>
+                  <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                    {formatCurrency(invoiceLines.reduce((sum, l) => sum + l.product.prixVente * l.quantity, 0))}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Product Selection Modal */}
+          {productSelectModal.isOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[80vh] overflow-hidden">
+                <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+                  <h4 className="font-semibold text-slate-800 dark:text-white">Sélectionner un produit</h4>
+                  <button type="button" onClick={closeProductSelectModal} className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+                  <Input
+                    placeholder="Rechercher un produit..."
+                    icon={<Search className="w-4 h-4" />}
+                    value={selectedProductId}
+                    onChange={(e) => setSelectedProductId(e.target.value)}
+                  />
+                </div>
+                <div className="max-h-64 overflow-y-auto">
+                  {MOCK_PRODUCTS.filter(p =>
+                    p.nom.toLowerCase().includes(selectedProductId.toLowerCase()) ||
+                    p.sku.toLowerCase().includes(selectedProductId.toLowerCase())
+                  ).map((product) => (
+                    <button
+                      key={product.id}
+                      type="button"
+                      onClick={() => {
+                        const existing = invoiceLines.find(l => l.product.id === product.id);
+                        if (existing) {
+                          setInvoiceLines(invoiceLines.map(l =>
+                            l.product.id === product.id ? { ...l, quantity: l.quantity + 1 } : l
+                          ));
+                        } else {
+                          setInvoiceLines([...invoiceLines, { product, quantity: 1 }]);
+                        }
+                        closeProductSelectModal();
+                        showToast(`${product.nom} ajouté à la facture`, "success");
+                      }}
+                      className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-left border-b border-slate-100 dark:border-slate-700 last:border-0"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                        <Package className="w-5 h-5 text-slate-400" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="font-medium text-slate-800 dark:text-white">{product.nom}</p>
+                        <p className="text-xs text-slate-500">{product.sku} • {product.categorie}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-slate-800 dark:text-white">{formatCurrency(product.prixVente)}</p>
+                        <p className="text-xs text-slate-500">Stock: {product.stock}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date d&apos;échéance</label>
+              <Input type="date" required />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mode de paiement</label>
+              <Select
+                value=""
+                onChange={() => { }}
+                options={[
+                  { value: "especes", label: "Espèces" },
+                  { value: "carte", label: "Carte bancaire" },
+                  { value: "virement", label: "Virement" },
+                  { value: "mobile", label: "Mobile Money" },
+                ]}
+                placeholder="Sélectionner"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes</label>
+            <textarea
+              rows={2}
+              placeholder="Notes ou conditions particulières..."
+              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <Button variant="outline" onClick={closeNewFactureModal}>
+              Annuler
+            </Button>
+            <Button type="submit">Créer la facture</Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Facture Details Modal */}
+      <Modal isOpen={factureDetailsModal.isOpen} onClose={factureDetailsModal.close} title="Détails de la facture" size="lg">
+        {selectedFacture && (
+          <div className="space-y-6">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-semibold text-slate-800 dark:text-white">{selectedFacture.id}</h3>
+                <p className="text-slate-500 dark:text-slate-400">{selectedFacture.client}</p>
+              </div>
+              <Badge variant={
+                selectedFacture.statut === "Payée" ? "success" :
+                  selectedFacture.statut === "En attente" ? "warning" :
+                    selectedFacture.statut === "En retard" ? "danger" : "default"
+              }>
+                {selectedFacture.statut}
+              </Badge>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <Card padding="sm" className="text-center">
+                <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(selectedFacture.montant)}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Montant TTC</p>
+              </Card>
+              <Card padding="sm" className="text-center">
+                <p className="text-lg font-bold text-slate-800 dark:text-white">{selectedFacture.date}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Date facture</p>
+              </Card>
+              <Card padding="sm" className="text-center">
+                <p className="text-lg font-bold text-slate-800 dark:text-white">{selectedFacture.echeance}</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Échéance</p>
+              </Card>
+              <Card padding="sm" className="text-center">
+                <p className="text-lg font-bold text-slate-800 dark:text-white">30 jours</p>
+                <p className="text-xs text-slate-500 dark:text-slate-400">Délai paiement</p>
+              </Card>
+            </div>
+
+            {/* Simulated Lines */}
+            <div>
+              <h4 className="font-medium text-slate-800 dark:text-white mb-3">Lignes de facturation</h4>
+              <div className="space-y-2">
+                {MOCK_PRODUCTS.slice(0, 3).map((p, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
+                        <Package className="w-4 h-4 text-slate-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{p.nom}</p>
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Réf: {p.sku}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-slate-800 dark:text-white">{formatCurrency(p.prixVente)}</p>
+                      <p className="text-xs text-slate-500 dark:text-slate-400">x{i + 1}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Summary */}
+            <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-slate-500 dark:text-slate-400">Sous-total HT</span>
+                <span className="text-slate-800 dark:text-white">{formatCurrency(selectedFacture.montant * 0.84)}</span>
+              </div>
+              <div className="flex justify-between text-sm mb-2">
+                <span className="text-slate-500 dark:text-slate-400">TVA (18%)</span>
+                <span className="text-slate-800 dark:text-white">{formatCurrency(selectedFacture.montant * 0.16)}</span>
+              </div>
+              <div className="flex justify-between text-lg font-bold border-t border-slate-200 dark:border-slate-600 pt-2">
+                <span className="text-slate-800 dark:text-white">Total TTC</span>
+                <span className="text-indigo-600 dark:text-indigo-400">{formatCurrency(selectedFacture.montant)}</span>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+              <Button variant="outline" onClick={factureDetailsModal.close}>
+                Fermer
+              </Button>
+              <Button variant="outline" onClick={() => {
+                generateInvoicePDF(selectedFacture);
+                showToast(`PDF ${selectedFacture.id} téléchargé avec succès !`, "success");
+              }}>
+                <Download className="w-4 h-4 mr-2" />
+                PDF
+              </Button>
+              <Button onClick={() => {
+                showToast(`Facture ${selectedFacture.id} envoyée à ${selectedFacture.client}`, "success");
+                factureDetailsModal.close();
+              }}>
+                <Send className="w-4 h-4 mr-2" />
+                Envoyer
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+};

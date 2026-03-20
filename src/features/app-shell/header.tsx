@@ -1,0 +1,333 @@
+"use client";
+
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import {
+  Menu,
+  Search,
+  Bell,
+  Moon,
+  Sun,
+  ChevronDown,
+  User,
+  Key,
+  LogOut,
+  Package,
+  Users,
+  Truck,
+} from "lucide-react";
+import {
+  MOCK_CLIENTS,
+  MOCK_FOURNISSEURS,
+  MOCK_PRODUCTS,
+  type StockProUser,
+} from "@/data/stock-mock";
+import { formatCurrency } from "@/lib/format";
+import { showToast } from "@/lib/app-toast";
+import { useDisclosure } from "@/hooks/use-disclosure";
+import { NotificationPanel, Avatar } from "@/components/stock-pro/primitives";
+import { routePath, type AppRouteId } from "@/lib/stock-pro-routes";
+
+export const Header: React.FC<{
+  user: StockProUser;
+  sidebarCollapsed: boolean;
+  setMobileOpen: (v: boolean) => void;
+  darkMode: boolean;
+  setDarkMode: (v: boolean) => void;
+  language: string;
+  setLanguage: (v: string) => void;
+  onLogout: () => void;
+  pageTitle: string;
+  globalSearch?: string;
+  setGlobalSearch?: (v: string) => void;
+  searchResults?: { type: string; items: unknown[] }[];
+}> = ({
+  user,
+  sidebarCollapsed,
+  setMobileOpen,
+  darkMode,
+  setDarkMode,
+  language,
+  setLanguage,
+  onLogout,
+  pageTitle,
+  globalSearch = "",
+  setGlobalSearch,
+  searchResults = [],
+}) => {
+  const router = useRouter();
+  const notificationsPanel = useDisclosure();
+  const userMenu = useDisclosure();
+  const searchPanel = useDisclosure();
+
+  const go = (id: AppRouteId) => {
+    router.push(routePath(id));
+  };
+
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        notificationsPanel.close();
+        userMenu.close();
+        searchPanel.close();
+      }
+    };
+    window.addEventListener("keydown", handleEscape);
+    return () => window.removeEventListener("keydown", handleEscape);
+  }, [notificationsPanel.close, userMenu.close, searchPanel.close]);
+
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      if (!target.closest(".notifications-dropdown") && !target.closest(".notifications-button")) {
+        notificationsPanel.close();
+      }
+      if (!target.closest(".user-menu-dropdown") && !target.closest(".user-menu-button")) {
+        userMenu.close();
+      }
+      if (!target.closest(".search-dropdown") && !target.closest(".search-button")) {
+        searchPanel.close();
+      }
+    };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
+  }, [notificationsPanel.close, userMenu.close, searchPanel.close]);
+
+  return (
+    <header
+      className={`fixed top-0 right-0 h-16 bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 shadow-sm z-30 transition-all duration-300 ${sidebarCollapsed ? "lg:left-[72px]" : "lg:left-[260px]"
+        } left-0`}
+    >
+      <div className="flex items-center justify-between h-full px-4 lg:px-6">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => setMobileOpen(true)}
+            className="lg:hidden p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+          <h1 className="text-lg font-semibold text-slate-800 dark:text-white hidden sm:block">{pageTitle}</h1>
+        </div>
+
+        <div className="flex items-center gap-2 sm:gap-4">
+          <button
+            onClick={() => searchPanel.toggle()}
+            className="search-button p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 relative group"
+            title="Rechercher (⌘K)"
+          >
+            <Search className="w-5 h-5" />
+            <span className="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap hidden sm:block">⌘K</span>
+          </button>
+
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="hidden sm:block px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-sm text-slate-600 dark:text-slate-300"
+          >
+            <option value="fr">🇫🇷 FR</option>
+            <option value="en">🇬🇧 EN</option>
+            <option value="ar">🇸🇦 AR</option>
+          </select>
+
+          <button
+            onClick={() => {
+              setDarkMode(!darkMode);
+              showToast(darkMode ? "Mode clair activé" : "Mode sombre activé", "info");
+            }}
+            className="p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700"
+            title={darkMode ? "Activer le mode clair" : "Activer le mode sombre"}
+          >
+            {darkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+          </button>
+
+          <div className="relative">
+            <button
+              onClick={() => notificationsPanel.toggle()}
+              className="notifications-button relative p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+            >
+              <Bell className="w-5 h-5" />
+              <motion.span
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute top-1 right-1 w-2 h-2 bg-rose-500 rounded-full"
+              />
+            </button>
+            <div className="notifications-dropdown">
+              <NotificationPanel isOpen={notificationsPanel.isOpen} onClose={notificationsPanel.close} />
+            </div>
+          </div>
+
+          <div className="relative">
+            <button
+              onClick={() => userMenu.toggle()}
+              className="user-menu-button flex items-center gap-2 p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+            >
+              <Avatar initials={user.avatar} color={user.color} size="sm" />
+              <ChevronDown className="w-4 h-4 text-slate-400 hidden sm:block" />
+            </button>
+
+            {userMenu.isOpen && (
+              <div className="user-menu-dropdown absolute right-0 mt-2 w-56 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 overflow-hidden z-50">
+                <div className="px-4 py-3 border-b border-slate-200 dark:border-slate-700">
+                  <p className="font-medium text-slate-800 dark:text-white">{user.nom}</p>
+                  <p className="text-sm text-slate-500 dark:text-slate-400">{user.email}</p>
+                </div>
+                <div className="py-2">
+                  <button
+                    onClick={() => {
+                      go("profil");
+                      userMenu.close();
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-left text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                  >
+                    <User className="w-4 h-4" />
+                    Mon profil
+                  </button>
+                  <button
+                    onClick={() => {
+                      go("profil");
+                      userMenu.close();
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-left text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700"
+                  >
+                    <Key className="w-4 h-4" />
+                    Changer mot de passe
+                  </button>
+                  <hr className="my-2 border-slate-200 dark:border-slate-700" />
+                  <button
+                    onClick={onLogout}
+                    className="w-full flex items-center gap-3 px-4 py-2 text-left text-rose-600 hover:bg-slate-50 dark:hover:bg-slate-700"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Déconnexion
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {searchPanel.isOpen && (
+        <div className="search-dropdown absolute inset-x-4 top-full mt-2 bg-white dark:bg-slate-800 rounded-xl shadow-xl border border-slate-200 dark:border-slate-700 p-4 z-50 max-h-[70vh] overflow-hidden flex flex-col">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+            <input
+              type="text"
+              placeholder="Rechercher produits, clients, fournisseurs..."
+              value={globalSearch}
+              onChange={(e) => setGlobalSearch?.(e.target.value)}
+              className="w-full pl-10 pr-4 py-3 rounded-lg border border-slate-200 dark:border-slate-600 bg-slate-50 dark:bg-slate-700 text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              autoFocus
+            />
+          </div>
+
+          {globalSearch.trim() && (
+            <div className="mt-4 flex-1 overflow-y-auto">
+              {searchResults.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">
+                  <Search className="w-8 h-8 mx-auto mb-2 opacity-50" />
+                  <p className="font-medium">Aucun résultat pour &quot;{globalSearch}&quot;</p>
+                  <div className="mt-4 text-sm">
+                    <p className="text-slate-400 mb-2">Suggestions:</p>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {["Riz", "Huile", "Café", "Smartphone"].map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          onClick={() => setGlobalSearch?.(suggestion)}
+                          className="px-3 py-1 bg-slate-100 dark:bg-slate-700 rounded-full hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
+                    <p className="mt-3 text-xs text-slate-400">
+                      💡 Essayez de rechercher par nom, SKU, ou catégorie
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {searchResults.map((group, idx) => (
+                    <div key={idx}>
+                      <h4 className="text-xs font-semibold text-slate-400 uppercase mb-2">{group.type}</h4>
+                      <div className="space-y-1">
+                        {group.type === "Produits" && (group.items as typeof MOCK_PRODUCTS).map((item: (typeof MOCK_PRODUCTS)[0]) => (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              go("produits");
+                              searchPanel.close();
+                              setGlobalSearch?.("");
+                            }}
+                            className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 text-left"
+                          >
+                            <Package className="w-4 h-4 text-indigo-500" />
+                            <div>
+                              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{item.nom}</p>
+                              <p className="text-xs text-slate-400">{item.sku} • {formatCurrency(item.prixVente)}</p>
+                            </div>
+                          </button>
+                        ))}
+                        {group.type === "Clients" && (group.items as typeof MOCK_CLIENTS).map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              go("clients");
+                              searchPanel.close();
+                              setGlobalSearch?.("");
+                            }}
+                            className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 text-left"
+                          >
+                            <Users className="w-4 h-4 text-emerald-500" />
+                            <div>
+                              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{item.nom}</p>
+                              <p className="text-xs text-slate-400">{item.email}</p>
+                            </div>
+                          </button>
+                        ))}
+                        {group.type === "Fournisseurs" && (group.items as typeof MOCK_FOURNISSEURS).map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => {
+                              go("fournisseurs");
+                              searchPanel.close();
+                              setGlobalSearch?.("");
+                            }}
+                            className="w-full flex items-center gap-3 p-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 text-left"
+                          >
+                            <Truck className="w-4 h-4 text-amber-500" />
+                            <div>
+                              <p className="text-sm font-medium text-slate-700 dark:text-slate-200">{item.nom}</p>
+                              <p className="text-xs text-slate-400">{item.contact}</p>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          <div className="flex items-center justify-between mt-4 pt-3 border-t border-slate-200 dark:border-slate-700">
+            <p className="text-xs text-slate-400">
+              <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-xs">Esc</kbd> pour fermer
+            </p>
+            <button
+              onClick={() => {
+                searchPanel.close();
+                setGlobalSearch?.("");
+              }}
+              className="text-xs text-indigo-600 hover:text-indigo-700"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
+    </header>
+  );
+};
