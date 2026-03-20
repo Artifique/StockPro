@@ -2,6 +2,8 @@
 
 Application Next.js (gestion de stock).
 
+**Dépôt :** [github.com/amasbarry223/STOCKPRO](https://github.com/amasbarry223/STOCKPRO)
+
 ## Démarrage
 
 ```bash
