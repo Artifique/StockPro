@@ -252,8 +252,8 @@ export const RetoursPage: React.FC = () => {
       sortable: true,
       render: (value: unknown, row: Record<string, unknown>) => (
         <div>
-          <p className="font-medium text-slate-800 dark:text-white">{String(value)}</p>
-          <p className="text-xs text-slate-500">{String(row.clientTelephone)}</p>
+          <p className="font-medium text-foreground">{String(value)}</p>
+          <p className="text-xs text-muted-foreground">{String(row.clientTelephone)}</p>
         </div>
       )
     },
@@ -263,8 +263,8 @@ export const RetoursPage: React.FC = () => {
       sortable: true,
       render: (value: unknown, row: Record<string, unknown>) => (
         <div>
-          <p className="font-medium text-slate-800 dark:text-white">{String(value)}</p>
-          <p className="text-xs text-slate-500">SKU: {String(row.produitSku)} • Qté: {String(row.quantite)}</p>
+          <p className="font-medium text-foreground">{String(value)}</p>
+          <p className="text-xs text-muted-foreground">SKU: {String(row.produitSku)} • Qté: {String(row.quantite)}</p>
         </div>
       )
     },
@@ -288,7 +288,7 @@ export const RetoursPage: React.FC = () => {
       label: "Montant",
       sortable: true,
       render: (value: unknown) => (
-        <span className="font-semibold text-slate-800 dark:text-white">{formatCurrency(value as number)}</span>
+        <span className="font-semibold text-foreground">{formatCurrency(value as number)}</span>
       )
     },
     {
@@ -329,7 +329,7 @@ export const RetoursPage: React.FC = () => {
       render: (_: unknown, row: Record<string, unknown>) => (
         <div className="flex items-center gap-1">
           <button
-            className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+            className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-navy dark:text-stockpro-signal hover:bg-stockpro-navy/8 dark:hover:bg-stockpro-signal/10"
             title="Voir détails"
             onClick={() => {
               const retour = retours.find(r => r.id === row.id);
@@ -343,7 +343,7 @@ export const RetoursPage: React.FC = () => {
           </button>
           {(row.statut === "demande" || row.statut === "en_attente") && (
             <button
-              className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-stock-ok-fg hover:bg-stockpro-stock-ok-bg dark:hover:bg-stockpro-stock-ok-fg/10"
               title="Traiter"
               onClick={() => {
                 const retour = retours.find(r => r.id === row.id);
@@ -358,7 +358,7 @@ export const RetoursPage: React.FC = () => {
           )}
           {(row.statut === "valide" || row.statut === "rembourse" || row.statut === "echange") && (
             <button
-              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700"
+              className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
               title="Imprimer"
               onClick={() => {
                 const retour = retours.find(r => r.id === row.id);
@@ -381,8 +381,8 @@ export const RetoursPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Retours & Échanges</h2>
-          <p className="text-slate-500 dark:text-slate-400">Gérez les retours et échanges de produits</p>
+          <h2 className="text-2xl font-bold text-foreground">Retours & Échanges</h2>
+          <p className="text-muted-foreground">Gérez les retours et échanges de produits</p>
         </div>
         <Button onClick={() => newRetourModal.open()}>
           <Plus className="w-4 h-4 mr-2" />
@@ -393,68 +393,68 @@ export const RetoursPage: React.FC = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
         <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-800 rounded-bl-3xl" />
+          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-muted to-muted dark:from-muted dark:to-card rounded-bl-3xl" />
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 rounded-lg bg-slate-100 dark:bg-slate-700">
-                <RefreshCw className="w-4 h-4 text-slate-600 dark:text-slate-400" />
+              <div className="p-2 rounded-lg bg-muted">
+                <RefreshCw className="w-4 h-4 text-muted-foreground" />
               </div>
-              <span className="text-xs text-slate-500 dark:text-slate-400">Total</span>
+              <span className="text-xs text-muted-foreground">Total</span>
             </div>
-            <p className="text-3xl font-bold text-slate-800 dark:text-white">{stats.total}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">demandes</p>
+            <p className="text-3xl font-bold text-foreground">{stats.total}</p>
+            <p className="text-xs text-muted-foreground">demandes</p>
           </div>
         </Card>
         <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-amber-100 to-amber-200 dark:from-amber-900/30 dark:to-amber-800/30 rounded-bl-3xl" />
+          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-stockpro-stock-low-bg to-stockpro-stock-low-bg dark:from-stockpro-stock-low-fg/12 dark:to-stockpro-stock-low-fg/8 rounded-bl-3xl" />
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                <Clock className="w-4 h-4 text-amber-600 dark:text-amber-400" />
+              <div className="p-2 rounded-lg bg-stockpro-stock-low-bg dark:bg-stockpro-stock-low-fg/12">
+                <Clock className="w-4 h-4 text-stockpro-stock-low-fg" />
               </div>
-              <span className="text-xs text-slate-500 dark:text-slate-400">En attente</span>
+              <span className="text-xs text-muted-foreground">En attente</span>
             </div>
-            <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">{stats.enAttente}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">à traiter</p>
+            <p className="text-3xl font-bold text-stockpro-stock-low-fg">{stats.enAttente}</p>
+            <p className="text-xs text-muted-foreground">à traiter</p>
           </div>
         </Card>
         <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-900/30 dark:to-emerald-800/30 rounded-bl-3xl" />
+          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-stockpro-stock-ok-bg to-stockpro-stock-ok-bg dark:from-stockpro-stock-ok-fg/12 dark:to-stockpro-stock-ok-fg/8 rounded-bl-3xl" />
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                <CheckCircle className="w-4 h-4 text-emerald-600 dark:text-emerald-400" />
+              <div className="p-2 rounded-lg bg-stockpro-stock-ok-bg dark:bg-stockpro-stock-ok-fg/12">
+                <CheckCircle className="w-4 h-4 text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg" />
               </div>
-              <span className="text-xs text-slate-500 dark:text-slate-400">Traitées</span>
+              <span className="text-xs text-muted-foreground">Traitées</span>
             </div>
-            <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{stats.valides}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">terminées</p>
+            <p className="text-3xl font-bold text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">{stats.valides}</p>
+            <p className="text-xs text-muted-foreground">terminées</p>
           </div>
         </Card>
         <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-violet-100 to-violet-200 dark:from-violet-900/30 dark:to-violet-800/30 rounded-bl-3xl" />
+          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-stockpro-navy-mid/15 to-stockpro-navy-mid/22 dark:from-stockpro-navy-mid/18 dark:to-stockpro-navy-mid/12 rounded-bl-3xl" />
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 rounded-lg bg-violet-100 dark:bg-violet-900/30">
-                <Wallet className="w-4 h-4 text-violet-600 dark:text-violet-400" />
+              <div className="p-2 rounded-lg bg-stockpro-navy-mid/12 dark:bg-stockpro-navy-mid/15">
+                <Wallet className="w-4 h-4 text-stockpro-navy dark:text-stockpro-signal" />
               </div>
-              <span className="text-xs text-slate-500 dark:text-slate-400">Remboursé</span>
+              <span className="text-xs text-muted-foreground">Remboursé</span>
             </div>
-            <p className="text-xl font-bold text-violet-600 dark:text-violet-400">{formatShortCurrency(stats.montantRembourse)}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">FCFA</p>
+            <p className="text-xl font-bold text-stockpro-navy dark:text-stockpro-signal">{formatShortCurrency(stats.montantRembourse)}</p>
+            <p className="text-xs text-muted-foreground">FCFA</p>
           </div>
         </Card>
         <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-rose-100 to-rose-200 dark:from-rose-900/30 dark:to-rose-800/30 rounded-bl-3xl" />
+          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-stockpro-stock-error-bg to-stockpro-stock-error-bg dark:from-stockpro-stock-error-fg/12 dark:to-stockpro-stock-error-fg/8 rounded-bl-3xl" />
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 rounded-lg bg-rose-100 dark:bg-rose-900/30">
-                <AlertTriangle className="w-4 h-4 text-rose-600 dark:text-rose-400" />
+              <div className="p-2 rounded-lg bg-stockpro-stock-error-bg dark:bg-stockpro-stock-error-fg/12">
+                <AlertTriangle className="w-4 h-4 text-stockpro-stock-error-fg" />
               </div>
-              <span className="text-xs text-slate-500 dark:text-slate-400">En attente</span>
+              <span className="text-xs text-muted-foreground">En attente</span>
             </div>
-            <p className="text-xl font-bold text-rose-600 dark:text-rose-400">{formatShortCurrency(stats.montantEnAttente)}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">FCFA</p>
+            <p className="text-xl font-bold text-stockpro-stock-error-fg">{formatShortCurrency(stats.montantEnAttente)}</p>
+            <p className="text-xs text-muted-foreground">FCFA</p>
           </div>
         </Card>
       </div>
@@ -462,7 +462,7 @@ export const RetoursPage: React.FC = () => {
       {/* Filtres */}
       <Card padding="sm">
         <div className="flex flex-wrap items-center gap-4">
-          <Filter className="w-5 h-5 text-slate-400" />
+          <Filter className="w-5 h-5 text-muted-foreground" />
           <Select
             value={filterStatut}
             onChange={setFilterStatut}
@@ -479,20 +479,20 @@ export const RetoursPage: React.FC = () => {
             ]}
           />
           <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-slate-400" />
+            <Calendar className="w-4 h-4 text-muted-foreground" />
             <input
               type="date"
               value={filterDateFrom}
               onChange={(e) => setFilterDateFrom(e.target.value)}
-              className="h-9 px-3 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-800 dark:text-white"
+              className="h-9 px-3 text-sm bg-card border border-border rounded-lg text-foreground"
               placeholder="Date début"
             />
-            <span className="text-slate-400">→</span>
+            <span className="text-muted-foreground">→</span>
             <input
               type="date"
               value={filterDateTo}
               onChange={(e) => setFilterDateTo(e.target.value)}
-              className="h-9 px-3 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-800 dark:text-white"
+              className="h-9 px-3 text-sm bg-card border border-border rounded-lg text-foreground"
               placeholder="Date fin"
             />
           </div>
@@ -537,7 +537,7 @@ export const RetoursPage: React.FC = () => {
         <div className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Client *</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Client *</label>
               <Select
                 value={newRetour.client}
                 onChange={(v) => {
@@ -553,7 +553,7 @@ export const RetoursPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Produit *</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Produit *</label>
               <Select
                 value={newRetour.produit}
                 onChange={(v) => {
@@ -573,7 +573,7 @@ export const RetoursPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Quantité *</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Quantité *</label>
               <Input
                 type="number"
                 min="1"
@@ -582,7 +582,7 @@ export const RetoursPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prix unitaire</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Prix unitaire</label>
               <Input
                 type="number"
                 value={String(newRetour.prixUnitaire)}
@@ -590,7 +590,7 @@ export const RetoursPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Type *</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Type *</label>
               <Select
                 value={newRetour.type}
                 onChange={(v) => setNewRetour({ ...newRetour, type: v })}
@@ -604,7 +604,7 @@ export const RetoursPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Motif *</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Motif *</label>
               <Select
                 value={newRetour.motif}
                 onChange={(v) => setNewRetour({ ...newRetour, motif: v })}
@@ -613,9 +613,9 @@ export const RetoursPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Montant total</label>
-              <div className="h-10 px-3 py-2 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center">
-                <span className="font-semibold text-slate-800 dark:text-white">
+              <label className="block text-sm font-medium text-foreground mb-1">Montant total</label>
+              <div className="h-10 px-3 py-2 bg-muted rounded-lg flex items-center">
+                <span className="font-semibold text-foreground">
                   {formatCurrency(newRetour.quantite * newRetour.prixUnitaire)}
                 </span>
               </div>
@@ -623,9 +623,9 @@ export const RetoursPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description du motif</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Description du motif</label>
             <textarea
-              className="w-full h-20 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full h-20 px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-2 focus:ring-stockpro-signal focus:border-transparent"
               placeholder="Décrivez la raison du retour..."
               value={newRetour.motifDescription}
               onChange={(e) => setNewRetour({ ...newRetour, motifDescription: e.target.value })}
@@ -633,16 +633,16 @@ export const RetoursPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes internes</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Notes internes</label>
             <textarea
-              className="w-full h-16 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-600 rounded-lg text-slate-800 dark:text-white focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+              className="w-full h-16 px-3 py-2 bg-card border border-border rounded-lg text-foreground focus:ring-2 focus:ring-stockpro-signal focus:border-transparent"
               placeholder="Notes pour le traitement..."
               value={newRetour.notes}
               onChange={(e) => setNewRetour({ ...newRetour, notes: e.target.value })}
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" onClick={newRetourModal.close}>Annuler</Button>
             <Button onClick={handleNewRetour}>
               <Check className="w-4 h-4 mr-2" />
@@ -663,13 +663,13 @@ export const RetoursPage: React.FC = () => {
           <div className="space-y-4">
             {/* Info générale */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Client</p>
-                <p className="font-semibold text-slate-800 dark:text-white">{selectedRetour.client}</p>
-                <p className="text-sm text-slate-500">{selectedRetour.clientTelephone}</p>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-1">Client</p>
+                <p className="font-semibold text-foreground">{selectedRetour.client}</p>
+                <p className="text-sm text-muted-foreground">{selectedRetour.clientTelephone}</p>
               </div>
-              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Statut</p>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-1">Statut</p>
                 <Badge variant={selectedRetour.statut === "rembourse" || selectedRetour.statut === "echange" || selectedRetour.statut === "valide" ? "success" : selectedRetour.statut === "refuse" ? "danger" : "warning"}>
                   {STATUTS_RETOUR[selectedRetour.statut as keyof typeof STATUTS_RETOUR]?.label}
                 </Badge>
@@ -677,66 +677,66 @@ export const RetoursPage: React.FC = () => {
             </div>
 
             {/* Produit retourné */}
-            <div className="p-4 border border-slate-200 dark:border-slate-600 rounded-lg">
-              <h4 className="font-semibold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
+            <div className="p-4 border border-border rounded-lg">
+              <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                 <Package className="w-4 h-4" />
                 Produit retourné
               </h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                 <div>
-                  <p className="text-slate-500 dark:text-slate-400">Produit</p>
-                  <p className="font-medium text-slate-800 dark:text-white">{selectedRetour.produit}</p>
+                  <p className="text-muted-foreground">Produit</p>
+                  <p className="font-medium text-foreground">{selectedRetour.produit}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500 dark:text-slate-400">SKU</p>
-                  <p className="font-medium text-slate-800 dark:text-white">{selectedRetour.produitSku}</p>
+                  <p className="text-muted-foreground">SKU</p>
+                  <p className="font-medium text-foreground">{selectedRetour.produitSku}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500 dark:text-slate-400">Quantité</p>
-                  <p className="font-medium text-slate-800 dark:text-white">{selectedRetour.quantite}</p>
+                  <p className="text-muted-foreground">Quantité</p>
+                  <p className="font-medium text-foreground">{selectedRetour.quantite}</p>
                 </div>
                 <div>
-                  <p className="text-slate-500 dark:text-slate-400">Montant</p>
-                  <p className="font-medium text-slate-800 dark:text-white">{formatCurrency(selectedRetour.montantTotal)}</p>
+                  <p className="text-muted-foreground">Montant</p>
+                  <p className="font-medium text-foreground">{formatCurrency(selectedRetour.montantTotal)}</p>
                 </div>
               </div>
             </div>
 
             {/* Motif */}
-            <div className="p-4 border border-slate-200 dark:border-slate-600 rounded-lg">
-              <h4 className="font-semibold text-slate-800 dark:text-white mb-2 flex items-center gap-2">
+            <div className="p-4 border border-border rounded-lg">
+              <h4 className="font-semibold text-foreground mb-2 flex items-center gap-2">
                 <AlertCircle className="w-4 h-4" />
                 Motif du retour
               </h4>
               <Badge variant="outline" className="mb-2">
                 {MOTIFS_RETOUR.find(m => m.id === selectedRetour.motif)?.label || selectedRetour.motif}
               </Badge>
-              <p className="text-sm text-slate-600 dark:text-slate-300">{selectedRetour.motifDescription}</p>
+              <p className="text-sm text-muted-foreground">{selectedRetour.motifDescription}</p>
             </div>
 
             {/* Produit échangé (si applicable) */}
             {selectedRetour.produitEchange && (
-              <div className="p-4 border border-indigo-200 dark:border-indigo-800 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
-                <h4 className="font-semibold text-indigo-800 dark:text-indigo-300 mb-3 flex items-center gap-2">
+              <div className="p-4 rounded-lg border border-stockpro-navy/20 bg-stockpro-navy/5 dark:border-stockpro-signal/25 dark:bg-stockpro-signal/8">
+                <h4 className="font-semibold text-stockpro-navy dark:text-stockpro-signal mb-3 flex items-center gap-2">
                   <RefreshCw className="w-4 h-4" />
                   Produit d'échange
                 </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-sm">
                   <div>
-                    <p className="text-slate-500 dark:text-slate-400">Produit</p>
-                    <p className="font-medium text-slate-800 dark:text-white">{selectedRetour.produitEchange.nom}</p>
+                    <p className="text-muted-foreground">Produit</p>
+                    <p className="font-medium text-foreground">{selectedRetour.produitEchange.nom}</p>
                   </div>
                   <div>
-                    <p className="text-slate-500 dark:text-slate-400">SKU</p>
-                    <p className="font-medium text-slate-800 dark:text-white">{selectedRetour.produitEchange.sku}</p>
+                    <p className="text-muted-foreground">SKU</p>
+                    <p className="font-medium text-foreground">{selectedRetour.produitEchange.sku}</p>
                   </div>
                   <div>
-                    <p className="text-slate-500 dark:text-slate-400">Quantité</p>
-                    <p className="font-medium text-slate-800 dark:text-white">{selectedRetour.produitEchange.quantite}</p>
+                    <p className="text-muted-foreground">Quantité</p>
+                    <p className="font-medium text-foreground">{selectedRetour.produitEchange.quantite}</p>
                   </div>
                   <div>
-                    <p className="text-slate-500 dark:text-slate-400">Prix</p>
-                    <p className="font-medium text-slate-800 dark:text-white">{formatCurrency(selectedRetour.produitEchange.prix)}</p>
+                    <p className="text-muted-foreground">Prix</p>
+                    <p className="font-medium text-foreground">{formatCurrency(selectedRetour.produitEchange.prix)}</p>
                   </div>
                 </div>
               </div>
@@ -744,22 +744,22 @@ export const RetoursPage: React.FC = () => {
 
             {/* Montant remboursé */}
             {selectedRetour.montantRembourse > 0 && (
-              <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                <p className="text-sm text-emerald-600 dark:text-emerald-400">Montant remboursé</p>
-                <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">{formatCurrency(selectedRetour.montantRembourse)}</p>
+              <div className="p-4 rounded-lg bg-stockpro-stock-ok-bg dark:bg-stockpro-stock-ok-fg/10">
+                <p className="text-sm text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">Montant remboursé</p>
+                <p className="text-2xl font-bold text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">{formatCurrency(selectedRetour.montantRembourse)}</p>
               </div>
             )}
 
             {/* Notes */}
             {selectedRetour.notes && (
-              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Notes</p>
-                <p className="text-sm text-slate-600 dark:text-slate-300">{selectedRetour.notes}</p>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-xs text-muted-foreground mb-1">Notes</p>
+                <p className="text-sm text-muted-foreground">{selectedRetour.notes}</p>
               </div>
             )}
 
             {/* Dates */}
-            <div className="flex justify-between text-sm text-slate-500 dark:text-slate-400 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex justify-between text-sm text-muted-foreground pt-4 border-t border-border">
               <span>Demande: {selectedRetour.dateDemande}</span>
               {selectedRetour.dateValidation && <span>Traitement: {selectedRetour.dateValidation}</span>}
               {selectedRetour.processedBy && <span>Par: {selectedRetour.processedBy}</span>}
@@ -777,43 +777,43 @@ export const RetoursPage: React.FC = () => {
       >
         {selectedRetour && (
           <div className="space-y-4">
-            <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-lg flex items-start gap-3">
-              <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+            <div className="p-4 rounded-lg flex bg-stockpro-stock-low-bg dark:bg-stockpro-stock-low-fg/10 items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-stockpro-stock-low-fg flex-shrink-0 mt-0.5" />
               <div>
-                <p className="font-medium text-amber-800 dark:text-amber-300">Action de traitement</p>
-                <p className="text-sm text-amber-700 dark:text-amber-400">
+                <p className="font-medium text-stockpro-stock-low-fg">Action de traitement</p>
+                <p className="text-sm text-stockpro-stock-low-fg">
                   Choisissez l'action à effectuer pour ce retour. Cette action mettra à jour le stock automatiquement.
                 </p>
               </div>
             </div>
 
             {/* Résumé */}
-            <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+            <div className="grid grid-cols-2 gap-4 p-4 bg-muted/50 rounded-lg">
               <div>
-                <p className="text-xs text-slate-500">Client</p>
+                <p className="text-xs text-muted-foreground">Client</p>
                 <p className="font-medium">{selectedRetour.client}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Produit</p>
+                <p className="text-xs text-muted-foreground">Produit</p>
                 <p className="font-medium">{selectedRetour.produit} (x{selectedRetour.quantite})</p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Montant</p>
+                <p className="text-xs text-muted-foreground">Montant</p>
                 <p className="font-medium">{formatCurrency(selectedRetour.montantTotal)}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-500">Motif</p>
+                <p className="text-xs text-muted-foreground">Motif</p>
                 <p className="font-medium">{MOTIFS_RETOUR.find(m => m.id === selectedRetour.motif)?.label}</p>
               </div>
             </div>
 
             {/* Options d'échange */}
             {selectedRetour.type === "echange" && (
-              <div className="p-4 border border-indigo-200 dark:border-indigo-800 rounded-lg">
-                <h4 className="font-semibold text-slate-800 dark:text-white mb-3">Produit d'échange</h4>
+              <div className="p-4 rounded-lg border border-stockpro-navy/20 dark:border-stockpro-signal/25">
+                <h4 className="font-semibold text-foreground mb-3">Produit d'échange</h4>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Produit de remplacement</label>
+                    <label className="block text-sm text-muted-foreground mb-1">Produit de remplacement</label>
                     <Select
                       value={exchangeProduct}
                       onChange={setExchangeProduct}
@@ -825,7 +825,7 @@ export const RetoursPage: React.FC = () => {
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-slate-600 dark:text-slate-400 mb-1">Quantité</label>
+                    <label className="block text-sm text-muted-foreground mb-1">Quantité</label>
                     <Input
                       type="number"
                       min="1"
@@ -838,22 +838,22 @@ export const RetoursPage: React.FC = () => {
             )}
 
             {/* Impact sur le stock */}
-            <div className="p-4 border border-slate-200 dark:border-slate-600 rounded-lg">
-              <h4 className="font-semibold text-slate-800 dark:text-white mb-3 flex items-center gap-2">
+            <div className="p-4 border border-border rounded-lg">
+              <h4 className="font-semibold text-foreground mb-3 flex items-center gap-2">
                 <Boxes className="w-4 h-4" />
                 Impact sur le stock
               </h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-slate-600 dark:text-slate-400">Stock actuel ({selectedRetour.produitSku})</span>
+                  <span className="text-muted-foreground">Stock actuel ({selectedRetour.produitSku})</span>
                   <span className="font-medium">{MOCK_PRODUCTS.find(p => p.sku === selectedRetour.produitSku)?.stock || 0} unités</span>
                 </div>
-                <div className="flex justify-between text-emerald-600 dark:text-emerald-400">
+                <div className="flex justify-between text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">
                   <span>+ Retour en stock</span>
                   <span className="font-medium">+{selectedRetour.quantite} unités</span>
                 </div>
                 {selectedRetour.type === "echange" && exchangeProduct && (
-                  <div className="flex justify-between text-rose-600 dark:text-rose-400">
+                  <div className="flex justify-between text-stockpro-stock-error-fg">
                     <span>- Sortie échange ({exchangeProduct})</span>
                     <span className="font-medium">-{exchangeQuantity} unités</span>
                   </div>
@@ -862,7 +862,7 @@ export const RetoursPage: React.FC = () => {
             </div>
 
             {/* Boutons d'action */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-4 border-t border-border">
               <Button
                 variant="success"
                 onClick={() => handleProcessRetour("valider")}
@@ -913,83 +913,83 @@ export const RetoursPage: React.FC = () => {
         {selectedRetour && (
           <div className="space-y-4">
             {/* En-tête */}
-            <div className="text-center pb-4 border-b border-slate-200 dark:border-slate-700">
-              <h3 className="text-xl font-bold text-slate-800 dark:text-white">StockPro Manager</h3>
-              <p className="text-sm text-slate-500">Reçu de Retour / Échange</p>
+            <div className="text-center pb-4 border-b border-border">
+              <h3 className="text-xl font-bold text-foreground">StockPro Manager</h3>
+              <p className="text-sm text-muted-foreground">Reçu de Retour / Échange</p>
             </div>
 
             {/* Informations */}
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-slate-500 dark:text-slate-400">N° Retour</p>
-                <p className="font-semibold text-slate-800 dark:text-white">{selectedRetour.id}</p>
+                <p className="text-muted-foreground">N° Retour</p>
+                <p className="font-semibold text-foreground">{selectedRetour.id}</p>
               </div>
               <div>
-                <p className="text-slate-500 dark:text-slate-400">Date</p>
-                <p className="font-semibold text-slate-800 dark:text-white">{selectedRetour.dateDemande}</p>
+                <p className="text-muted-foreground">Date</p>
+                <p className="font-semibold text-foreground">{selectedRetour.dateDemande}</p>
               </div>
               <div>
-                <p className="text-slate-500 dark:text-slate-400">Client</p>
-                <p className="font-semibold text-slate-800 dark:text-white">{selectedRetour.client}</p>
+                <p className="text-muted-foreground">Client</p>
+                <p className="font-semibold text-foreground">{selectedRetour.client}</p>
               </div>
               <div>
-                <p className="text-slate-500 dark:text-slate-400">Téléphone</p>
-                <p className="font-semibold text-slate-800 dark:text-white">{selectedRetour.clientTelephone}</p>
+                <p className="text-muted-foreground">Téléphone</p>
+                <p className="font-semibold text-foreground">{selectedRetour.clientTelephone}</p>
               </div>
             </div>
 
             {/* Produit */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-              <h4 className="font-semibold text-slate-800 dark:text-white mb-2">Produit retourné</h4>
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <h4 className="font-semibold text-foreground mb-2">Produit retourné</h4>
               <div className="grid grid-cols-2 gap-2 text-sm">
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">Produit: </span>
-                  <span className="font-medium text-slate-800 dark:text-white">{selectedRetour.produit}</span>
+                  <span className="text-muted-foreground">Produit: </span>
+                  <span className="font-medium text-foreground">{selectedRetour.produit}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">SKU: </span>
-                  <span className="font-medium text-slate-800 dark:text-white">{selectedRetour.produitSku}</span>
+                  <span className="text-muted-foreground">SKU: </span>
+                  <span className="font-medium text-foreground">{selectedRetour.produitSku}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">Quantité: </span>
-                  <span className="font-medium text-slate-800 dark:text-white">{selectedRetour.quantite}</span>
+                  <span className="text-muted-foreground">Quantité: </span>
+                  <span className="font-medium text-foreground">{selectedRetour.quantite}</span>
                 </div>
                 <div>
-                  <span className="text-slate-500 dark:text-slate-400">Montant: </span>
-                  <span className="font-medium text-slate-800 dark:text-white">{formatCurrency(selectedRetour.montantTotal)}</span>
+                  <span className="text-muted-foreground">Montant: </span>
+                  <span className="font-medium text-foreground">{formatCurrency(selectedRetour.montantTotal)}</span>
                 </div>
               </div>
             </div>
 
             {/* Motif */}
-            <div className="p-4 border border-slate-200 dark:border-slate-600 rounded-lg">
-              <h4 className="font-semibold text-slate-800 dark:text-white mb-1">Motif</h4>
-              <p className="text-sm text-slate-600 dark:text-slate-300">
+            <div className="p-4 border border-border rounded-lg">
+              <h4 className="font-semibold text-foreground mb-1">Motif</h4>
+              <p className="text-sm text-muted-foreground">
                 {MOTIFS_RETOUR.find(m => m.id === selectedRetour.motif)?.label || selectedRetour.motif}
               </p>
               {selectedRetour.motifDescription && (
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{selectedRetour.motifDescription}</p>
+                <p className="text-xs text-muted-foreground mt-1">{selectedRetour.motifDescription}</p>
               )}
             </div>
 
             {/* Résolution */}
-            <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-              <h4 className="font-semibold text-emerald-800 dark:text-emerald-300 mb-2">Résolution</h4>
+            <div className="p-4 rounded-lg bg-stockpro-stock-ok-bg dark:bg-stockpro-stock-ok-fg/10">
+              <h4 className="font-semibold text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg mb-2">Résolution</h4>
               <div className="flex items-center gap-2">
                 <Badge variant="success">
                   {STATUTS_RETOUR[selectedRetour.statut as keyof typeof STATUTS_RETOUR]?.label}
                 </Badge>
-                <span className="text-sm text-slate-600 dark:text-slate-300">
+                <span className="text-sm text-muted-foreground">
                   le {selectedRetour.dateValidation}
                 </span>
               </div>
               {selectedRetour.montantRembourse > 0 && (
-                <p className="text-lg font-bold text-emerald-700 dark:text-emerald-400 mt-2">
+                <p className="text-lg font-bold text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg mt-2">
                   Remboursé: {formatCurrency(selectedRetour.montantRembourse)}
                 </p>
               )}
               {selectedRetour.produitEchange && (
-                <p className="text-sm text-slate-600 dark:text-slate-300 mt-2">
+                <p className="text-sm text-muted-foreground mt-2">
                   Échangé contre: {selectedRetour.produitEchange.nom} (x{selectedRetour.produitEchange.quantite})
                 </p>
               )}
@@ -997,13 +997,13 @@ export const RetoursPage: React.FC = () => {
 
             {/* Traité par */}
             {selectedRetour.processedBy && (
-              <p className="text-xs text-slate-500 dark:text-slate-400 text-center">
+              <p className="text-xs text-muted-foreground text-center">
                 Traité par: {selectedRetour.processedBy}
               </p>
             )}
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button variant="outline" onClick={closePrintRetourModal}>
                 Fermer
               </Button>

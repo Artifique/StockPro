@@ -49,7 +49,7 @@ export function Card(props: {
           : undefined
       }
       className={
-        "bg-white dark:bg-slate-800 rounded-xl shadow-sm border border-slate-200 dark:border-slate-700 " +
+        "rounded-xl border border-border bg-card shadow-sm " +
         paddings[padding] +
         " " +
         className
@@ -58,8 +58,8 @@ export function Card(props: {
       {(title || description || headerAction) && (
         <div className="flex items-start justify-between mb-4">
           <div className="flex-1">
-            {title && <h3 className="text-lg font-semibold text-slate-800 dark:text-white">{title}</h3>}
-            {description && <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{description}</p>}
+            {title && <h3 className="text-lg font-semibold text-card-foreground">{title}</h3>}
+            {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
           </div>
           {headerAction && <div className="ml-4">{headerAction}</div>}
         </div>

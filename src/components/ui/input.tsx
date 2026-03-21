@@ -18,20 +18,20 @@ export const Input: React.FC<InputProps> = ({
   return (
     <div className="w-full">
       <div className="relative">
-        {icon && <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">{icon}</div>}
+        {icon && <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">{icon}</div>}
         <input
           type={type}
           disabled={disabled}
           className={
-            "w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed " +
+            "w-full rounded-lg border border-border bg-card px-4 py-2.5 text-foreground placeholder:text-muted-foreground transition-all duration-200 focus:border-transparent focus:outline-none focus:ring-2 focus:ring-stockpro-signal disabled:cursor-not-allowed disabled:opacity-50 " +
             (icon ? "pl-10 " : "") +
-            (error ? "border-rose-500 focus:ring-rose-500 " : "") +
-            className
+            className +
+            (error ? " !border-stockpro-stock-error-fg focus:!ring-stockpro-stock-error-fg " : "")
           }
           {...rest}
         />
       </div>
-      {error && <p className="mt-1.5 text-sm text-rose-500">{error}</p>}
+      {error && <p className="mt-1.5 text-sm text-stockpro-stock-error-fg">{error}</p>}
     </div>
   );
 };

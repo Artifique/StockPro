@@ -19,10 +19,8 @@ import { Header } from "./header";
 import { Sidebar } from "./sidebar";
 import { OnboardingModal } from "./onboarding-modal";
 import { NetworkStatus } from "./network-status";
-import { FloatingHelpButton } from "./floating-help-button";
 import { QuickActionsFAB } from "./quick-actions-fab";
 import { ScrollToTop } from "./scroll-to-top";
-import { KeyboardShortcutsHelp } from "./keyboard-shortcuts-help";
 
 function AppShellLayoutInner({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -57,12 +55,12 @@ function AppShellLayoutInner({ children }: { children: React.ReactNode }) {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+      <div className="flex min-h-screen items-center justify-center bg-stockpro-page dark:bg-background">
         <div className="text-center">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 mb-4 animate-pulse">
-            <Package className="w-8 h-8 text-white" />
+          <div className="mb-4 inline-flex h-16 w-16 animate-pulse items-center justify-center rounded-2xl bg-stockpro-navy dark:bg-stockpro-signal">
+            <Package className="h-8 w-8 text-white dark:text-stockpro-navy-night" />
           </div>
-          <div className="h-4 w-32 mx-auto bg-slate-200 dark:bg-slate-700 rounded animate-pulse" />
+          <div className="h-4 w-32 mx-auto bg-muted rounded animate-pulse" />
         </div>
       </div>
     );
@@ -73,7 +71,7 @@ function AppShellLayoutInner({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className={`min-h-screen bg-slate-50 dark:bg-slate-900 ${darkMode ? "dark" : ""}`}>
+    <div className={`min-h-screen bg-stockpro-page dark:bg-background ${darkMode ? "dark" : ""}`}>
       <Sidebar
         collapsed={sidebarCollapsed}
         setCollapsed={setSidebarCollapsed}
@@ -112,32 +110,17 @@ function AppShellLayoutInner({ children }: { children: React.ReactNode }) {
         className={`pt-16 min-h-screen transition-all duration-300 ${sidebarCollapsed ? "lg:pl-[72px]" : "lg:pl-[260px]"
           }`}
       >
-        <div className="p-4 lg:p-6 pb-24 lg:pb-20">
+        <div className="p-4 pb-24 pt-4 lg:p-6 lg:pb-6">
           <AnimatePresence mode="wait">
             <PageTransition key={pathname ?? ""}>{children}</PageTransition>
           </AnimatePresence>
         </div>
       </main>
 
-      <footer
-        className={`fixed bottom-0 right-0 h-12 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 hidden lg:flex items-center justify-between px-6 text-sm text-slate-500 dark:text-slate-400 transition-all duration-300 z-20 ${sidebarCollapsed ? "lg:left-[72px]" : "lg:left-[260px]"
-          } left-0`}
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-30 flex h-16 items-center justify-around border-t border-border bg-white px-2 dark:border-white/10 dark:bg-stockpro-rail lg:hidden"
+        aria-label="Navigation mobile"
       >
-        <div className="flex items-center gap-2">
-          <Package className="w-4 h-4 text-indigo-500" />
-          <span>StockPro Manager v1.0</span>
-        </div>
-        <div className="flex items-center gap-4">
-          <span className="hidden sm:inline">© 2024 Tous droits réservés</span>
-          <span className="text-slate-400">|</span>
-          <span className="flex items-center gap-1">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            Système actif
-          </span>
-        </div>
-      </footer>
-
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 h-16 bg-white dark:bg-slate-800 border-t border-slate-200 dark:border-slate-700 flex items-center justify-around z-30 px-2">
         {(() => {
           const allMobileItems: {
             id: AppRouteId | "menu";
@@ -161,10 +144,10 @@ function AppShellLayoutInner({ children }: { children: React.ReactNode }) {
                   key={item.id}
                   type="button"
                   onClick={() => setMobileMenuOpen(true)}
-                  className="flex flex-col items-center justify-center gap-1 p-2 rounded-lg transition-colors relative text-slate-500 dark:text-slate-400"
+                  className="relative flex flex-col items-center justify-center gap-1 rounded-lg p-2 text-muted-foreground transition-colors dark:text-muted-foreground"
                 >
-                  <Icon className="w-5 h-5" />
-                  <span className="text-xs font-medium">{item.label}</span>
+                  <Icon className="h-5 w-5 shrink-0" />
+                  <span className="app-shell-tab-label text-muted-foreground">{item.label}</span>
                 </button>
               );
             }
@@ -173,14 +156,16 @@ function AppShellLayoutInner({ children }: { children: React.ReactNode }) {
               <Link
                 key={item.id}
                 href={href}
-                className={`flex flex-col items-center justify-center gap-1 p-2 rounded-lg transition-colors relative ${isActive
-                  ? "text-indigo-600 dark:text-indigo-400"
-                  : "text-slate-500 dark:text-slate-400"
+                className={`relative flex flex-col items-center justify-center gap-1 rounded-lg p-2 transition-colors ${isActive
+                  ? "text-stockpro-navy dark:text-stockpro-signal"
+                  : "text-muted-foreground"
                   }`}
               >
-                <Icon className="w-5 h-5" />
-                <span className="text-xs font-medium">{item.label}</span>
-                {isActive && <span className="absolute bottom-1 w-1 h-1 bg-indigo-600 rounded-full" />}
+                <Icon className="h-5 w-5 shrink-0" />
+                <span className={`app-shell-tab-label ${isActive ? "text-stockpro-navy dark:text-stockpro-signal" : ""}`}>
+                  {item.label}
+                </span>
+                {isActive && <span className="absolute bottom-1 h-1 w-1 rounded-full bg-stockpro-navy dark:bg-stockpro-signal" />}
               </Link>
             );
           });
@@ -189,7 +174,6 @@ function AppShellLayoutInner({ children }: { children: React.ReactNode }) {
 
       <ToastContainer />
       <NetworkStatus />
-      <FloatingHelpButton currentPage={activeRoute} />
       <QuickActionsFAB
         userRole={user.role}
         onNavigate={(r) => router.push(routePath(r))}
@@ -197,7 +181,6 @@ function AppShellLayoutInner({ children }: { children: React.ReactNode }) {
         darkMode={darkMode}
       />
       <ScrollToTop />
-      <KeyboardShortcutsHelp />
     </div>
   );
 }

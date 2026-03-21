@@ -58,7 +58,7 @@ const Skeleton: React.FC<{
 
     return (
       <div
-        className={`bg-slate-200 dark:bg-slate-700 ${variantStyles[variant]} ${animationStyles[animation]} ${className}`}
+        className={`bg-muted ${variantStyles[variant]} ${animationStyles[animation]} ${className}`}
         style={style}
       />
     );
@@ -83,12 +83,12 @@ const _SkeletonCard: React.FC<{ count?: number }> = ({ count = 4 }) => (
 // Skeleton Table for Data Tables
 const _SkeletonTable: React.FC<{ rows?: number; cols?: number }> = ({ rows = 5, cols = 4 }) => (
   <Card className="overflow-hidden">
-    <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+    <div className="p-4 border-b border-border">
       <Skeleton width={150} height={20} />
     </div>
     <div className="overflow-x-auto">
       <table className="w-full">
-        <thead className="bg-slate-50 dark:bg-slate-700/50">
+        <thead className="bg-muted/50">
           <tr>
             {Array.from({ length: cols }).map((_, i) => (
               <th key={i} className="px-4 py-3">
@@ -99,7 +99,7 @@ const _SkeletonTable: React.FC<{ rows?: number; cols?: number }> = ({ rows = 5, 
         </thead>
         <tbody>
           {Array.from({ length: rows }).map((_, rowIndex) => (
-            <tr key={rowIndex} className="border-b border-slate-100 dark:border-slate-700">
+            <tr key={rowIndex} className="border-b border-border">
               {Array.from({ length: cols }).map((_, colIndex) => (
                 <td key={colIndex} className="px-4 py-4">
                   <Skeleton
@@ -178,7 +178,7 @@ const _StaggerItem: React.FC<{
 const _PulseDot: React.FC<{
   color?: string;
   size?: "sm" | "md" | "lg";
-}> = ({ color = "bg-emerald-500", size = "md" }) => {
+}> = ({ color = "bg-stockpro-signal", size = "md" }) => {
   const sizes = {
     sm: "w-2 h-2",
     md: "w-3 h-3",
@@ -203,13 +203,13 @@ const _EmptyState: React.FC<{
 }> = ({ icon, title, description, action, className = "" }) => (
   <div className={`flex flex-col items-center justify-center py-12 px-4 text-center ${className}`}>
     {icon && (
-      <div className="mb-4 p-4 rounded-full bg-slate-100 dark:bg-slate-700/50">
+      <div className="mb-4 p-4 rounded-full bg-muted/50">
         {icon}
       </div>
     )}
-    <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-2">{title}</h3>
+    <h3 className="text-lg font-semibold text-foreground mb-2">{title}</h3>
     {description && (
-      <p className="text-sm text-slate-500 dark:text-slate-400 max-w-sm mb-4">{description}</p>
+      <p className="text-sm text-muted-foreground max-w-sm mb-4">{description}</p>
     )}
     {action}
   </div>
@@ -231,10 +231,13 @@ export const NotificationPanel: React.FC<{
   ]);
 
   const typeStyles = {
-    warning: "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
-    success: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
-    danger: "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400",
-    info: "bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400",
+    warning:
+      "bg-stockpro-stock-low-bg text-stockpro-stock-low-fg dark:bg-stockpro-stock-low-fg/15 dark:text-stockpro-stock-low-fg",
+    success:
+      "bg-stockpro-stock-ok-bg text-stockpro-stock-ok-fg dark:bg-stockpro-stock-ok-fg/15 dark:text-stockpro-stock-ok-fg",
+    danger:
+      "bg-stockpro-stock-error-bg text-stockpro-stock-error-fg dark:bg-stockpro-stock-error-fg/15 dark:text-stockpro-stock-error-fg",
+    info: "bg-stockpro-navy/10 text-stockpro-navy dark:bg-stockpro-signal/12 dark:text-stockpro-signal",
   };
 
   const typeIcons = {
@@ -279,14 +282,14 @@ export const NotificationPanel: React.FC<{
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: -10 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-white dark:bg-slate-800 rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700 z-50 overflow-hidden"
+            className="absolute right-0 top-full mt-2 w-80 sm:w-96 bg-card rounded-xl shadow-2xl border border-border z-50 overflow-hidden"
           >
             {/* Header */}
-            <div className="flex items-center justify-between px-4 py-3 border-b border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50">
+            <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/50">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-slate-800 dark:text-white">Notifications</h3>
+                <h3 className="font-semibold text-foreground">Notifications</h3>
                 {unreadCount > 0 && (
-                  <span className="px-2 py-0.5 text-xs font-medium bg-indigo-500 text-white rounded-full">
+                  <span className="rounded-full bg-stockpro-navy px-2 py-0.5 text-xs font-medium text-white dark:bg-stockpro-signal dark:text-stockpro-navy-night">
                     {unreadCount}
                   </span>
                 )}
@@ -294,7 +297,7 @@ export const NotificationPanel: React.FC<{
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-xs text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
+                  className="text-xs text-stockpro-navy hover:text-stockpro-navy-hover dark:text-stockpro-signal dark:hover:text-white"
                 >
                   Tout marquer lu
                 </button>
@@ -304,7 +307,7 @@ export const NotificationPanel: React.FC<{
             {/* Notifications List */}
             <div className="max-h-96 overflow-y-auto">
               {notifications.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-8 text-slate-400">
+                <div className="flex flex-col items-center justify-center py-8 text-muted-foreground">
                   <Bell className="w-10 h-10 mb-2 opacity-50" />
                   <p className="text-sm">Aucune notification</p>
                 </div>
@@ -316,33 +319,33 @@ export const NotificationPanel: React.FC<{
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.05 }}
                     onClick={() => markAsRead(notif.id)}
-                    className={`flex gap-3 p-4 border-b border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700/50 cursor-pointer transition-colors group ${!notif.read ? "bg-indigo-50/50 dark:bg-indigo-900/10" : ""}`}
+                    className={`group flex cursor-pointer gap-3 border-b border-border p-4 transition-colors hover:bg-muted/80 dark:border-border dark:hover:bg-muted/50 ${!notif.read ? "bg-stockpro-navy/[0.06] dark:bg-stockpro-signal/10" : ""}`}
                   >
                     <div className={`p-2 rounded-lg ${typeStyles[notif.type]}`}>
                       {typeIcons[notif.type]}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
-                        <p className={`font-medium text-sm ${!notif.read ? "text-slate-800 dark:text-white" : "text-slate-600 dark:text-slate-300"}`}>
+                        <p className={`font-medium text-sm ${!notif.read ? "text-foreground" : "text-muted-foreground"}`}>
                           {notif.title}
                         </p>
                         <div className="flex items-center gap-2">
                           {!notif.read && (
-                            <span className="w-2 h-2 bg-indigo-500 rounded-full" />
+                            <span className="h-2 w-2 rounded-full bg-stockpro-navy dark:bg-stockpro-signal" />
                           )}
                           <button
                             onClick={(e) => deleteNotification(notif.id, e)}
-                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600 transition-opacity"
+                            className="opacity-0 group-hover:opacity-100 p-1 rounded hover:bg-muted transition-opacity"
                             title="Supprimer"
                           >
-                            <X className="w-3 h-3 text-slate-400" />
+                            <X className="w-3 h-3 text-muted-foreground" />
                           </button>
                         </div>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 truncate">
+                      <p className="text-xs text-muted-foreground truncate">
                         {notif.message}
                       </p>
-                      <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                      <p className="text-xs text-muted-foreground mt-1">
                         {notif.time}
                       </p>
                     </div>
@@ -352,10 +355,10 @@ export const NotificationPanel: React.FC<{
             </div>
 
             {/* Footer */}
-            <div className="p-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-700/50 flex gap-2">
+            <div className="p-3 border-t border-border bg-muted/50 flex gap-2">
               <button
                 onClick={onClose}
-                className="flex-1 text-center text-sm text-slate-600 hover:text-slate-800 dark:text-slate-400 dark:hover:text-slate-200 font-medium py-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-600 transition-colors"
+                className="flex-1 rounded-lg py-1.5 text-center text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:text-foreground"
               >
                 Fermer
               </button>
@@ -364,7 +367,7 @@ export const NotificationPanel: React.FC<{
                   setNotifications([]);
                   showToast("Toutes les notifications effacées", "success");
                 }}
-                className="flex-1 text-center text-sm text-rose-600 hover:text-rose-700 dark:text-rose-400 font-medium py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                className="flex-1 rounded-lg py-1.5 text-center text-sm font-medium text-stockpro-stock-error-fg transition-colors hover:bg-stockpro-stock-error-bg dark:hover:bg-stockpro-stock-error-fg/12"
               >
                 Effacer tout
               </button>
@@ -394,23 +397,23 @@ const _StatCard: React.FC<{
   const content = (
     <Card
       padding="sm"
-      className={isClickable ? "cursor-pointer hover:border-indigo-300 dark:hover:border-indigo-600" : ""}
+      className={isClickable ? "cursor-pointer hover:border-stockpro-navy/35 dark:hover:border-stockpro-signal/40" : ""}
       onClick={onClick}
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <p className="text-sm font-medium text-slate-500 dark:text-slate-400">{label}</p>
+            <p className="text-sm font-medium text-muted-foreground">{label}</p>
             {hint && (
-              <span className="text-xs text-slate-400 dark:text-slate-500 bg-slate-100 dark:bg-slate-700 px-2 py-0.5 rounded-full">
+              <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
                 {hint}
               </span>
             )}
           </div>
-          <p className="mt-2 text-2xl font-bold text-slate-800 dark:text-white">{value}</p>
+          <p className="mt-2 text-2xl font-bold text-foreground">{value}</p>
           {(change !== undefined || trend) && (
-            <div className={`mt-1 flex items-center text-sm ${(trend === "up" || (change !== undefined && change >= 0)) ? "text-emerald-500" :
-              (trend === "down" || (change !== undefined && change < 0)) ? "text-rose-500" : "text-slate-500"
+            <div className={`mt-1 flex items-center text-sm ${(trend === "up" || (change !== undefined && change >= 0)) ? "text-stockpro-stock-ok-fg" :
+              (trend === "down" || (change !== undefined && change < 0)) ? "text-stockpro-stock-error-fg" : "text-muted-foreground"
               }`}>
               {(trend === "up" || (change !== undefined && change >= 0)) ? <TrendingUp className="w-3 h-3 mr-1" /> :
                 (trend === "down" || (change !== undefined && change < 0)) ? <TrendingDown className="w-3 h-3 mr-1" /> : null}
@@ -430,8 +433,8 @@ const _StatCard: React.FC<{
               <Area
                 type="monotone"
                 dataKey="value"
-                stroke={trend === "down" ? "#f43f5e" : "#6366f1"}
-                fill={trend === "down" ? "rgba(244, 63, 94, 0.1)" : "rgba(99, 102, 241, 0.1)"}
+                stroke={trend === "down" ? "#d93f3f" : "#1a2b6d"}
+                fill={trend === "down" ? "rgba(217, 63, 63, 0.1)" : "rgba(26, 43, 109, 0.1)"}
                 strokeWidth={2}
               />
             </RechartsAreaChart>
@@ -476,8 +479,8 @@ const _FloatingActionButton: React.FC<{
     whileTap={{ scale: 0.95 }}
     onClick={onClick}
     className={`fixed bottom-20 right-4 lg:bottom-8 lg:right-8 z-30 flex items-center gap-2 px-4 py-3 rounded-full shadow-lg transition-colors ${variant === "primary"
-      ? "bg-indigo-600 text-white hover:bg-indigo-700"
-      : "bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-700"
+      ? "bg-stockpro-navy text-white hover:bg-stockpro-navy-hover dark:bg-stockpro-signal dark:text-stockpro-navy-night dark:hover:brightness-110"
+      : "bg-card text-foreground border border-border hover:bg-muted"
       }`}
   >
     {icon}
@@ -523,29 +526,29 @@ const _AdvancedSearchFilter: React.FC<{
         <Card className="mb-4" padding="md">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
-              <Filter className="w-5 h-5 text-indigo-500" />
-              <h3 className="font-semibold text-slate-800 dark:text-white">
+              <Filter className="h-5 w-5 text-stockpro-navy dark:text-stockpro-signal" />
+              <h3 className="font-semibold text-foreground">
                 Filtres avancés
               </h3>
               {activeFiltersCount > 0 && (
-                <span className="px-2 py-0.5 text-xs font-medium bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400 rounded-full">
+                <span className="rounded-full bg-stockpro-navy/10 px-2 py-0.5 text-xs font-medium text-stockpro-navy dark:bg-stockpro-signal/15 dark:text-stockpro-signal">
                   {activeFiltersCount} actif{activeFiltersCount > 1 ? "s" : ""}
                 </span>
               )}
             </div>
             <button
               onClick={onClose}
-              className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+              className="p-1 rounded-lg hover:bg-muted transition-colors"
               aria-label="Fermer les filtres"
             >
-              <X className="w-5 h-5 text-slate-500" />
+              <X className="w-5 h-5 text-muted-foreground" />
             </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {filters.map((filter) => (
               <div key={filter.id}>
-                <label className="block text-sm font-medium text-slate-600 dark:text-slate-400 mb-1">
+                <label className="block text-sm font-medium text-muted-foreground mb-1">
                   {filter.label}
                 </label>
                 {filter.type === "text" && (
@@ -554,7 +557,7 @@ const _AdvancedSearchFilter: React.FC<{
                     value={filter.value as string}
                     onChange={(e) => onFilterChange(filter.id, e.target.value)}
                     placeholder={filter.placeholder}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
                     aria-label={filter.label}
                   />
                 )}
@@ -562,7 +565,7 @@ const _AdvancedSearchFilter: React.FC<{
                   <select
                     value={filter.value as string}
                     onChange={(e) => onFilterChange(filter.id, e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    className="w-full px-3 py-2 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
                     aria-label={filter.label}
                   >
                     <option value="">{filter.placeholder || "Sélectionner"}</option>
@@ -580,16 +583,16 @@ const _AdvancedSearchFilter: React.FC<{
                       value={(filter.value as { min: string; max: string }).min}
                       onChange={(e) => onFilterChange(filter.id, { ...(filter.value as { min: string; max: string }), min: e.target.value })}
                       placeholder="Min"
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
                       aria-label={`${filter.label} minimum`}
                     />
-                    <span className="text-slate-400">-</span>
+                    <span className="text-muted-foreground">-</span>
                     <input
                       type="number"
                       value={(filter.value as { min: string; max: string }).max}
                       onChange={(e) => onFilterChange(filter.id, { ...(filter.value as { min: string; max: string }), max: e.target.value })}
                       placeholder="Max"
-                      className="w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                      className="w-full px-3 py-2 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
                       aria-label={`${filter.label} maximum`}
                     />
                   </div>
@@ -598,7 +601,7 @@ const _AdvancedSearchFilter: React.FC<{
             ))}
           </div>
 
-          <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-border">
             <Button variant="ghost" onClick={onReset}>
               Réinitialiser
             </Button>
@@ -632,7 +635,7 @@ const _ActiveFilterTags: React.FC<{
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.8 }}
-          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 text-sm"
+          className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-stockpro-navy/10 dark:bg-stockpro-signal/12 text-stockpro-navy dark:text-stockpro-signal text-sm"
         >
           <span>{filter.label}: </span>
           <span className="font-medium">
@@ -642,7 +645,7 @@ const _ActiveFilterTags: React.FC<{
           </span>
           <button
             onClick={() => onRemove(filter.id)}
-            className="ml-1 p-0.5 rounded-full hover:bg-indigo-200 dark:hover:bg-indigo-800 transition-colors"
+            className="ml-1 rounded-full p-0.5 transition-colors hover:bg-stockpro-navy/15 dark:hover:bg-stockpro-signal/20"
             aria-label={`Supprimer le filtre ${filter.label}`}
           >
             <X className="w-3 h-3" />
@@ -661,7 +664,7 @@ const _ActiveFilterTags: React.FC<{
 const _SkipLink: React.FC<{ targetId: string }> = ({ targetId }) => (
   <a
     href={`#${targetId}`}
-    className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+    className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded-lg focus:bg-stockpro-navy focus:px-4 focus:py-2 focus:text-white focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
   >
     Aller au contenu principal
   </a>
@@ -690,10 +693,13 @@ export const Alert: React.FC<{
   className?: string;
 }> = ({ children, variant = "info", onDismiss, className = "" }) => {
   const variants = {
-    info: "bg-sky-50 border-sky-200 text-sky-800 dark:bg-sky-900/20 dark:border-sky-800 dark:text-sky-300",
-    warning: "bg-amber-50 border-amber-200 text-amber-800 dark:bg-amber-900/20 dark:border-amber-800 dark:text-amber-300",
-    danger: "bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-900/20 dark:border-rose-800 dark:text-rose-300",
-    success: "bg-emerald-50 border-emerald-200 text-emerald-800 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-300",
+    info: "border border-stockpro-navy/20 bg-stockpro-navy/5 text-stockpro-navy dark:border-stockpro-signal/30 dark:bg-stockpro-signal/8 dark:text-stockpro-signal",
+    warning:
+      "bg-stockpro-stock-low-bg border-stockpro-stock-low-fg/30 text-stockpro-stock-low-fg dark:bg-stockpro-stock-low-fg/10 dark:border-stockpro-stock-low-fg/40 dark:text-stockpro-stock-low-fg",
+    danger:
+      "bg-stockpro-stock-error-bg border-stockpro-stock-error-fg/30 text-stockpro-stock-error-fg dark:bg-stockpro-stock-error-fg/10 dark:border-stockpro-stock-error-fg/40 dark:text-stockpro-stock-error-fg",
+    success:
+      "bg-stockpro-stock-ok-bg border-stockpro-stock-ok-fg/30 text-stockpro-stock-ok-fg dark:bg-stockpro-stock-ok-fg/10 dark:border-stockpro-stock-ok-fg/40 dark:text-stockpro-stock-ok-fg",
   };
 
   const icons = {
@@ -732,7 +738,7 @@ export const Select: React.FC<SelectProps> = ({ value, onChange, options, placeh
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className={`w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 ${className}`}
+      className={`w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal focus:border-transparent transition-all duration-200 ${className}`}
       {...rest}
     >
       <option value="">{placeholder}</option>
@@ -760,9 +766,9 @@ export const ConfirmDialog: React.FC<{
   if (!isOpen) return null;
 
   const variantStyles = {
-    danger: { icon: <Trash2 className="w-6 h-6" />, iconBg: "bg-rose-100 dark:bg-rose-900/30", iconColor: "text-rose-600 dark:text-rose-400", btnVariant: "danger" as const },
-    warning: { icon: <AlertTriangle className="w-6 h-6" />, iconBg: "bg-amber-100 dark:bg-amber-900/30", iconColor: "text-amber-600 dark:text-amber-400", btnVariant: "primary" as const },
-    info: { icon: <Info className="w-6 h-6" />, iconBg: "bg-sky-100 dark:bg-sky-900/30", iconColor: "text-sky-600 dark:text-sky-400", btnVariant: "primary" as const },
+    danger: { icon: <Trash2 className="w-6 h-6" />, iconBg: "bg-stockpro-stock-error-bg dark:bg-stockpro-stock-error-fg/12", iconColor: "text-stockpro-stock-error-fg", btnVariant: "danger" as const },
+    warning: { icon: <AlertTriangle className="w-6 h-6" />, iconBg: "bg-stockpro-stock-low-bg dark:bg-stockpro-stock-low-fg/12", iconColor: "text-stockpro-stock-low-fg", btnVariant: "primary" as const },
+    info: { icon: <Info className="w-6 h-6" />, iconBg: "bg-stockpro-navy/10 dark:bg-stockpro-signal/12", iconColor: "text-stockpro-navy dark:text-stockpro-signal", btnVariant: "primary" as const },
   };
 
   const style = variantStyles[variant];
@@ -770,19 +776,19 @@ export const ConfirmDialog: React.FC<{
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-md w-full animate-in zoom-in-95 duration-200">
+      <div className="relative bg-card rounded-2xl shadow-xl max-w-md w-full animate-in zoom-in-95 duration-200">
         <div className="p-6">
           <div className="flex items-start gap-4">
             <div className={`p-3 rounded-full ${style.iconBg} ${style.iconColor}`}>
               {style.icon}
             </div>
             <div className="flex-1">
-              <h3 className="text-lg font-semibold text-slate-800 dark:text-white">{title}</h3>
-              <p className="mt-2 text-sm text-slate-600 dark:text-slate-400">{message}</p>
+              <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+              <p className="mt-2 text-sm text-muted-foreground">{message}</p>
             </div>
           </div>
         </div>
-        <div className="flex justify-end gap-3 px-6 py-4 bg-slate-50 dark:bg-slate-700/50 rounded-b-2xl">
+        <div className="flex justify-end gap-3 px-6 py-4 bg-muted/50 rounded-b-2xl">
           <Button variant="outline" onClick={onClose}>
             {cancelText}
           </Button>
@@ -799,10 +805,11 @@ export const ConfirmDialog: React.FC<{
 export const Avatar: React.FC<{
   initials: string;
   color?: string;
-  size?: "sm" | "md" | "lg";
+  size?: "xs" | "sm" | "md" | "lg";
   className?: string;
-}> = ({ initials, color = "#6366f1", size = "md", className = "" }) => {
+}> = ({ initials, color = "#1a2b6d", size = "md", className = "" }) => {
   const sizes = {
+    xs: "w-6 h-6 text-[10px]",
     sm: "w-8 h-8 text-xs",
     md: "w-10 h-10 text-sm",
     lg: "w-12 h-12 text-base",

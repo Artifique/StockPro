@@ -87,8 +87,8 @@ export const AchatsPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Achats & Commandes</h2>
-          <p className="text-slate-500 dark:text-slate-400">Gérez vos commandes fournisseurs</p>
+          <h2 className="text-2xl font-bold text-foreground">Achats & Commandes</h2>
+          <p className="text-muted-foreground">Gérez vos commandes fournisseurs</p>
         </div>
         <Button onClick={() => newCommandeModal.open()}>
           <Plus className="w-4 h-4 mr-2" />
@@ -99,27 +99,27 @@ export const AchatsPage: React.FC = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="text-center">
-          <p className="text-3xl font-bold text-slate-800 dark:text-white">{MOCK_COMMANDES.length}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Total commandes</p>
+          <p className="text-3xl font-bold text-foreground">{MOCK_COMMANDES.length}</p>
+          <p className="text-sm text-muted-foreground">Total commandes</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">{stats.enAttente}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">En attente</p>
+          <p className="text-3xl font-bold text-stockpro-stock-low-fg">{stats.enAttente}</p>
+          <p className="text-sm text-muted-foreground">En attente</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{stats.recues}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Reçues</p>
+          <p className="text-3xl font-bold text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">{stats.recues}</p>
+          <p className="text-sm text-muted-foreground">Reçues</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(stats.total)}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Montant total</p>
+          <p className="text-3xl font-bold text-stockpro-navy dark:text-stockpro-signal">{formatCurrency(stats.total)}</p>
+          <p className="text-sm text-muted-foreground">Montant total</p>
         </Card>
       </div>
 
       {/* Filters */}
       <Card padding="sm">
         <div className="flex items-center gap-4">
-          <Filter className="w-5 h-5 text-slate-400" />
+          <Filter className="w-5 h-5 text-muted-foreground" />
           <Select
             value={filterStatut}
             onChange={setFilterStatut}
@@ -145,7 +145,7 @@ export const AchatsPage: React.FC = () => {
           return (
             <div className="flex items-center justify-end gap-1">
               <button
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
                 title="Voir les détails"
                 onClick={() => {
                   setSelectedCommande(commande || null);
@@ -156,7 +156,7 @@ export const AchatsPage: React.FC = () => {
               </button>
               {row.statut === "En attente" && (
                 <button
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
+                  className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-stock-ok-fg hover:bg-stockpro-stock-ok-bg dark:hover:bg-stockpro-stock-ok-fg/10"
                   title="Marquer comme reçue"
                   onClick={() => showToast(`Commande ${row.id} marquée comme reçue !`, "success")}
                 >
@@ -165,7 +165,7 @@ export const AchatsPage: React.FC = () => {
               )}
               {row.statut !== "Reçue" && row.statut !== "Annulée" && (
                 <button
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30"
+                  className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-stock-error-fg hover:bg-stockpro-stock-error-bg dark:hover:bg-stockpro-stock-error-fg/12"
                   title="Annuler la commande"
                   onClick={() => {
                     if (confirm(`⚠️ Annuler la commande ${row.id} ?\n\nCette action est irréversible.`)) {
@@ -201,7 +201,7 @@ export const AchatsPage: React.FC = () => {
           }}
         >
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Fournisseur</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Fournisseur</label>
             <Select
               value=""
               onChange={() => { }}
@@ -210,9 +210,9 @@ export const AchatsPage: React.FC = () => {
             />
           </div>
 
-          <div className="border border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-4">
+          <div className="border border-dashed border-border dark:border-border rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium text-slate-700 dark:text-slate-300">Produits à commander</h4>
+              <h4 className="font-medium text-foreground">Produits à commander</h4>
               <Button
                 variant="outline"
                 size="sm"
@@ -226,20 +226,20 @@ export const AchatsPage: React.FC = () => {
 
             {orderLines.length === 0 ? (
               <div className="text-center py-4">
-                <Package className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <p className="text-sm text-slate-500 dark:text-slate-400">Aucun produit ajouté</p>
+                <Package className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Aucun produit ajouté</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {orderLines.map((line, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
-                        <Package className="w-5 h-5 text-slate-500" />
+                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                        <Package className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{line.product.nom}</p>
-                        <p className="text-xs text-slate-500">{formatCurrency(line.prixAchat)} x {line.quantity}</p>
+                        <p className="text-sm font-medium text-foreground">{line.product.nom}</p>
+                        <p className="text-xs text-muted-foreground">{formatCurrency(line.prixAchat)} x {line.quantity}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -253,9 +253,9 @@ export const AchatsPage: React.FC = () => {
                               ));
                             }
                           }}
-                          className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600"
+                          className="p-1 rounded hover:bg-muted"
                         >
-                          <Minus className="w-4 h-4 text-slate-400" />
+                          <Minus className="w-4 h-4 text-muted-foreground" />
                         </button>
                         <input
                           type="number"
@@ -266,7 +266,7 @@ export const AchatsPage: React.FC = () => {
                               i === index ? { ...l, quantity: qty } : l
                             ));
                           }}
-                          className="w-16 text-center border border-slate-200 dark:border-slate-600 rounded px-2 py-1 text-sm bg-white dark:bg-slate-700"
+                          className="w-16 text-center border border-border rounded px-2 py-1 text-sm bg-card"
                         />
                         <button
                           type="button"
@@ -275,18 +275,18 @@ export const AchatsPage: React.FC = () => {
                               i === index ? { ...l, quantity: l.quantity + 1 } : l
                             ));
                           }}
-                          className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600"
+                          className="p-1 rounded hover:bg-muted"
                         >
-                          <Plus className="w-4 h-4 text-slate-400" />
+                          <Plus className="w-4 h-4 text-muted-foreground" />
                         </button>
                       </div>
-                      <p className="font-semibold text-slate-800 dark:text-white w-28 text-right">
+                      <p className="font-semibold text-foreground w-28 text-right">
                         {formatCurrency(line.prixAchat * line.quantity)}
                       </p>
                       <button
                         type="button"
                         onClick={() => setOrderLines(orderLines.filter((_, i) => i !== index))}
-                        className="p-1 rounded text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30"
+                        className="p-1 rounded text-stockpro-stock-error-fg hover:bg-stockpro-stock-error-bg dark:hover:bg-stockpro-stock-error-fg/12"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -295,9 +295,9 @@ export const AchatsPage: React.FC = () => {
                 ))}
 
                 {/* Total */}
-                <div className="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-slate-600">
-                  <span className="font-medium text-slate-700 dark:text-slate-300">Total</span>
-                  <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+                <div className="flex justify-between items-center pt-3 border-t border-border">
+                  <span className="font-medium text-foreground">Total</span>
+                  <span className="text-lg font-bold text-stockpro-navy dark:text-stockpro-signal">
                     {formatCurrency(orderLines.reduce((sum, l) => sum + l.prixAchat * l.quantity, 0))}
                   </span>
                 </div>
@@ -308,14 +308,14 @@ export const AchatsPage: React.FC = () => {
           {/* Product Selection Modal */}
           {productSelectModal.isOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[80vh] overflow-hidden">
-                <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                  <h4 className="font-semibold text-slate-800 dark:text-white">Sélectionner un produit</h4>
-                  <button type="button" onClick={closeProductSelectModal} className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700">
+              <div className="bg-card rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[80vh] overflow-hidden">
+                <div className="p-4 border-b border-border flex items-center justify-between">
+                  <h4 className="font-semibold text-foreground">Sélectionner un produit</h4>
+                  <button type="button" onClick={closeProductSelectModal} className="p-1 rounded hover:bg-muted">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
-                <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+                <div className="p-4 border-b border-border">
                   <Input
                     placeholder="Rechercher un produit..."
                     icon={<Search className="w-4 h-4" />}
@@ -343,18 +343,18 @@ export const AchatsPage: React.FC = () => {
                         closeProductSelectModal();
                         showToast(`${product.nom} ajouté à la commande`, "success");
                       }}
-                      className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-left border-b border-slate-100 dark:border-slate-700 last:border-0"
+                      className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 text-left border-b border-border last:border-0"
                     >
-                      <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                        <Package className="w-5 h-5 text-slate-400" />
+                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                        <Package className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-slate-800 dark:text-white">{product.nom}</p>
-                        <p className="text-xs text-slate-500">{product.sku} • {product.categorie}</p>
+                        <p className="font-medium text-foreground">{product.nom}</p>
+                        <p className="text-xs text-muted-foreground">{product.sku} • {product.categorie}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-slate-800 dark:text-white">{formatCurrency(product.prixAchat)}</p>
-                        <p className="text-xs text-slate-500">Prix d'achat</p>
+                        <p className="font-semibold text-foreground">{formatCurrency(product.prixAchat)}</p>
+                        <p className="text-xs text-muted-foreground">Prix d'achat</p>
                       </div>
                     </button>
                   ))}
@@ -365,25 +365,25 @@ export const AchatsPage: React.FC = () => {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date de commande</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Date de commande</label>
               <Input type="date" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date de livraison prévue</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Date de livraison prévue</label>
               <Input type="date" />
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Notes</label>
             <textarea
               rows={2}
               placeholder="Instructions spéciales..."
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" onClick={closeNewCommandeModal}>
               Annuler
             </Button>
@@ -398,8 +398,8 @@ export const AchatsPage: React.FC = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-semibold text-slate-800 dark:text-white">{selectedCommande.id}</h3>
-                <p className="text-slate-500 dark:text-slate-400">{selectedCommande.fournisseur}</p>
+                <h3 className="text-xl font-semibold text-foreground">{selectedCommande.id}</h3>
+                <p className="text-muted-foreground">{selectedCommande.fournisseur}</p>
               </div>
               <Badge variant={
                 selectedCommande.statut === "Reçue" ? "success" :
@@ -412,38 +412,38 @@ export const AchatsPage: React.FC = () => {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Card padding="sm" className="text-center">
-                <p className="text-2xl font-bold text-slate-800 dark:text-white">{selectedCommande.produits}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Articles</p>
+                <p className="text-2xl font-bold text-foreground">{selectedCommande.produits}</p>
+                <p className="text-xs text-muted-foreground">Articles</p>
               </Card>
               <Card padding="sm" className="text-center">
-                <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(selectedCommande.montant)}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Montant</p>
+                <p className="text-2xl font-bold text-stockpro-navy dark:text-stockpro-signal">{formatCurrency(selectedCommande.montant)}</p>
+                <p className="text-xs text-muted-foreground">Montant</p>
               </Card>
               <Card padding="sm" className="text-center">
-                <p className="text-lg font-bold text-slate-800 dark:text-white">{selectedCommande.date}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Date commande</p>
+                <p className="text-lg font-bold text-foreground">{selectedCommande.date}</p>
+                <p className="text-xs text-muted-foreground">Date commande</p>
               </Card>
               <Card padding="sm" className="text-center">
-                <p className="text-lg font-bold text-slate-800 dark:text-white">{selectedCommande.statut === "Reçue" ? "Livrée" : "En cours"}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Statut livraison</p>
+                <p className="text-lg font-bold text-foreground">{selectedCommande.statut === "Reçue" ? "Livrée" : "En cours"}</p>
+                <p className="text-xs text-muted-foreground">Statut livraison</p>
               </Card>
             </div>
 
             {/* Progress */}
-            <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+            <div className="p-4 bg-muted/50 rounded-lg">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Progression</span>
-                <span className="text-sm text-slate-500 dark:text-slate-400">
+                <span className="text-sm font-medium text-foreground">Progression</span>
+                <span className="text-sm text-muted-foreground">
                   {selectedCommande.statut === "Reçue" ? "100%" : selectedCommande.statut === "En transit" ? "75%" : "25%"}
                 </span>
               </div>
-              <div className="w-full h-2 bg-slate-200 dark:bg-slate-600 rounded-full overflow-hidden">
+              <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 transition-all duration-500"
+                  className="h-full bg-stockpro-signal transition-all duration-500"
                   style={{ width: selectedCommande.statut === "Reçue" ? "100%" : selectedCommande.statut === "En transit" ? "75%" : "25%" }}
                 />
               </div>
-              <div className="flex justify-between mt-2 text-xs text-slate-500 dark:text-slate-400">
+              <div className="flex justify-between mt-2 text-xs text-muted-foreground">
                 <span>Commandée</span>
                 <span>En transit</span>
                 <span>Reçue</span>
@@ -452,29 +452,29 @@ export const AchatsPage: React.FC = () => {
 
             {/* Simulated Products */}
             <div>
-              <h4 className="font-medium text-slate-800 dark:text-white mb-3">Produits commandés</h4>
+              <h4 className="font-medium text-foreground mb-3">Produits commandés</h4>
               <div className="space-y-2">
                 {MOCK_PRODUCTS.slice(0, selectedCommande.produits).map((p, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                  <div key={i} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
-                        <Package className="w-4 h-4 text-slate-500" />
+                      <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
+                        <Package className="w-4 h-4 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{p.nom}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">{p.sku}</p>
+                        <p className="text-sm font-medium text-foreground">{p.nom}</p>
+                        <p className="text-xs text-muted-foreground">{p.sku}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-slate-800 dark:text-white">{formatCurrency(p.prixAchat)}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">x{((i + p.id) % 10) + 1}</p>
+                      <p className="text-sm font-medium text-foreground">{formatCurrency(p.prixAchat)}</p>
+                      <p className="text-xs text-muted-foreground">x{((i + p.id) % 10) + 1}</p>
                     </div>
                   </div>
                 ))}
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button variant="outline" onClick={commandeDetailsModal.close}>
                 Fermer
               </Button>

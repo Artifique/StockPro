@@ -83,7 +83,7 @@ export const ParametresPage: React.FC<{
   const unitModal = useDisclosure();
   const [categories, setCategories] = useState(CATEGORIES);
   const [unites, setUnites] = useState(UNITES_MESURE);
-  const [newCategory, setNewCategory] = useState({ nom: "", color: "#6366f1" });
+  const [newCategory, setNewCategory] = useState({ nom: "", color: "#1a2b6d" });
   const [newUnit, setNewUnit] = useState({ nom: "", abreviation: "" });
   const [editingCategory, setEditingCategory] = useState<typeof CATEGORIES[0] | null>(null);
   const [editingUnit, setEditingUnit] = useState<typeof UNITES_MESURE[0] | null>(null);
@@ -284,8 +284,8 @@ export const ParametresPage: React.FC<{
         <div className="flex items-center gap-3">
           <Avatar initials={String(row.avatar)} color={String(row.color)} size="sm" />
           <div>
-            <p className="font-medium text-slate-800 dark:text-white">{String(value)}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{String(row.email)}</p>
+            <p className="font-medium text-foreground">{String(value)}</p>
+            <p className="text-xs text-muted-foreground">{String(row.email)}</p>
           </div>
         </div>
       ),
@@ -296,10 +296,10 @@ export const ParametresPage: React.FC<{
       sortable: true,
       render: (value: unknown) => {
         const roleColors: Record<string, string> = {
-          "Super Admin": "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
-          "Gérant": "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
-          "Caissier": "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-          "Responsable Stock": "bg-pink-100 text-pink-700 dark:bg-pink-900/30 dark:text-pink-400",
+          "Super Admin": "bg-stockpro-stock-error-bg text-stockpro-stock-error-fg dark:bg-stockpro-stock-error-fg/12 dark:text-stockpro-stock-error-fg",
+          "Gérant": "bg-stockpro-navy/10 text-stockpro-navy dark:bg-stockpro-signal/12 dark:text-stockpro-signal",
+          "Caissier": "bg-stockpro-stock-low-bg text-stockpro-stock-low-fg dark:bg-stockpro-stock-low-fg/12 dark:text-stockpro-stock-low-fg",
+          "Responsable Stock": "bg-stockpro-navy-mid/15 text-stockpro-navy dark:bg-stockpro-navy-mid/20 dark:text-stockpro-signal",
           "Comptable": "bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400",
         };
         return (
@@ -321,7 +321,7 @@ export const ParametresPage: React.FC<{
     {
       key: "derniereConnexion",
       label: "Dernière connexion",
-      render: () => <span className="text-slate-500 dark:text-slate-400">Il y a 2h</span>,
+      render: () => <span className="text-muted-foreground">Il y a 2h</span>,
     },
   ];
 
@@ -339,7 +339,7 @@ export const ParametresPage: React.FC<{
       type="button"
       onClick={() => !disabled && onChange(!enabled)}
       disabled={disabled}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${enabled ? "bg-indigo-600" : "bg-slate-200 dark:bg-slate-700"
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${enabled ? "bg-primary" : "bg-muted"
         } ${disabled ? "opacity-50 cursor-not-allowed" : ""}`}
     >
       <span
@@ -356,10 +356,10 @@ export const ParametresPage: React.FC<{
     description?: string;
     children: React.ReactNode;
   }> = ({ label, description, children }) => (
-    <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-700 last:border-0">
+    <div className="flex items-center justify-between py-3 border-b border-border last:border-0">
       <div className="flex-1 pr-4">
-        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{label}</p>
-        {description && <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">{description}</p>}
+        <p className="text-sm font-medium text-foreground">{label}</p>
+        {description && <p className="text-xs text-muted-foreground mt-0.5">{description}</p>}
       </div>
       <div className="flex-shrink-0">{children}</div>
     </div>
@@ -370,8 +370,8 @@ export const ParametresPage: React.FC<{
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-white">Gestion des utilisateurs</h3>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Gérez les accès et permissions de votre équipe</p>
+          <h3 className="text-lg font-semibold text-foreground">Gestion des utilisateurs</h3>
+          <p className="text-sm text-muted-foreground">Gérez les accès et permissions de votre équipe</p>
         </div>
         {isSuperAdmin && (
           <Button onClick={() => newUserModal.open()}>
@@ -391,7 +391,7 @@ export const ParametresPage: React.FC<{
           return (
             <div className="flex items-center justify-end gap-1">
               <button
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
                 title="Modifier"
                 onClick={() => {
                   if (user) {
@@ -408,7 +408,7 @@ export const ParametresPage: React.FC<{
                 <Edit className="w-4 h-4" />
               </button>
               <button
-                className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-navy dark:text-stockpro-signal hover:bg-stockpro-navy/8 dark:hover:bg-stockpro-signal/10"
                 title="Réinitialiser mot de passe"
                 onClick={() => {
                   setSelectedUser(user || null);
@@ -420,7 +420,7 @@ export const ParametresPage: React.FC<{
               </button>
               <button
                 onClick={() => toggleUserStatus(row.id as number)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/30"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-stock-low-fg hover:bg-stockpro-stock-low-bg dark:hover:bg-stockpro-stock-low-fg/10"
                 title={row.statut === "actif" ? "Désactiver" : "Activer"}
               >
                 {row.statut === "actif" ? <Minus className="w-4 h-4" /> : <Check className="w-4 h-4" />}
@@ -438,7 +438,7 @@ export const ParametresPage: React.FC<{
       <Card title="Informations générales" description="Informations de votre entreprise">
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom de l'entreprise</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Nom de l'entreprise</label>
             <Input
               value={enterpriseSettings.nomEntreprise}
               onChange={(e) => setEnterpriseSettings({ ...enterpriseSettings, nomEntreprise: e.target.value })}
@@ -446,7 +446,7 @@ export const ParametresPage: React.FC<{
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Email</label>
               <Input
                 type="email"
                 value={enterpriseSettings.email}
@@ -454,7 +454,7 @@ export const ParametresPage: React.FC<{
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Téléphone</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Téléphone</label>
               <Input
                 value={enterpriseSettings.telephone}
                 onChange={(e) => setEnterpriseSettings({ ...enterpriseSettings, telephone: e.target.value })}
@@ -462,7 +462,7 @@ export const ParametresPage: React.FC<{
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Adresse</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Adresse</label>
             <Input
               value={enterpriseSettings.adresse}
               onChange={(e) => setEnterpriseSettings({ ...enterpriseSettings, adresse: e.target.value })}
@@ -470,7 +470,7 @@ export const ParametresPage: React.FC<{
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Pays</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Pays</label>
               <Select
                 value={enterpriseSettings.pays}
                 onChange={(v) => setEnterpriseSettings({ ...enterpriseSettings, pays: v })}
@@ -487,7 +487,7 @@ export const ParametresPage: React.FC<{
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Devise</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Devise</label>
               <Select
                 value={enterpriseSettings.devise}
                 onChange={(v) => setEnterpriseSettings({ ...enterpriseSettings, devise: v })}
@@ -507,11 +507,11 @@ export const ParametresPage: React.FC<{
       <Card title="Logo et image" description="Personnalisez l'apparence de vos documents">
         <div className="space-y-4">
           <div className="flex items-center gap-6">
-            <div className="w-24 h-24 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center border-2 border-dashed border-slate-300 dark:border-slate-600 overflow-hidden">
+            <div className="w-24 h-24 rounded-xl bg-muted flex items-center justify-center border-2 border-dashed border-border dark:border-border overflow-hidden">
               {enterpriseSettings.logo ? (
                 <img src={enterpriseSettings.logo} alt="Logo" className="w-full h-full object-cover rounded-xl" />
               ) : (
-                <Building className="w-8 h-8 text-slate-400" />
+                <Building className="w-8 h-8 text-muted-foreground" />
               )}
             </div>
             <div className="flex-1">
@@ -560,7 +560,7 @@ export const ParametresPage: React.FC<{
                   Supprimer
                 </Button>
               )}
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">PNG, JPG ou SVG. Max 2MB. Recommandé: 200x200px</p>
+              <p className="text-xs text-muted-foreground mt-2">PNG, JPG ou SVG. Max 2MB. Recommandé: 200x200px</p>
             </div>
           </div>
         </div>
@@ -582,14 +582,14 @@ export const ParametresPage: React.FC<{
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Préfixe factures</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Préfixe factures</label>
               <Input
                 value={invoiceSettings.prefixFacture}
                 onChange={(e) => setInvoiceSettings({ ...invoiceSettings, prefixFacture: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prochain numéro</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Prochain numéro</label>
               <Input
                 type="number"
                 value={invoiceSettings.numeroSuivant}
@@ -599,22 +599,22 @@ export const ParametresPage: React.FC<{
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Préfixe devis</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Préfixe devis</label>
               <Input
                 value={invoiceSettings.prefixDevis}
                 onChange={(e) => setInvoiceSettings({ ...invoiceSettings, prefixDevis: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Préfixe avoirs</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Préfixe avoirs</label>
               <Input
                 value={invoiceSettings.prefixAvoir}
                 onChange={(e) => setInvoiceSettings({ ...invoiceSettings, prefixAvoir: e.target.value })}
               />
             </div>
           </div>
-          <div className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-            <p className="text-sm text-slate-600 dark:text-slate-300">Aperçu: <span className="font-mono font-semibold">{invoiceSettings.prefixFacture}-{invoiceSettings.numeroSuivant}</span></p>
+          <div className="p-3 bg-muted/50 rounded-lg">
+            <p className="text-sm text-muted-foreground">Aperçu: <span className="font-mono font-semibold">{invoiceSettings.prefixFacture}-{invoiceSettings.numeroSuivant}</span></p>
           </div>
         </div>
       </Card>
@@ -623,7 +623,7 @@ export const ParametresPage: React.FC<{
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">TVA par défaut (%)</label>
+              <label className="block text-sm font-medium text-foreground mb-1">TVA par défaut (%)</label>
               <Input
                 type="number"
                 value={invoiceSettings.tvaDefaut}
@@ -631,7 +631,7 @@ export const ParametresPage: React.FC<{
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Délai paiement (jours)</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Délai paiement (jours)</label>
               <Input
                 type="number"
                 value={invoiceSettings.delaiPaiement}
@@ -640,18 +640,18 @@ export const ParametresPage: React.FC<{
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Conditions de paiement</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Conditions de paiement</label>
             <Input
               value={invoiceSettings.conditionsPaiement}
               onChange={(e) => setInvoiceSettings({ ...invoiceSettings, conditionsPaiement: e.target.value })}
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes en pied de page</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Notes en pied de page</label>
             <textarea
               value={invoiceSettings.notesPied}
               onChange={(e) => setInvoiceSettings({ ...invoiceSettings, notesPied: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
               rows={2}
             />
           </div>
@@ -675,7 +675,7 @@ export const ParametresPage: React.FC<{
         title="Tableau de bord"
         description="Bannière de bienvenue affichée lorsque vous n'avez pas encore de favoris ni de produits récemment consultés"
       >
-        <p className="text-sm text-slate-600 dark:text-slate-400 mb-3">
+        <p className="text-sm text-muted-foreground mb-3">
           Si vous l&apos;avez fermée, vous pouvez la réafficher depuis ici avant de retourner sur le dashboard.
         </p>
         <Button
@@ -782,9 +782,9 @@ export const ParametresPage: React.FC<{
             />
           </SettingRow>
         </div>
-        <div className="mt-4 pt-4 border-t border-slate-100 dark:border-slate-700 space-y-4">
+        <div className="mt-4 pt-4 border-t border-border space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email administrateur</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Email administrateur</label>
             <Input
               type="email"
               value={notificationSettings.emailAdmin}
@@ -792,7 +792,7 @@ export const ParametresPage: React.FC<{
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Téléphone SMS</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Téléphone SMS</label>
             <Input
               value={notificationSettings.smsPhone}
               onChange={(e) => setNotificationSettings({ ...notificationSettings, smsPhone: e.target.value })}
@@ -824,10 +824,10 @@ export const ParametresPage: React.FC<{
               onChange={(v) => setSecuritySettings({ ...securitySettings, authentification2FA: v })}
             />
           </SettingRow>
-          <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-700">
+          <div className="flex items-center justify-between py-3 border-b border-border">
             <div className="flex-1 pr-4">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Durée de session</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Déconnexion automatique après inactivité</p>
+              <p className="text-sm font-medium text-foreground">Durée de session</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Déconnexion automatique après inactivité</p>
             </div>
             <Select
               value={String(securitySettings.sessionTimeout)}
@@ -841,10 +841,10 @@ export const ParametresPage: React.FC<{
               ]}
             />
           </div>
-          <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-700">
+          <div className="flex items-center justify-between py-3 border-b border-border">
             <div className="flex-1 pr-4">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Tentatives de connexion</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Verrouillage après échecs</p>
+              <p className="text-sm font-medium text-foreground">Tentatives de connexion</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Verrouillage après échecs</p>
             </div>
             <Select
               value={String(securitySettings.maxLoginAttempts)}
@@ -861,10 +861,10 @@ export const ParametresPage: React.FC<{
 
       <Card title="Politique de mots de passe" description="Exigences de sécurité des mots de passe">
         <div className="space-y-1">
-          <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-700">
+          <div className="flex items-center justify-between py-3 border-b border-border">
             <div className="flex-1 pr-4">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Longueur minimum</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Nombre de caractères requis</p>
+              <p className="text-sm font-medium text-foreground">Longueur minimum</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Nombre de caractères requis</p>
             </div>
             <Select
               value={String(securitySettings.passwordMinLength)}
@@ -909,24 +909,24 @@ export const ParametresPage: React.FC<{
 
       <Card title="Journal d'activité" description="Historique des actions importantes">
         <div className="space-y-3">
-          <div className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg flex items-center justify-between">
+          <div className="p-3 bg-muted/50 rounded-lg flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Connexion réussie</p>
-              <p className="text-xs text-slate-500">Admin - Il y a 2h</p>
+              <p className="text-sm font-medium text-foreground">Connexion réussie</p>
+              <p className="text-xs text-muted-foreground">Admin - Il y a 2h</p>
             </div>
             <Badge variant="success">Succès</Badge>
           </div>
-          <div className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg flex items-center justify-between">
+          <div className="p-3 bg-muted/50 rounded-lg flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Mot de passe modifié</p>
-              <p className="text-xs text-slate-500">Admin - Hier 14:30</p>
+              <p className="text-sm font-medium text-foreground">Mot de passe modifié</p>
+              <p className="text-xs text-muted-foreground">Admin - Hier 14:30</p>
             </div>
             <Badge variant="info">Info</Badge>
           </div>
-          <div className="p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg flex items-center justify-between">
+          <div className="p-3 bg-muted/50 rounded-lg flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Tentative échouée</p>
-              <p className="text-xs text-slate-500">user@inconnu.com - Hier 09:15</p>
+              <p className="text-sm font-medium text-foreground">Tentative échouée</p>
+              <p className="text-xs text-muted-foreground">user@inconnu.com - Hier 09:15</p>
             </div>
             <Badge variant="warning">Alerte</Badge>
           </div>
@@ -981,58 +981,58 @@ export const ParametresPage: React.FC<{
 
     const SortIcon = ({ field }: { field: string }) => {
       if (logSortField !== field) {
-        return <ArrowUpDown className="w-4 h-4 text-slate-400" />;
+        return <ArrowUpDown className="w-4 h-4 text-muted-foreground" />;
       }
       return logSortDirection === "asc"
-        ? <ArrowUp className="w-4 h-4 text-emerald-500" />
-        : <ArrowDown className="w-4 h-4 text-emerald-500" />;
+        ? <ArrowUp className="w-4 h-4 text-stockpro-stock-ok-fg" />
+        : <ArrowDown className="w-4 h-4 text-stockpro-stock-ok-fg" />;
     };
 
     return (
       <div className="space-y-4">
         {/* Stats Row */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-700 rounded-xl p-4 border border-slate-200 dark:border-slate-600">
+          <div className="rounded-xl border border-border bg-gradient-to-br from-muted/50 to-muted p-4 dark:from-card dark:to-muted/80">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wide">Total</p>
-                <p className="text-2xl font-bold text-slate-800 dark:text-white mt-1">{logStats.total}</p>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Total</p>
+                <p className="text-2xl font-bold text-foreground mt-1">{logStats.total}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
-                <Database className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+              <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                <Database className="w-5 h-5 text-muted-foreground" />
               </div>
             </div>
           </div>
-          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/30 dark:to-indigo-800/30 rounded-xl p-4 border border-indigo-200 dark:border-indigo-700">
+          <div className="bg-gradient-to-br from-stockpro-navy/8 to-stockpro-navy/12 dark:from-stockpro-signal/10 dark:to-stockpro-signal/8 rounded-xl p-4 border border-stockpro-navy/20 dark:border-stockpro-signal/30">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-indigo-500 dark:text-indigo-400 uppercase tracking-wide">Aujourd'hui</p>
-                <p className="text-2xl font-bold text-indigo-700 dark:text-indigo-300 mt-1">{logStats.today}</p>
+                <p className="text-xs font-medium text-stockpro-navy dark:text-stockpro-signal uppercase tracking-wide">Aujourd'hui</p>
+                <p className="text-2xl font-bold text-stockpro-navy dark:text-stockpro-signal mt-1">{logStats.today}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-indigo-200 dark:bg-indigo-700 flex items-center justify-center">
-                <Clock className="w-5 h-5 text-indigo-600 dark:text-indigo-300" />
+              <div className="w-10 h-10 rounded-lg bg-stockpro-navy/20 dark:bg-stockpro-signal/25 flex items-center justify-center">
+                <Clock className="h-5 w-5 text-stockpro-navy dark:text-stockpro-signal" />
               </div>
             </div>
           </div>
-          <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/30 dark:to-amber-800/30 rounded-xl p-4 border border-amber-200 dark:border-amber-700">
+          <div className="bg-gradient-to-br from-stockpro-stock-low-bg to-stockpro-stock-low-bg dark:from-stockpro-stock-low-fg/12 dark:to-stockpro-stock-low-fg/8 rounded-xl p-4 border border-stockpro-stock-low-fg/25 dark:border-stockpro-stock-low-fg/35">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-amber-500 dark:text-amber-400 uppercase tracking-wide">Avertissements</p>
-                <p className="text-2xl font-bold text-amber-700 dark:text-amber-300 mt-1">{logStats.warnings}</p>
+                <p className="text-xs font-medium text-stockpro-stock-low-fg uppercase tracking-wide">Avertissements</p>
+                <p className="text-2xl font-bold text-stockpro-stock-low-fg mt-1">{logStats.warnings}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-amber-200 dark:bg-amber-700 flex items-center justify-center">
-                <AlertTriangle className="w-5 h-5 text-amber-600 dark:text-amber-300" />
+              <div className="w-10 h-10 rounded-lg bg-stockpro-stock-low-bg dark:bg-stockpro-stock-low-fg/25 flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-stockpro-stock-low-fg" />
               </div>
             </div>
           </div>
-          <div className="bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/30 dark:to-rose-800/30 rounded-xl p-4 border border-rose-200 dark:border-rose-700">
+          <div className="rounded-xl border border-stockpro-stock-error-fg/25 bg-gradient-to-br from-stockpro-stock-error-bg to-stockpro-stock-error-bg p-4 dark:border-stockpro-stock-error-fg/35 dark:from-stockpro-stock-error-fg/10 dark:to-stockpro-stock-error-fg/6">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs font-medium text-rose-500 dark:text-rose-400 uppercase tracking-wide">Erreurs</p>
-                <p className="text-2xl font-bold text-rose-700 dark:text-rose-300 mt-1">{logStats.errors}</p>
+                <p className="text-xs font-medium uppercase tracking-wide text-stockpro-stock-error-fg">Erreurs</p>
+                <p className="text-2xl font-bold text-stockpro-stock-error-fg mt-1">{logStats.errors}</p>
               </div>
-              <div className="w-10 h-10 rounded-lg bg-rose-200 dark:bg-rose-700 flex items-center justify-center">
-                <AlertCircle className="w-5 h-5 text-rose-600 dark:text-rose-300" />
+              <div className="w-10 h-10 rounded-lg bg-stockpro-stock-error-bg dark:bg-stockpro-stock-error-fg/25 flex items-center justify-center">
+                <AlertCircle className="h-5 w-5 text-stockpro-stock-error-fg" />
               </div>
             </div>
           </div>
@@ -1042,7 +1042,7 @@ export const ParametresPage: React.FC<{
         <Card padding="sm" className="!p-3">
           <div className="flex flex-wrap items-center gap-3">
             <div className="relative flex-1 min-w-[200px]">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <input
                 type="text"
                 placeholder="Rechercher..."
@@ -1051,7 +1051,7 @@ export const ParametresPage: React.FC<{
                   setLogSearchTerm(e.target.value);
                   setLogPage(1);
                 }}
-                className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                className="w-full pl-9 pr-4 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal focus:border-transparent"
               />
             </div>
             <select
@@ -1060,7 +1060,7 @@ export const ParametresPage: React.FC<{
                 setLogFilterCategory(e.target.value);
                 setLogPage(1);
               }}
-              className="px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
             >
               <option value="all">Toutes catégories</option>
               {LOG_CATEGORIES.filter(c => c.id !== "all").map(c => (
@@ -1073,7 +1073,7 @@ export const ParametresPage: React.FC<{
                 setLogFilterSeverity(e.target.value);
                 setLogPage(1);
               }}
-              className="px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
             >
               <option value="all">Toutes sévérités</option>
               <option value="info">Info</option>
@@ -1088,7 +1088,7 @@ export const ParametresPage: React.FC<{
                 setLogFilterDate(e.target.value);
                 setLogPage(1);
               }}
-              className="px-3 py-2 text-sm rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="px-3 py-2 text-sm rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
             />
             <Button variant="outline" size="sm" onClick={exportLogs}>
               <Download className="w-4 h-4 mr-1.5" />
@@ -1102,9 +1102,9 @@ export const ParametresPage: React.FC<{
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="bg-slate-50 dark:bg-slate-700/50 border-b border-slate-200 dark:border-slate-600">
+                <tr className="bg-muted/50 border-b border-border">
                   <th
-                    className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600/50 transition-colors"
+                    className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/50 transition-colors"
                     onClick={() => handleSort("timestamp")}
                   >
                     <div className="flex items-center gap-2">
@@ -1114,7 +1114,7 @@ export const ParametresPage: React.FC<{
                     </div>
                   </th>
                   <th
-                    className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600/50 transition-colors"
+                    className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/50 transition-colors"
                     onClick={() => handleSort("type")}
                   >
                     <div className="flex items-center gap-2">
@@ -1123,7 +1123,7 @@ export const ParametresPage: React.FC<{
                     </div>
                   </th>
                   <th
-                    className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600/50 transition-colors"
+                    className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/50 transition-colors"
                     onClick={() => handleSort("user")}
                   >
                     <div className="flex items-center gap-2">
@@ -1133,7 +1133,7 @@ export const ParametresPage: React.FC<{
                     </div>
                   </th>
                   <th
-                    className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600/50 transition-colors"
+                    className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/50 transition-colors"
                     onClick={() => handleSort("details")}
                   >
                     <div className="flex items-center gap-2">
@@ -1142,7 +1142,7 @@ export const ParametresPage: React.FC<{
                     </div>
                   </th>
                   <th
-                    className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600/50 transition-colors"
+                    className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider cursor-pointer hover:bg-muted/50 transition-colors"
                     onClick={() => handleSort("ip")}
                   >
                     <div className="flex items-center gap-2">
@@ -1151,18 +1151,18 @@ export const ParametresPage: React.FC<{
                       <SortIcon field="ip" />
                     </div>
                   </th>
-                  <th className="px-4 py-3 text-center text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider">
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+              <tbody className="divide-y divide-border">
                 {paginatedLogs.length === 0 ? (
                   <tr>
                     <td colSpan={6} className="px-4 py-12 text-center">
                       <div className="flex flex-col items-center">
-                        <History className="w-10 h-10 text-slate-300 dark:text-slate-600 mb-3" />
-                        <p className="text-slate-500 dark:text-slate-400 text-sm">Aucun log trouvé</p>
+                        <History className="w-10 h-10 text-muted-foreground/40 dark:text-muted-foreground/60 mb-3" />
+                        <p className="text-muted-foreground text-sm">Aucun log trouvé</p>
                       </div>
                     </td>
                   </tr>
@@ -1179,7 +1179,7 @@ export const ParametresPage: React.FC<{
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.02 }}
-                        className="hover:bg-slate-50 dark:hover:bg-slate-700/30 transition-colors cursor-pointer"
+                        className="hover:bg-muted/30 transition-colors cursor-pointer"
                         onClick={() => {
                           setSelectedLog(log);
                           logDetailsModal.open();
@@ -1187,8 +1187,8 @@ export const ParametresPage: React.FC<{
                       >
                         <td className="px-4 py-3 whitespace-nowrap">
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-slate-800 dark:text-white">{date}</span>
-                            <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                            <span className="text-sm font-medium text-foreground">{date}</span>
+                            <span className="text-xs text-muted-foreground flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {time}
                             </span>
@@ -1204,17 +1204,17 @@ export const ParametresPage: React.FC<{
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
                           <div className="flex flex-col">
-                            <span className="text-sm font-medium text-slate-800 dark:text-white">{log.user}</span>
-                            <span className="text-xs text-slate-500 dark:text-slate-400">{log.userRole}</span>
+                            <span className="text-sm font-medium text-foreground">{log.user}</span>
+                            <span className="text-xs text-muted-foreground">{log.userRole}</span>
                           </div>
                         </td>
                         <td className="px-4 py-3">
-                          <p className="text-sm text-slate-700 dark:text-slate-300 line-clamp-2 max-w-md">
+                          <p className="text-sm text-foreground line-clamp-2 max-w-md">
                             {log.details}
                           </p>
                         </td>
                         <td className="px-4 py-3 whitespace-nowrap">
-                          <code className="text-xs bg-slate-100 dark:bg-slate-700 px-2 py-1 rounded text-slate-600 dark:text-slate-300">
+                          <code className="text-xs bg-muted px-2 py-1 rounded text-muted-foreground">
                             {log.ip}
                           </code>
                         </td>
@@ -1241,9 +1241,9 @@ export const ParametresPage: React.FC<{
 
           {/* Pagination */}
           {filteredLogs.length > 0 && (
-            <div className="px-4 py-3 border-t border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800/50">
+            <div className="px-4 py-3 border-t border-border bg-muted/80 dark:bg-muted/60">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <span>Afficher</span>
                   <select
                     value={logPageSize}
@@ -1251,7 +1251,7 @@ export const ParametresPage: React.FC<{
                       setLogPageSize(Number(e.target.value));
                       setLogPage(1);
                     }}
-                    className="px-2 py-1 text-sm rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200"
+                    className="px-2 py-1 text-sm rounded border border-border bg-card text-foreground"
                   >
                     <option value={10}>10</option>
                     <option value={15}>15</option>
@@ -1259,7 +1259,7 @@ export const ParametresPage: React.FC<{
                     <option value={50}>50</option>
                   </select>
                   <span>entrées</span>
-                  <span className="text-slate-400 dark:text-slate-500 mx-2">|</span>
+                  <span className="text-muted-foreground mx-2">|</span>
                   <span>
                     {((logPage - 1) * logPageSize) + 1} à {Math.min(logPage * logPageSize, filteredLogs.length)} sur {filteredLogs.length}
                   </span>
@@ -1269,7 +1269,7 @@ export const ParametresPage: React.FC<{
                   <button
                     onClick={() => setLogPage(1)}
                     disabled={logPage === 1}
-                    className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 rounded-lg hover:bg-muted dark:hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     title="Première page"
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -1277,7 +1277,7 @@ export const ParametresPage: React.FC<{
                   <button
                     onClick={() => setLogPage(p => Math.max(1, p - 1))}
                     disabled={logPage === 1}
-                    className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 rounded-lg hover:bg-muted dark:hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     title="Page précédente"
                   >
                     <ChevronLeft className="w-4 h-4" />
@@ -1301,8 +1301,8 @@ export const ParametresPage: React.FC<{
                           key={pageNum}
                           onClick={() => setLogPage(pageNum)}
                           className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${pageNum === logPage
-                            ? "bg-emerald-500 text-white"
-                            : "hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-400"
+                            ? "bg-stockpro-signal text-stockpro-navy-night"
+                            : "hover:bg-muted dark:hover:bg-muted text-muted-foreground"
                             }`}
                         >
                           {pageNum}
@@ -1314,7 +1314,7 @@ export const ParametresPage: React.FC<{
                   <button
                     onClick={() => setLogPage(p => Math.min(totalLogPages, p + 1))}
                     disabled={logPage === totalLogPages}
-                    className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 rounded-lg hover:bg-muted dark:hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     title="Page suivante"
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -1322,7 +1322,7 @@ export const ParametresPage: React.FC<{
                   <button
                     onClick={() => setLogPage(totalLogPages)}
                     disabled={logPage === totalLogPages}
-                    className="p-2 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    className="p-2 rounded-lg hover:bg-muted dark:hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     title="Dernière page"
                   >
                     <ChevronRight className="w-4 h-4" />
@@ -1359,11 +1359,11 @@ export const ParametresPage: React.FC<{
                         {logType?.label || selectedLog.type}
                       </h4>
                       <div className="flex items-center gap-3 mt-1">
-                        <span className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                        <span className="text-sm text-muted-foreground flex items-center gap-1.5">
                           <Calendar className="w-4 h-4" />
                           {date}
                         </span>
-                        <span className="text-sm text-slate-600 dark:text-slate-400 flex items-center gap-1.5">
+                        <span className="text-sm text-muted-foreground flex items-center gap-1.5">
                           <Clock className="w-4 h-4" />
                           {time}
                         </span>
@@ -1373,42 +1373,42 @@ export const ParametresPage: React.FC<{
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                  <div className="p-4 bg-muted/50 rounded-xl">
                     <div className="flex items-center gap-2 mb-2">
-                      <User className="w-4 h-4 text-slate-400" />
-                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Utilisateur</p>
+                      <User className="w-4 h-4 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Utilisateur</p>
                     </div>
-                    <p className="font-semibold text-slate-800 dark:text-white">{selectedLog.user}</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">{selectedLog.userRole}</p>
+                    <p className="font-semibold text-foreground">{selectedLog.user}</p>
+                    <p className="text-sm text-muted-foreground mt-1">{selectedLog.userRole}</p>
                   </div>
-                  <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-xl">
+                  <div className="p-4 bg-muted/50 rounded-xl">
                     <div className="flex items-center gap-2 mb-2">
-                      <MapPin className="w-4 h-4 text-slate-400" />
-                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Adresse IP</p>
+                      <MapPin className="w-4 h-4 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Adresse IP</p>
                     </div>
-                    <p className="font-semibold text-slate-800 dark:text-white font-mono">{selectedLog.ip}</p>
+                    <p className="font-semibold text-foreground font-mono">{selectedLog.ip}</p>
                   </div>
                 </div>
 
-                <div className="p-4 border border-slate-200 dark:border-slate-600 rounded-xl">
+                <div className="p-4 border border-border rounded-xl">
                   <div className="flex items-center gap-2 mb-2">
-                    <FileText className="w-4 h-4 text-slate-400" />
-                    <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Détails</p>
+                    <FileText className="w-4 h-4 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground uppercase tracking-wide">Détails</p>
                   </div>
-                  <p className="text-slate-800 dark:text-white leading-relaxed">{selectedLog.details}</p>
+                  <p className="text-foreground leading-relaxed">{selectedLog.details}</p>
                 </div>
 
                 {Object.keys(selectedLog.metadata).length > 0 && (
-                  <div className="p-4 border border-slate-200 dark:border-slate-600 rounded-xl">
+                  <div className="p-4 border border-border rounded-xl">
                     <div className="flex items-center gap-2 mb-3">
-                      <Database className="w-4 h-4 text-slate-400" />
-                      <p className="text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wide">Métadonnées</p>
+                      <Database className="w-4 h-4 text-muted-foreground" />
+                      <p className="text-xs text-muted-foreground uppercase tracking-wide">Métadonnées</p>
                     </div>
                     <div className="space-y-2">
                       {Object.entries(selectedLog.metadata).map(([key, value]) => (
-                        <div key={key} className="flex justify-between items-start py-2 border-b border-slate-100 dark:border-slate-700 last:border-0">
-                          <span className="text-sm text-slate-500 dark:text-slate-400 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
-                          <span className="text-sm text-slate-800 dark:text-white font-medium text-right max-w-[60%]">
+                        <div key={key} className="flex justify-between items-start py-2 border-b border-border last:border-0">
+                          <span className="text-sm text-muted-foreground capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
+                          <span className="text-sm text-foreground font-medium text-right max-w-[60%]">
                             {Array.isArray(value) ? value.join(", ") : String(value)}
                           </span>
                         </div>
@@ -1417,7 +1417,7 @@ export const ParametresPage: React.FC<{
                   </div>
                 )}
 
-                <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+                <div className="flex justify-end gap-3 pt-4 border-t border-border">
                   <Button variant="outline" onClick={() => {
                     logDetailsModal.close();
                     setSelectedLog(null);
@@ -1454,10 +1454,10 @@ export const ParametresPage: React.FC<{
               onChange={(v) => setBackupSettings({ ...backupSettings, autoBackup: v })}
             />
           </SettingRow>
-          <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-700">
+          <div className="flex items-center justify-between py-3 border-b border-border">
             <div className="flex-1 pr-4">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Fréquence</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Rythme des sauvegardes</p>
+              <p className="text-sm font-medium text-foreground">Fréquence</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Rythme des sauvegardes</p>
             </div>
             <Select
               value={backupSettings.backupFrequency}
@@ -1469,10 +1469,10 @@ export const ParametresPage: React.FC<{
               ]}
             />
           </div>
-          <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-700">
+          <div className="flex items-center justify-between py-3 border-b border-border">
             <div className="flex-1 pr-4">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Heure de sauvegarde</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Moment de la sauvegarde</p>
+              <p className="text-sm font-medium text-foreground">Heure de sauvegarde</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Moment de la sauvegarde</p>
             </div>
             <Input
               type="time"
@@ -1481,10 +1481,10 @@ export const ParametresPage: React.FC<{
               className="w-32"
             />
           </div>
-          <div className="flex items-center justify-between py-3 border-b border-slate-100 dark:border-slate-700">
+          <div className="flex items-center justify-between py-3 border-b border-border">
             <div className="flex-1 pr-4">
-              <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Rétention</p>
-              <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Durée de conservation</p>
+              <p className="text-sm font-medium text-foreground">Rétention</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Durée de conservation</p>
             </div>
             <Select
               value={String(backupSettings.retentionDays)}
@@ -1503,21 +1503,21 @@ export const ParametresPage: React.FC<{
 
       <Card title="Statut des sauvegardes" description="Informations sur les dernières sauvegardes">
         <div className="space-y-4">
-          <div className="p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg border border-emerald-200 dark:border-emerald-800">
+          <div className="p-4 rounded-lg border border-stockpro-stock-ok-fg/25 bg-stockpro-stock-ok-bg dark:border-stockpro-stock-ok-fg/35 dark:bg-stockpro-stock-ok-fg/10">
             <div className="flex items-center gap-3">
-              <CheckCircle className="w-8 h-8 text-emerald-500" />
+              <CheckCircle className="w-8 h-8 text-stockpro-stock-ok-fg" />
               <div>
-                <p className="font-medium text-emerald-800 dark:text-emerald-300">Dernière sauvegarde réussie</p>
-                <p className="text-sm text-emerald-600 dark:text-emerald-400">{backupSettings.lastBackup}</p>
+                <p className="font-medium text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">Dernière sauvegarde réussie</p>
+                <p className="text-sm text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">{backupSettings.lastBackup}</p>
               </div>
             </div>
           </div>
-          <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+          <div className="p-4 bg-muted/50 rounded-lg">
             <div className="flex items-center gap-3">
-              <Clock className="w-8 h-8 text-slate-400" />
+              <Clock className="w-8 h-8 text-muted-foreground" />
               <div>
-                <p className="font-medium text-slate-800 dark:text-white">Prochaine sauvegarde</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{backupSettings.nextBackup}</p>
+                <p className="font-medium text-foreground">Prochaine sauvegarde</p>
+                <p className="text-sm text-muted-foreground">{backupSettings.nextBackup}</p>
               </div>
             </div>
           </div>
@@ -1543,11 +1543,11 @@ export const ParametresPage: React.FC<{
                 addLogWithCurrentUser("SETTINGS_EXPORT", "Export des données produits", { exportType: "produits", format: "CSV", records: MOCK_PRODUCTS.length });
                 showToast("Export produits téléchargé !", "success");
               }}
-              className="p-4 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-left"
+              className="p-4 rounded-lg border border-border hover:bg-muted transition-colors text-left"
             >
-              <Package className="w-6 h-6 text-indigo-500 mb-2" />
-              <p className="font-medium text-slate-800 dark:text-white">Produits</p>
-              <p className="text-xs text-slate-500">CSV, Excel</p>
+              <Package className="w-6 h-6 text-stockpro-navy dark:text-stockpro-signal mb-2" />
+              <p className="font-medium text-foreground">Produits</p>
+              <p className="text-xs text-muted-foreground">CSV, Excel</p>
             </button>
             <button
               onClick={() => {
@@ -1559,11 +1559,11 @@ export const ParametresPage: React.FC<{
                 addLogWithCurrentUser("SETTINGS_EXPORT", "Export des données clients", { exportType: "clients", format: "CSV", records: MOCK_CLIENTS.length });
                 showToast("Export clients téléchargé !", "success");
               }}
-              className="p-4 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-left"
+              className="p-4 rounded-lg border border-border hover:bg-muted transition-colors text-left"
             >
-              <Users className="w-6 h-6 text-emerald-500 mb-2" />
-              <p className="font-medium text-slate-800 dark:text-white">Clients</p>
-              <p className="text-xs text-slate-500">CSV, Excel</p>
+              <Users className="w-6 h-6 text-stockpro-stock-ok-fg mb-2" />
+              <p className="font-medium text-foreground">Clients</p>
+              <p className="text-xs text-muted-foreground">CSV, Excel</p>
             </button>
             <button
               onClick={() => {
@@ -1575,11 +1575,11 @@ export const ParametresPage: React.FC<{
                 addLogWithCurrentUser("SETTINGS_EXPORT", "Export des données ventes", { exportType: "ventes", format: "CSV", records: MOCK_TRANSACTIONS.length });
                 showToast("Export ventes téléchargé !", "success");
               }}
-              className="p-4 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-left"
+              className="p-4 rounded-lg border border-border hover:bg-muted transition-colors text-left"
             >
-              <BarChart3 className="w-6 h-6 text-amber-500 mb-2" />
-              <p className="font-medium text-slate-800 dark:text-white">Ventes</p>
-              <p className="text-xs text-slate-500">CSV, Excel</p>
+              <BarChart3 className="mb-2 h-6 w-6 text-stockpro-stock-low-fg" />
+              <p className="font-medium text-foreground">Ventes</p>
+              <p className="text-xs text-muted-foreground">CSV, Excel</p>
             </button>
             <button
               onClick={() => {
@@ -1591,11 +1591,11 @@ export const ParametresPage: React.FC<{
                 addLogWithCurrentUser("SETTINGS_EXPORT", "Export des données stock", { exportType: "stock", format: "CSV", records: MOCK_PRODUCTS.length });
                 showToast("Export stock téléchargé !", "success");
               }}
-              className="p-4 rounded-lg border border-slate-200 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors text-left"
+              className="p-4 rounded-lg border border-border hover:bg-muted transition-colors text-left"
             >
-              <Boxes className="w-6 h-6 text-rose-500 mb-2" />
-              <p className="font-medium text-slate-800 dark:text-white">Stock</p>
-              <p className="text-xs text-slate-500">CSV, Excel</p>
+              <Boxes className="w-6 h-6 text-stockpro-stock-error-fg mb-2" />
+              <p className="font-medium text-foreground">Stock</p>
+              <p className="text-xs text-muted-foreground">CSV, Excel</p>
             </button>
           </div>
           <Button variant="outline" className="w-full" onClick={() => {
@@ -1640,10 +1640,10 @@ export const ParametresPage: React.FC<{
 
       <Card title="Import de données" description="Importez vos données existantes">
         <div className="space-y-4">
-          <div className="border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-lg p-6 text-center">
-            <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-            <p className="text-sm text-slate-600 dark:text-slate-300">Glissez-déposez vos fichiers ici</p>
-            <p className="text-xs text-slate-400 mt-1">ou</p>
+          <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+            <Upload className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">Glissez-déposez vos fichiers ici</p>
+            <p className="text-xs text-muted-foreground mt-1">ou</p>
             <input
               type="file"
               id="import-file"
@@ -1675,7 +1675,7 @@ export const ParametresPage: React.FC<{
               Parcourir
             </Button>
           </div>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Formats supportés: CSV, XLSX, JSON. Taille max: 10MB</p>
+          <p className="text-xs text-muted-foreground">Formats supportés: CSV, XLSX, JSON. Taille max: 10MB</p>
         </div>
       </Card>
 
@@ -1692,9 +1692,9 @@ export const ParametresPage: React.FC<{
     return (
       <div className="flex items-center justify-center h-64">
         <Card className="text-center p-8">
-          <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-white">Accès restreint</h3>
-          <p className="text-slate-500 dark:text-slate-400 mt-2">Vous n&apos;avez pas les permissions pour accéder à cette page.</p>
+          <AlertCircle className="mx-auto mb-4 h-12 w-12 text-stockpro-stock-low-fg" />
+          <h3 className="text-lg font-semibold text-foreground">Accès restreint</h3>
+          <p className="text-muted-foreground mt-2">Vous n&apos;avez pas les permissions pour accéder à cette page.</p>
         </Card>
       </div>
     );
@@ -1704,8 +1704,8 @@ export const ParametresPage: React.FC<{
     <div className="space-y-6">
       {/* Page Header */}
       <div>
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Paramètres</h2>
-        <p className="text-slate-500 dark:text-slate-400">Configurez votre application selon vos besoins</p>
+        <h2 className="text-2xl font-bold text-foreground">Paramètres</h2>
+        <p className="text-muted-foreground">Configurez votre application selon vos besoins</p>
       </div>
 
       {/* Tabs */}
@@ -1717,8 +1717,8 @@ export const ParametresPage: React.FC<{
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${activeTab === tab.id
-                ? "bg-indigo-600 text-white"
-                : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted"
                 }`}
             >
               <Icon className="w-4 h-4" />
@@ -1749,10 +1749,10 @@ export const ParametresPage: React.FC<{
               <Card>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-800 dark:text-white">Catégories de produits</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Gérez les catégories pour classifier vos produits</p>
+                    <h3 className="text-lg font-semibold text-foreground">Catégories de produits</h3>
+                    <p className="text-sm text-muted-foreground">Gérez les catégories pour classifier vos produits</p>
                   </div>
-                  <Button size="sm" onClick={() => { setEditingCategory(null); setNewCategory({ nom: "", color: "#6366f1" }); categoryModal.open(); }}>
+                  <Button size="sm" onClick={() => { setEditingCategory(null); setNewCategory({ nom: "", color: "#1a2b6d" }); categoryModal.open(); }}>
                     <Plus className="w-4 h-4 mr-1" />
                     Ajouter
                   </Button>
@@ -1763,37 +1763,37 @@ export const ParametresPage: React.FC<{
                       key={cat.id}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg group"
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg group"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-4 h-4 rounded-full" style={{ backgroundColor: cat.color }} />
-                        <span className="font-medium text-slate-700 dark:text-slate-300">{cat.nom}</span>
+                        <span className="font-medium text-foreground">{cat.nom}</span>
                       </div>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
-                          className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600"
+                          className="p-1 rounded hover:bg-muted"
                           title="Modifier"
                           onClick={() => { setEditingCategory(cat); setNewCategory({ nom: cat.nom, color: cat.color }); categoryModal.open(); }}
                         >
-                          <Edit className="w-3.5 h-3.5 text-slate-400" />
+                          <Edit className="w-3.5 h-3.5 text-muted-foreground" />
                         </button>
                         <button
-                          className="p-1 rounded hover:bg-rose-100 dark:hover:bg-rose-900/30"
+                          className="p-1 rounded hover:bg-stockpro-stock-error-bg dark:hover:bg-stockpro-stock-error-fg/12"
                           title="Supprimer"
                           onClick={() => {
                             setCategories(categories.filter(c => c.id !== cat.id));
                             showToast(`Catégorie "${cat.nom}" supprimée`, "success");
                           }}
                         >
-                          <Trash2 className="w-3.5 h-3.5 text-rose-500" />
+                          <Trash2 className="w-3.5 h-3.5 text-stockpro-stock-error-fg" />
                         </button>
                       </div>
                     </motion.div>
                   ))}
                   {/* Add new category button */}
                   <button
-                    className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-lg text-slate-400 hover:border-indigo-400 hover:text-indigo-500 transition-colors"
-                    onClick={() => { setEditingCategory(null); setNewCategory({ nom: "", color: "#6366f1" }); categoryModal.open(); }}
+                    className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-border rounded-lg text-muted-foreground hover:border-stockpro-signal/50 hover:text-stockpro-navy dark:hover:text-stockpro-signal transition-colors"
+                    onClick={() => { setEditingCategory(null); setNewCategory({ nom: "", color: "#1a2b6d" }); categoryModal.open(); }}
                   >
                     <Plus className="w-4 h-4" />
                     <span className="text-sm">Nouvelle catégorie</span>
@@ -1805,8 +1805,8 @@ export const ParametresPage: React.FC<{
               <Card>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-800 dark:text-white">Unités de mesure</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Définissez les unités pour vos produits</p>
+                    <h3 className="text-lg font-semibold text-foreground">Unités de mesure</h3>
+                    <p className="text-sm text-muted-foreground">Définissez les unités pour vos produits</p>
                   </div>
                   <Button size="sm" onClick={() => { setEditingUnit(null); setNewUnit({ nom: "", abreviation: "" }); unitModal.open(); }}>
                     <Plus className="w-4 h-4 mr-1" />
@@ -1819,36 +1819,36 @@ export const ParametresPage: React.FC<{
                       key={unite.id}
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg group"
+                      className="flex items-center justify-between p-3 bg-muted/50 rounded-lg group"
                     >
                       <div className="flex items-center gap-2">
-                        <span className="font-semibold text-indigo-600 dark:text-indigo-400">{unite.abreviation}</span>
-                        <span className="text-slate-600 dark:text-slate-400">{unite.nom}</span>
+                        <span className="font-semibold text-stockpro-navy dark:text-stockpro-signal">{unite.abreviation}</span>
+                        <span className="text-muted-foreground">{unite.nom}</span>
                       </div>
                       <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
-                          className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600"
+                          className="p-1 rounded hover:bg-muted"
                           title="Modifier"
                           onClick={() => { setEditingUnit(unite); setNewUnit({ nom: unite.nom, abreviation: unite.abreviation }); unitModal.open(); }}
                         >
-                          <Edit className="w-3 h-3 text-slate-400" />
+                          <Edit className="w-3 h-3 text-muted-foreground" />
                         </button>
                         <button
-                          className="p-1 rounded hover:bg-rose-100 dark:hover:bg-rose-900/30"
+                          className="p-1 rounded hover:bg-stockpro-stock-error-bg dark:hover:bg-stockpro-stock-error-fg/12"
                           title="Supprimer"
                           onClick={() => {
                             setUnites(unites.filter(u => u.id !== unite.id));
                             showToast(`Unité "${unite.nom}" supprimée`, "success");
                           }}
                         >
-                          <Trash2 className="w-3 h-3 text-rose-500" />
+                          <Trash2 className="w-3 h-3 text-stockpro-stock-error-fg" />
                         </button>
                       </div>
                     </motion.div>
                   ))}
                   {/* Add new unit button */}
                   <button
-                    className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-slate-200 dark:border-slate-600 rounded-lg text-slate-400 hover:border-indigo-400 hover:text-indigo-500 transition-colors"
+                    className="flex items-center justify-center gap-2 p-3 border-2 border-dashed border-border rounded-lg text-muted-foreground hover:border-stockpro-signal/50 hover:text-stockpro-navy dark:hover:text-stockpro-signal transition-colors"
                     onClick={() => { setEditingUnit(null); setNewUnit({ nom: "", abreviation: "" }); unitModal.open(); }}
                   >
                     <Plus className="w-4 h-4" />
@@ -1861,16 +1861,16 @@ export const ParametresPage: React.FC<{
               <Card>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-800 dark:text-white">Types de clients</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Catégorisez votre clientèle</p>
+                    <h3 className="text-lg font-semibold text-foreground">Types de clients</h3>
+                    <p className="text-sm text-muted-foreground">Catégorisez votre clientèle</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {[
                     { type: "VIP", desc: "Clients privilégiés", color: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400" },
-                    { type: "Grossiste", desc: "Achats en gros", color: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400" },
-                    { type: "Détaillant", desc: "Achats au détail", color: "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400" },
-                    { type: "Particulier", desc: "Clients occasionnels", color: "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300" },
+                    { type: "Grossiste", desc: "Achats en gros", color: "bg-stockpro-navy/10 text-stockpro-navy dark:bg-stockpro-signal/12 dark:text-stockpro-signal" },
+                    { type: "Détaillant", desc: "Achats au détail", color: "bg-stockpro-navy/8 text-stockpro-navy-mid dark:bg-stockpro-signal/10 dark:text-stockpro-signal" },
+                    { type: "Particulier", desc: "Clients occasionnels", color: "bg-muted text-foreground" },
                   ].map((item) => (
                     <div key={item.type} className={`p-4 rounded-lg ${item.color}`}>
                       <p className="font-semibold">{item.type}</p>
@@ -1884,8 +1884,8 @@ export const ParametresPage: React.FC<{
               <Card>
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-slate-800 dark:text-white">Modes de paiement</h3>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">Moyens de paiement acceptés</p>
+                    <h3 className="text-lg font-semibold text-foreground">Modes de paiement</h3>
+                    <p className="text-sm text-muted-foreground">Moyens de paiement acceptés</p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -1900,17 +1900,17 @@ export const ParametresPage: React.FC<{
                     <div
                       key={item.method}
                       className={`flex items-center gap-3 p-3 rounded-lg border ${item.active
-                        ? "border-emerald-200 bg-emerald-50 dark:bg-emerald-900/20"
-                        : "border-slate-200 bg-slate-50 dark:bg-slate-700/30"
+                        ? "border-stockpro-stock-ok-fg/30 bg-stockpro-stock-ok-bg dark:bg-stockpro-stock-ok-fg/10"
+                        : "border-border bg-muted/30"
                         }`}
                     >
-                      <div className={item.active ? "text-emerald-600" : "text-slate-400"}>
+                      <div className={item.active ? "text-stockpro-stock-ok-fg" : "text-muted-foreground"}>
                         {item.icon}
                       </div>
-                      <span className={`font-medium ${item.active ? "text-slate-700 dark:text-slate-300" : "text-slate-400"}`}>
+                      <span className={`font-medium ${item.active ? "text-foreground" : "text-muted-foreground"}`}>
                         {item.method}
                       </span>
-                      {item.active && <Check className="w-4 h-4 text-emerald-500 ml-auto" />}
+                      {item.active && <Check className="w-4 h-4 text-stockpro-stock-ok-fg ml-auto" />}
                     </div>
                   ))}
                 </div>
@@ -1936,15 +1936,15 @@ export const ParametresPage: React.FC<{
           }}
         >
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom complet</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Nom complet</label>
             <Input placeholder="Nom et prénom" required />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Email</label>
             <Input type="email" placeholder="email@exemple.com" required />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Rôle</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Rôle</label>
             <Select
               value=""
               onChange={() => { }}
@@ -1958,11 +1958,11 @@ export const ParametresPage: React.FC<{
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mot de passe temporaire</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Mot de passe temporaire</label>
             <Input type="password" placeholder="Mot de passe" required />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" onClick={() => newUserModal.close()}>
               Annuler
             </Button>
@@ -1989,7 +1989,7 @@ export const ParametresPage: React.FC<{
           }}
         >
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom complet</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Nom complet</label>
             <Input
               value={editUserData.nom}
               onChange={(e) => setEditUserData({ ...editUserData, nom: e.target.value })}
@@ -1998,7 +1998,7 @@ export const ParametresPage: React.FC<{
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Email</label>
             <Input
               type="email"
               value={editUserData.email}
@@ -2008,7 +2008,7 @@ export const ParametresPage: React.FC<{
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Rôle</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Rôle</label>
             <Select
               value={editUserData.role}
               onChange={(v) => setEditUserData({ ...editUserData, role: v })}
@@ -2023,7 +2023,7 @@ export const ParametresPage: React.FC<{
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" onClick={() => editUserModal.close()}>
               Annuler
             </Button>
@@ -2043,11 +2043,11 @@ export const ParametresPage: React.FC<{
       >
         {selectedUser && (
           <div className="space-y-4">
-            <div className="flex items-center gap-4 p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+            <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
               <Avatar initials={selectedUser.avatar} color={selectedUser.color} size="md" />
               <div>
-                <p className="font-medium text-slate-800 dark:text-white">{selectedUser.nom}</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{selectedUser.email}</p>
+                <p className="font-medium text-foreground">{selectedUser.nom}</p>
+                <p className="text-sm text-muted-foreground">{selectedUser.email}</p>
               </div>
             </div>
 
@@ -2056,14 +2056,14 @@ export const ParametresPage: React.FC<{
             </Alert>
 
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+              <label className="block text-sm font-medium text-foreground mb-1">
                 Nouveau mot de passe temporaire
               </label>
               <Input
                 type="text"
                 value={resetPasswordTempPreview}
                 readOnly
-                className="bg-slate-50 dark:bg-slate-700"
+                className="bg-muted"
               />
             </div>
 
@@ -2072,14 +2072,14 @@ export const ParametresPage: React.FC<{
                 type="checkbox"
                 id="forceReset"
                 defaultChecked
-                className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                className="w-4 h-4 rounded border-border text-stockpro-navy dark:text-stockpro-signal focus:ring-stockpro-signal"
               />
-              <label htmlFor="forceReset" className="text-sm text-slate-600 dark:text-slate-400">
+              <label htmlFor="forceReset" className="text-sm text-muted-foreground">
                 Forcer le changement de mot de passe à la prochaine connexion
               </label>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button
                 variant="outline"
                 onClick={() => {
@@ -2133,13 +2133,13 @@ export const ParametresPage: React.FC<{
               showToast(`Catégorie "${newCategory.nom}" ajoutée avec succès`, "success");
             }
             categoryModal.close();
-            setNewCategory({ nom: "", color: "#6366f1" });
+            setNewCategory({ nom: "", color: "#1a2b6d" });
             setEditingCategory(null);
           }}
         >
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Nom de la catégorie <span className="text-rose-500">*</span>
+            <label className="block text-sm font-medium text-foreground mb-1">
+              Nom de la catégorie <span className="text-stockpro-stock-error-fg">*</span>
             </label>
             <Input
               value={newCategory.nom}
@@ -2150,7 +2150,7 @@ export const ParametresPage: React.FC<{
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+            <label className="block text-sm font-medium text-foreground mb-2">
               Couleur
             </label>
             <div className="flex items-center gap-3">
@@ -2158,28 +2158,28 @@ export const ParametresPage: React.FC<{
                 type="color"
                 value={newCategory.color}
                 onChange={(e) => setNewCategory({ ...newCategory, color: e.target.value })}
-                className="w-12 h-10 rounded-lg border border-slate-200 cursor-pointer"
+                className="w-12 h-10 rounded-lg border border-border cursor-pointer"
               />
               <div className="flex gap-2">
-                {["#22c55e", "#3b82f6", "#8b5cf6", "#ec4899", "#f59e0b", "#6366f1", "#14b8a6", "#ef4444"].map((color) => (
+                {["#6dc13a", "#1a2b6d", "#2a3d8f", "#e8932d", "#d93f3f", "#152456", "#0f1a45", "#f5f6fa"].map((color) => (
                   <button
                     key={color}
                     type="button"
                     onClick={() => setNewCategory({ ...newCategory, color })}
-                    className={`w-6 h-6 rounded-full border-2 transition-all ${newCategory.color === color ? "border-slate-800 scale-110" : "border-transparent hover:scale-110"}`}
+                    className={`w-6 h-6 rounded-full border-2 transition-all ${newCategory.color === color ? "border-foreground scale-110" : "border-transparent hover:scale-110"}`}
                     style={{ backgroundColor: color }}
                   />
                 ))}
               </div>
             </div>
           </div>
-          <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+          <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
             <div className="w-4 h-4 rounded-full" style={{ backgroundColor: newCategory.color }} />
-            <span className="text-sm text-slate-600 dark:text-slate-300">
+            <span className="text-sm text-muted-foreground">
               Aperçu: {newCategory.nom || "Nom de la catégorie"}
             </span>
           </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" type="button" onClick={() => categoryModal.close()}>
               Annuler
             </Button>
@@ -2227,8 +2227,8 @@ export const ParametresPage: React.FC<{
         >
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Nom <span className="text-rose-500">*</span>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Nom <span className="text-stockpro-stock-error-fg">*</span>
               </label>
               <Input
                 value={newUnit.nom}
@@ -2239,8 +2239,8 @@ export const ParametresPage: React.FC<{
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Abréviation <span className="text-rose-500">*</span>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Abréviation <span className="text-stockpro-stock-error-fg">*</span>
               </label>
               <Input
                 value={newUnit.abreviation}
@@ -2249,23 +2249,23 @@ export const ParametresPage: React.FC<{
                 required
                 maxLength={5}
               />
-              <p className="text-xs text-slate-400 mt-1">Max 5 caractères</p>
+              <p className="text-xs text-muted-foreground mt-1">Max 5 caractères</p>
             </div>
           </div>
-          <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-            <span className="font-semibold text-indigo-600 dark:text-indigo-400">
+          <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+            <span className="font-semibold text-stockpro-navy dark:text-stockpro-signal">
               {newUnit.abreviation || "abr"}
             </span>
-            <span className="text-slate-600 dark:text-slate-400">
+            <span className="text-muted-foreground">
               = {newUnit.nom || "nom de l'unité"}
             </span>
           </div>
-          <div className="p-3 bg-sky-50 dark:bg-sky-900/20 rounded-lg border border-sky-200 dark:border-sky-800">
-            <p className="text-sm text-sky-700 dark:text-sky-300">
+          <div className="p-3 rounded-lg border border-stockpro-navy/20 bg-stockpro-navy/5 dark:border-stockpro-signal/30 dark:bg-stockpro-signal/8">
+            <p className="text-sm text-stockpro-navy dark:text-stockpro-signal">
               <strong>Exemples courants:</strong> kg (kilogramme), L (litre), pc (pièce), m (mètre), pqt (paquet)
             </p>
           </div>
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" type="button" onClick={() => unitModal.close()}>
               Annuler
             </Button>

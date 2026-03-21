@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   keywords: ["StockPro", "Gestion de stock", "Commerce", "Boutique", "POS", "Inventaire"],
   authors: [{ name: "StockPro Team" }],
   icons: {
-    icon: "/logo.svg",
+    icon: "/logo-stockpro.png",
   },
   openGraph: {
     title: "StockPro Manager",
@@ -35,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="fr" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable}`}
         suppressHydrationWarning
       >
         {children}

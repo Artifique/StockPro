@@ -114,8 +114,8 @@ export const FacturationPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Facturation</h2>
-          <p className="text-slate-500 dark:text-slate-400">Gérez vos factures et encaissements</p>
+          <h2 className="text-2xl font-bold text-foreground">Facturation</h2>
+          <p className="text-muted-foreground">Gérez vos factures et encaissements</p>
         </div>
         <Button onClick={() => newFactureModal.open()}>
           <Plus className="w-4 h-4 mr-2" />
@@ -126,27 +126,27 @@ export const FacturationPage: React.FC = () => {
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="text-center">
-          <p className="text-3xl font-bold text-slate-800 dark:text-white">{formatCurrency(stats.total)}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Total facturé</p>
+          <p className="text-3xl font-bold text-foreground">{formatCurrency(stats.total)}</p>
+          <p className="text-sm text-muted-foreground">Total facturé</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(stats.payees)}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Payées</p>
+          <p className="text-3xl font-bold text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">{formatCurrency(stats.payees)}</p>
+          <p className="text-sm text-muted-foreground">Payées</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">{formatCurrency(stats.enAttente)}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">En attente</p>
+          <p className="text-3xl font-bold text-stockpro-stock-low-fg">{formatCurrency(stats.enAttente)}</p>
+          <p className="text-sm text-muted-foreground">En attente</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-rose-600 dark:text-rose-400">{formatCurrency(stats.enRetard)}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">En retard</p>
+          <p className="text-3xl font-bold text-stockpro-stock-error-fg">{formatCurrency(stats.enRetard)}</p>
+          <p className="text-sm text-muted-foreground">En retard</p>
         </Card>
       </div>
 
       {/* Filters */}
       <Card padding="sm">
         <div className="flex items-center gap-4">
-          <Filter className="w-5 h-5 text-slate-400" />
+          <Filter className="w-5 h-5 text-muted-foreground" />
           <Select
             value={filterStatut}
             onChange={setFilterStatut}
@@ -173,7 +173,7 @@ export const FacturationPage: React.FC = () => {
           return (
             <div className="flex items-center justify-end gap-1">
               <button
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
                 title="Voir les détails"
                 onClick={() => {
                   setSelectedFacture(facture || null);
@@ -183,7 +183,7 @@ export const FacturationPage: React.FC = () => {
                 <Eye className="w-4 h-4" />
               </button>
               <button
-                className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-navy dark:text-stockpro-signal hover:bg-stockpro-navy/8 dark:hover:bg-stockpro-signal/10"
                 title="Télécharger PDF"
                 onClick={() => {
                   if (facture) {
@@ -196,7 +196,7 @@ export const FacturationPage: React.FC = () => {
               </button>
               {(row.statut === "En attente" || row.statut === "En retard") && (
                 <button
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
+                  className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-stock-ok-fg hover:bg-stockpro-stock-ok-bg dark:hover:bg-stockpro-stock-ok-fg/10"
                   title="Marquer comme payée"
                   onClick={() => showToast(`Facture ${row.id} marquée comme payée !`, "success")}
                 >
@@ -204,7 +204,7 @@ export const FacturationPage: React.FC = () => {
                 </button>
               )}
               <button
-                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-stock-error-fg hover:bg-stockpro-stock-error-bg dark:hover:bg-stockpro-stock-error-fg/12"
                 title="Envoyer par email"
                 onClick={() => showToast(`Facture ${row.id} envoyée à ${row.client}`, "success")}
               >
@@ -236,7 +236,7 @@ export const FacturationPage: React.FC = () => {
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Client</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Client</label>
               <Select
                 value=""
                 onChange={() => { }}
@@ -245,14 +245,14 @@ export const FacturationPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date de facture</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Date de facture</label>
               <Input type="date" required />
             </div>
           </div>
 
-          <div className="border border-dashed border-slate-300 dark:border-slate-600 rounded-lg p-4">
+          <div className="border border-dashed border-border dark:border-border rounded-lg p-4">
             <div className="flex items-center justify-between mb-3">
-              <h4 className="font-medium text-slate-700 dark:text-slate-300">Lignes de facturation</h4>
+              <h4 className="font-medium text-foreground">Lignes de facturation</h4>
               <Button
                 variant="outline"
                 size="sm"
@@ -266,21 +266,21 @@ export const FacturationPage: React.FC = () => {
 
             {invoiceLines.length === 0 ? (
               <div className="text-center py-4">
-                <FileText className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-                <p className="text-sm text-slate-500 dark:text-slate-400">Aucun produit ajouté</p>
-                <p className="text-xs text-slate-400">Cliquez sur "Ajouter un produit" pour commencer</p>
+                <FileText className="w-8 h-8 text-muted-foreground mx-auto mb-2" />
+                <p className="text-sm text-muted-foreground">Aucun produit ajouté</p>
+                <p className="text-xs text-muted-foreground">Cliquez sur "Ajouter un produit" pour commencer</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {invoiceLines.map((line, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                  <div key={index} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
-                        <Package className="w-5 h-5 text-slate-500" />
+                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                        <Package className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{line.product.nom}</p>
-                        <p className="text-xs text-slate-500">{formatCurrency(line.product.prixVente)} x {line.quantity}</p>
+                        <p className="text-sm font-medium text-foreground">{line.product.nom}</p>
+                        <p className="text-xs text-muted-foreground">{formatCurrency(line.product.prixVente)} x {line.quantity}</p>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
@@ -294,9 +294,9 @@ export const FacturationPage: React.FC = () => {
                               ));
                             }
                           }}
-                          className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600"
+                          className="p-1 rounded hover:bg-muted"
                         >
-                          <Minus className="w-4 h-4 text-slate-400" />
+                          <Minus className="w-4 h-4 text-muted-foreground" />
                         </button>
                         <span className="w-8 text-center font-medium">{line.quantity}</span>
                         <button
@@ -306,18 +306,18 @@ export const FacturationPage: React.FC = () => {
                               i === index ? { ...l, quantity: l.quantity + 1 } : l
                             ));
                           }}
-                          className="p-1 rounded hover:bg-slate-200 dark:hover:bg-slate-600"
+                          className="p-1 rounded hover:bg-muted"
                         >
-                          <Plus className="w-4 h-4 text-slate-400" />
+                          <Plus className="w-4 h-4 text-muted-foreground" />
                         </button>
                       </div>
-                      <p className="font-semibold text-slate-800 dark:text-white w-28 text-right">
+                      <p className="font-semibold text-foreground w-28 text-right">
                         {formatCurrency(line.product.prixVente * line.quantity)}
                       </p>
                       <button
                         type="button"
                         onClick={() => setInvoiceLines(invoiceLines.filter((_, i) => i !== index))}
-                        className="p-1 rounded text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30"
+                        className="p-1 rounded text-stockpro-stock-error-fg hover:bg-stockpro-stock-error-bg dark:hover:bg-stockpro-stock-error-fg/12"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -326,9 +326,9 @@ export const FacturationPage: React.FC = () => {
                 ))}
 
                 {/* Total */}
-                <div className="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-slate-600">
-                  <span className="font-medium text-slate-700 dark:text-slate-300">Total TTC</span>
-                  <span className="text-xl font-bold text-indigo-600 dark:text-indigo-400">
+                <div className="flex justify-between items-center pt-3 border-t border-border">
+                  <span className="font-medium text-foreground">Total TTC</span>
+                  <span className="text-xl font-bold text-stockpro-navy dark:text-stockpro-signal">
                     {formatCurrency(invoiceLines.reduce((sum, l) => sum + l.product.prixVente * l.quantity, 0))}
                   </span>
                 </div>
@@ -339,14 +339,14 @@ export const FacturationPage: React.FC = () => {
           {/* Product Selection Modal */}
           {productSelectModal.isOpen && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-              <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[80vh] overflow-hidden">
-                <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-                  <h4 className="font-semibold text-slate-800 dark:text-white">Sélectionner un produit</h4>
-                  <button type="button" onClick={closeProductSelectModal} className="p-1 rounded hover:bg-slate-100 dark:hover:bg-slate-700">
+              <div className="bg-card rounded-xl shadow-xl w-full max-w-md mx-4 max-h-[80vh] overflow-hidden">
+                <div className="p-4 border-b border-border flex items-center justify-between">
+                  <h4 className="font-semibold text-foreground">Sélectionner un produit</h4>
+                  <button type="button" onClick={closeProductSelectModal} className="p-1 rounded hover:bg-muted">
                     <X className="w-5 h-5" />
                   </button>
                 </div>
-                <div className="p-4 border-b border-slate-200 dark:border-slate-700">
+                <div className="p-4 border-b border-border">
                   <Input
                     placeholder="Rechercher un produit..."
                     icon={<Search className="w-4 h-4" />}
@@ -374,18 +374,18 @@ export const FacturationPage: React.FC = () => {
                         closeProductSelectModal();
                         showToast(`${product.nom} ajouté à la facture`, "success");
                       }}
-                      className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 text-left border-b border-slate-100 dark:border-slate-700 last:border-0"
+                      className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 text-left border-b border-border last:border-0"
                     >
-                      <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                        <Package className="w-5 h-5 text-slate-400" />
+                      <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                        <Package className="w-5 h-5 text-muted-foreground" />
                       </div>
                       <div className="flex-1">
-                        <p className="font-medium text-slate-800 dark:text-white">{product.nom}</p>
-                        <p className="text-xs text-slate-500">{product.sku} • {product.categorie}</p>
+                        <p className="font-medium text-foreground">{product.nom}</p>
+                        <p className="text-xs text-muted-foreground">{product.sku} • {product.categorie}</p>
                       </div>
                       <div className="text-right">
-                        <p className="font-semibold text-slate-800 dark:text-white">{formatCurrency(product.prixVente)}</p>
-                        <p className="text-xs text-slate-500">Stock: {product.stock}</p>
+                        <p className="font-semibold text-foreground">{formatCurrency(product.prixVente)}</p>
+                        <p className="text-xs text-muted-foreground">Stock: {product.stock}</p>
                       </div>
                     </button>
                   ))}
@@ -396,11 +396,11 @@ export const FacturationPage: React.FC = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Date d&apos;échéance</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Date d&apos;échéance</label>
               <Input type="date" required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Mode de paiement</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Mode de paiement</label>
               <Select
                 value=""
                 onChange={() => { }}
@@ -416,15 +416,15 @@ export const FacturationPage: React.FC = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Notes</label>
             <textarea
               rows={2}
               placeholder="Notes ou conditions particulières..."
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" onClick={closeNewFactureModal}>
               Annuler
             </Button>
@@ -439,8 +439,8 @@ export const FacturationPage: React.FC = () => {
           <div className="space-y-6">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-xl font-semibold text-slate-800 dark:text-white">{selectedFacture.id}</h3>
-                <p className="text-slate-500 dark:text-slate-400">{selectedFacture.client}</p>
+                <h3 className="text-xl font-semibold text-foreground">{selectedFacture.id}</h3>
+                <p className="text-muted-foreground">{selectedFacture.client}</p>
               </div>
               <Badge variant={
                 selectedFacture.statut === "Payée" ? "success" :
@@ -453,41 +453,41 @@ export const FacturationPage: React.FC = () => {
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Card padding="sm" className="text-center">
-                <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(selectedFacture.montant)}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Montant TTC</p>
+                <p className="text-2xl font-bold text-stockpro-navy dark:text-stockpro-signal">{formatCurrency(selectedFacture.montant)}</p>
+                <p className="text-xs text-muted-foreground">Montant TTC</p>
               </Card>
               <Card padding="sm" className="text-center">
-                <p className="text-lg font-bold text-slate-800 dark:text-white">{selectedFacture.date}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Date facture</p>
+                <p className="text-lg font-bold text-foreground">{selectedFacture.date}</p>
+                <p className="text-xs text-muted-foreground">Date facture</p>
               </Card>
               <Card padding="sm" className="text-center">
-                <p className="text-lg font-bold text-slate-800 dark:text-white">{selectedFacture.echeance}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Échéance</p>
+                <p className="text-lg font-bold text-foreground">{selectedFacture.echeance}</p>
+                <p className="text-xs text-muted-foreground">Échéance</p>
               </Card>
               <Card padding="sm" className="text-center">
-                <p className="text-lg font-bold text-slate-800 dark:text-white">30 jours</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Délai paiement</p>
+                <p className="text-lg font-bold text-foreground">30 jours</p>
+                <p className="text-xs text-muted-foreground">Délai paiement</p>
               </Card>
             </div>
 
             {/* Simulated Lines */}
             <div>
-              <h4 className="font-medium text-slate-800 dark:text-white mb-3">Lignes de facturation</h4>
+              <h4 className="font-medium text-foreground mb-3">Lignes de facturation</h4>
               <div className="space-y-2">
                 {MOCK_PRODUCTS.slice(0, 3).map((p, i) => (
-                  <div key={i} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                  <div key={i} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
-                        <Package className="w-4 h-4 text-slate-500" />
+                      <div className="w-8 h-8 rounded bg-muted flex items-center justify-center">
+                        <Package className="w-4 h-4 text-muted-foreground" />
                       </div>
                       <div>
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{p.nom}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">Réf: {p.sku}</p>
+                        <p className="text-sm font-medium text-foreground">{p.nom}</p>
+                        <p className="text-xs text-muted-foreground">Réf: {p.sku}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-medium text-slate-800 dark:text-white">{formatCurrency(p.prixVente)}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">x{i + 1}</p>
+                      <p className="text-sm font-medium text-foreground">{formatCurrency(p.prixVente)}</p>
+                      <p className="text-xs text-muted-foreground">x{i + 1}</p>
                     </div>
                   </div>
                 ))}
@@ -495,22 +495,22 @@ export const FacturationPage: React.FC = () => {
             </div>
 
             {/* Summary */}
-            <div className="border-t border-slate-200 dark:border-slate-700 pt-4">
+            <div className="border-t border-border pt-4">
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-500 dark:text-slate-400">Sous-total HT</span>
-                <span className="text-slate-800 dark:text-white">{formatCurrency(selectedFacture.montant * 0.84)}</span>
+                <span className="text-muted-foreground">Sous-total HT</span>
+                <span className="text-foreground">{formatCurrency(selectedFacture.montant * 0.84)}</span>
               </div>
               <div className="flex justify-between text-sm mb-2">
-                <span className="text-slate-500 dark:text-slate-400">TVA (18%)</span>
-                <span className="text-slate-800 dark:text-white">{formatCurrency(selectedFacture.montant * 0.16)}</span>
+                <span className="text-muted-foreground">TVA (18%)</span>
+                <span className="text-foreground">{formatCurrency(selectedFacture.montant * 0.16)}</span>
               </div>
-              <div className="flex justify-between text-lg font-bold border-t border-slate-200 dark:border-slate-600 pt-2">
-                <span className="text-slate-800 dark:text-white">Total TTC</span>
-                <span className="text-indigo-600 dark:text-indigo-400">{formatCurrency(selectedFacture.montant)}</span>
+              <div className="flex justify-between text-lg font-bold border-t border-border pt-2">
+                <span className="text-foreground">Total TTC</span>
+                <span className="text-stockpro-navy dark:text-stockpro-signal">{formatCurrency(selectedFacture.montant)}</span>
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button variant="outline" onClick={factureDetailsModal.close}>
                 Fermer
               </Button>

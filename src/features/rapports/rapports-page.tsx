@@ -35,8 +35,8 @@ export const RapportsPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Rapports & Analyses</h2>
-          <p className="text-slate-500 dark:text-slate-400">Visualisez vos performances</p>
+          <h2 className="text-2xl font-bold text-foreground">Rapports & Analyses</h2>
+          <p className="text-muted-foreground">Visualisez vos performances</p>
         </div>
         <div className="flex items-center gap-3">
           <Select
@@ -66,8 +66,8 @@ export const RapportsPage: React.FC = () => {
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium whitespace-nowrap transition-colors ${activeTab === tab.id
-                ? "bg-indigo-600 text-white"
-                : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-600"
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground hover:bg-muted"
                 }`}
             >
               <Icon className="w-4 h-4" />
@@ -81,32 +81,32 @@ export const RapportsPage: React.FC = () => {
 
       {/* Summary Table */}
       <Card>
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Résumé mensuel</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">Résumé mensuel</h3>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="bg-slate-50 dark:bg-slate-700/50">
-                <th className="px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase">Mois</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase">Ventes</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase">Achats</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase">Marge</th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase">Évolution</th>
+              <tr className="bg-muted/50">
+                <th className="px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase">Mois</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase">Ventes</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase">Achats</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase">Marge</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase">Évolution</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+            <tbody className="divide-y divide-border">
               {VENTES_MENSUELLES.slice(-6).map((row, i) => {
                 const marge = row.ventes - row.achats;
                 const prevMarge = i > 0 ? VENTES_MENSUELLES[VENTES_MENSUELLES.length - 6 + i - 1].ventes - VENTES_MENSUELLES[VENTES_MENSUELLES.length - 6 + i - 1].achats : marge;
                 const evolution = prevMarge > 0 ? ((marge - prevMarge) / prevMarge) * 100 : 0;
 
                 return (
-                  <tr key={row.mois} className="hover:bg-slate-50 dark:hover:bg-slate-700/50">
-                    <td className="px-4 py-3 text-sm font-medium text-slate-800 dark:text-white">{row.mois}</td>
-                    <td className="px-4 py-3 text-sm text-right text-slate-600 dark:text-slate-300">{formatCurrency(row.ventes)}</td>
-                    <td className="px-4 py-3 text-sm text-right text-slate-600 dark:text-slate-300">{formatCurrency(row.achats)}</td>
-                    <td className="px-4 py-3 text-sm text-right font-semibold text-emerald-600 dark:text-emerald-400">{formatCurrency(marge)}</td>
+                  <tr key={row.mois} className="hover:bg-muted/50">
+                    <td className="px-4 py-3 text-sm font-medium text-foreground">{row.mois}</td>
+                    <td className="px-4 py-3 text-sm text-right text-muted-foreground">{formatCurrency(row.ventes)}</td>
+                    <td className="px-4 py-3 text-sm text-right text-muted-foreground">{formatCurrency(row.achats)}</td>
+                    <td className="px-4 py-3 text-sm text-right font-semibold text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">{formatCurrency(marge)}</td>
                     <td className="px-4 py-3 text-right">
-                      <span className={`inline-flex items-center text-sm ${evolution >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                      <span className={`inline-flex items-center text-sm ${evolution >= 0 ? "text-stockpro-stock-ok-fg" : "text-stockpro-stock-error-fg"}`}>
                         {evolution >= 0 ? <ArrowUp className="w-4 h-4 mr-1" /> : <ArrowDown className="w-4 h-4 mr-1" />}
                         {Math.abs(evolution).toFixed(1)}%
                       </span>
@@ -116,15 +116,15 @@ export const RapportsPage: React.FC = () => {
               })}
             </tbody>
             <tfoot>
-              <tr className="bg-indigo-50 dark:bg-indigo-900/30 font-semibold">
-                <td className="px-4 py-3 text-sm text-indigo-800 dark:text-indigo-300">Total</td>
-                <td className="px-4 py-3 text-sm text-right text-indigo-800 dark:text-indigo-300">
+              <tr className="bg-stockpro-navy/8 dark:bg-stockpro-signal/12 font-semibold">
+                <td className="px-4 py-3 text-sm text-stockpro-navy dark:text-stockpro-signal">Total</td>
+                <td className="px-4 py-3 text-sm text-right text-stockpro-navy dark:text-stockpro-signal">
                   {formatCurrency(VENTES_MENSUELLES.reduce((sum, r) => sum + r.ventes, 0))}
                 </td>
-                <td className="px-4 py-3 text-sm text-right text-indigo-800 dark:text-indigo-300">
+                <td className="px-4 py-3 text-sm text-right text-stockpro-navy dark:text-stockpro-signal">
                   {formatCurrency(VENTES_MENSUELLES.reduce((sum, r) => sum + r.achats, 0))}
                 </td>
-                <td className="px-4 py-3 text-sm text-right text-emerald-600 dark:text-emerald-400">
+                <td className="px-4 py-3 text-sm text-right text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">
                   {formatCurrency(VENTES_MENSUELLES.reduce((sum, r) => sum + r.ventes - r.achats, 0))}
                 </td>
                 <td className="px-4 py-3 text-right">—</td>

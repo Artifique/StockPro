@@ -1,19 +1,19 @@
 /** Profils démo (sans secret — l’auth réelle est côté serveur). */
 export const MOCK_USERS = [
-  { id: 1, email: "admin@stockpro.com", role: "Super Admin", nom: "Karim Benali", avatar: "KB", color: "#6366f1", statut: "actif" },
-  { id: 2, email: "gerant@stockpro.com", role: "Gérant", nom: "Amina Toure", avatar: "AT", color: "#10b981", statut: "actif" },
-  { id: 3, email: "caissier@stockpro.com", role: "Caissier", nom: "Youssef Diallo", avatar: "YD", color: "#f59e0b", statut: "actif" },
-  { id: 4, email: "stock@stockpro.com", role: "Responsable Stock", nom: "Fatima Ndiaye", avatar: "FN", color: "#ec4899", statut: "actif" },
-  { id: 5, email: "compta@stockpro.com", role: "Comptable", nom: "Omar Traoré", avatar: "OT", color: "#14b8a6", statut: "actif" },
+  { id: 1, email: "admin@stockpro.com", role: "Super Admin", nom: "Karim Benali", avatar: "KB", color: "#1a2b6d", statut: "actif" },
+  { id: 2, email: "gerant@stockpro.com", role: "Gérant", nom: "Amina Toure", avatar: "AT", color: "#6dc13a", statut: "actif" },
+  { id: 3, email: "caissier@stockpro.com", role: "Caissier", nom: "Youssef Diallo", avatar: "YD", color: "#e8932d", statut: "actif" },
+  { id: 4, email: "stock@stockpro.com", role: "Responsable Stock", nom: "Fatima Ndiaye", avatar: "FN", color: "#2a3d8f", statut: "actif" },
+  { id: 5, email: "compta@stockpro.com", role: "Comptable", nom: "Omar Traoré", avatar: "OT", color: "#152456", statut: "actif" },
 ];
 
 export const CATEGORIES = [
-  { id: 1, nom: "Alimentaire", color: "#22c55e" },
-  { id: 2, nom: "Vêtements", color: "#3b82f6" },
-  { id: 3, nom: "Électronique", color: "#8b5cf6" },
-  { id: 4, nom: "Cosmétiques", color: "#ec4899" },
-  { id: 5, nom: "Ménager", color: "#f59e0b" },
-  { id: 6, nom: "Bureautique", color: "#6366f1" },
+  { id: 1, nom: "Alimentaire", color: "#6dc13a" },
+  { id: 2, nom: "Vêtements", color: "#2a3d8f" },
+  { id: 3, nom: "Électronique", color: "#1a2b6d" },
+  { id: 4, nom: "Cosmétiques", color: "#e8932d" },
+  { id: 5, nom: "Ménager", color: "#d93f3f" },
+  { id: 6, nom: "Bureautique", color: "#152456" },
 ];
 
 // Unités de mesure disponibles
@@ -107,10 +107,10 @@ export const TOP_PRODUITS = [
 ];
 
 export const REPARTITION_CA = [
-  { categorie: "Alimentaire", valeur: 38, color: "#22c55e" },
-  { categorie: "Vêtements", valeur: 25, color: "#3b82f6" },
-  { categorie: "Électronique", valeur: 22, color: "#8b5cf6" },
-  { categorie: "Autres", valeur: 15, color: "#f59e0b" },
+  { categorie: "Alimentaire", valeur: 38, color: "#6dc13a" },
+  { categorie: "Vêtements", valeur: 25, color: "#2a3d8f" },
+  { categorie: "Électronique", valeur: 22, color: "#1a2b6d" },
+  { categorie: "Autres", valeur: 15, color: "#e8932d" },
 ];
 
 export const STOCK_EVOLUTION = [
@@ -407,10 +407,10 @@ export const LOG_CATEGORIES = [
 
 // Niveaux de sévérité
 export const SEVERITY_STYLES = {
-  info: { bg: "bg-sky-100 dark:bg-sky-900/30", text: "text-sky-700 dark:text-sky-400", badge: "info" },
-  success: { bg: "bg-emerald-100 dark:bg-emerald-900/30", text: "text-emerald-700 dark:text-emerald-400", badge: "success" },
-  warning: { bg: "bg-amber-100 dark:bg-amber-900/30", text: "text-amber-700 dark:text-amber-400", badge: "warning" },
-  danger: { bg: "bg-rose-100 dark:bg-rose-900/30", text: "text-rose-700 dark:text-rose-400", badge: "danger" },
+  info: { bg: "bg-stockpro-navy/10 dark:bg-stockpro-signal/12", text: "text-stockpro-navy dark:text-stockpro-signal", badge: "info" },
+  success: { bg: "bg-stockpro-stock-ok-bg dark:bg-stockpro-stock-ok-fg/12", text: "text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg", badge: "success" },
+  warning: { bg: "bg-stockpro-stock-low-bg dark:bg-stockpro-stock-low-fg/12", text: "text-stockpro-stock-low-fg", badge: "warning" },
+  danger: { bg: "bg-stockpro-stock-error-bg dark:bg-stockpro-stock-error-fg/12", text: "text-stockpro-stock-error-fg", badge: "danger" },
 };
 
 // Données mock des logs

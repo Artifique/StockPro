@@ -64,10 +64,10 @@ export const ClientsPage: React.FC = () => {
       sortable: true,
       render: (value: unknown, row: Record<string, unknown>) => (
         <div className="flex items-center gap-3">
-          <Avatar initials={String(value).split(" ").map((n) => n[0]).join("").slice(0, 2)} color="#6366f1" size="sm" />
+          <Avatar initials={String(value).split(" ").map((n) => n[0]).join("").slice(0, 2)} color="#1a2b6d" size="sm" />
           <div>
-            <p className="font-medium text-slate-800 dark:text-white">{String(value)}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{String(row.email)}</p>
+            <p className="font-medium text-foreground">{String(value)}</p>
+            <p className="text-xs text-muted-foreground">{String(row.email)}</p>
           </div>
         </div>
       ),
@@ -80,9 +80,9 @@ export const ClientsPage: React.FC = () => {
       render: (value: unknown) => {
         const typeStyles: Record<string, string> = {
           VIP: "bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400",
-          Grossiste: "bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-400",
-          Détaillant: "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400",
-          Particulier: "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300",
+          Grossiste: "bg-stockpro-navy/10 text-stockpro-navy dark:bg-stockpro-signal/12 dark:text-stockpro-signal",
+          Détaillant: "bg-stockpro-navy/8 text-stockpro-navy-mid dark:bg-stockpro-signal/10 dark:text-stockpro-signal",
+          Particulier: "bg-muted text-foreground",
         };
         return (
           <span className={`px-2.5 py-1 rounded-full text-xs font-semibold ${typeStyles[String(value)] || ""}`}>
@@ -103,7 +103,7 @@ export const ClientsPage: React.FC = () => {
       sortable: true,
       render: (value: unknown) => {
         const solde = value as number;
-        const color = solde >= 0 ? "text-emerald-600" : "text-rose-600";
+        const color = solde >= 0 ? "text-stockpro-stock-ok-fg" : "text-stockpro-stock-error-fg";
         return <span className={`font-semibold ${color}`}>{solde >= 0 ? "+" : ""}{formatCurrency(solde)}</span>;
       },
     },
@@ -128,8 +128,8 @@ export const ClientsPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Gestion des Clients</h2>
-          <p className="text-slate-500 dark:text-slate-400">Gérez votre base de clients</p>
+          <h2 className="text-2xl font-bold text-foreground">Gestion des Clients</h2>
+          <p className="text-muted-foreground">Gérez votre base de clients</p>
         </div>
         <Button onClick={() => newClientModal.open()}>
           <Plus className="w-4 h-4 mr-2" />
@@ -140,20 +140,20 @@ export const ClientsPage: React.FC = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="text-center">
-          <p className="text-3xl font-bold text-slate-800 dark:text-white">{stats.total}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Total clients</p>
+          <p className="text-3xl font-bold text-foreground">{stats.total}</p>
+          <p className="text-sm text-muted-foreground">Total clients</p>
         </Card>
         <Card className="text-center">
           <p className="text-3xl font-bold text-yellow-600 dark:text-yellow-400">{stats.vip}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Clients VIP</p>
+          <p className="text-sm text-muted-foreground">Clients VIP</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-rose-600 dark:text-rose-400">{formatCurrency(stats.creances)}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Créances totales</p>
+          <p className="text-3xl font-bold text-stockpro-stock-error-fg">{formatCurrency(stats.creances)}</p>
+          <p className="text-sm text-muted-foreground">Créances totales</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">{stats.nouveaux}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Nouveaux ce mois</p>
+          <p className="text-3xl font-bold text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">{stats.nouveaux}</p>
+          <p className="text-sm text-muted-foreground">Nouveaux ce mois</p>
         </Card>
       </div>
 
@@ -196,7 +196,7 @@ export const ClientsPage: React.FC = () => {
           )}
         </div>
         {(searchQuery || selectedType) && (
-          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-slate-100 dark:border-slate-700 text-sm text-slate-500">
+          <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border text-sm text-muted-foreground">
             <span>{filteredClients.length} client{filteredClients.length > 1 ? "s" : ""} trouvé{filteredClients.length > 1 ? "s" : ""}</span>
           </div>
         )}
@@ -219,13 +219,13 @@ export const ClientsPage: React.FC = () => {
             <div className="flex items-center justify-end gap-1">
               <button
                 onClick={() => viewClientDetails(client!)}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-navy dark:text-stockpro-signal hover:bg-stockpro-navy/8 dark:hover:bg-stockpro-signal/10"
                 title="Voir la fiche client"
               >
                 <Eye className="w-4 h-4" />
               </button>
               <button
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
                 title="Modifier le client"
                 onClick={() => {
                   if (client) {
@@ -243,7 +243,7 @@ export const ClientsPage: React.FC = () => {
                 <Edit className="w-4 h-4" />
               </button>
               <button
-                className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-stock-ok-fg hover:bg-stockpro-stock-ok-bg dark:hover:bg-stockpro-stock-ok-fg/10"
                 title="Envoyer un SMS"
                 onClick={() => showToast(`SMS envoyé à ${row.nom}`, "success")}
               >
@@ -258,10 +258,10 @@ export const ClientsPage: React.FC = () => {
       {clientDrawer.isOpen && selectedClient && (
         <div className="fixed inset-0 z-50 flex justify-end">
           <div className="absolute inset-0 bg-black/50" onClick={() => clientDrawer.close()} />
-          <div className="relative w-full max-w-md bg-white dark:bg-slate-800 shadow-xl h-full overflow-y-auto animate-in slide-in-from-right duration-300">
-            <div className="sticky top-0 bg-white dark:bg-slate-800 px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-slate-800 dark:text-white">Fiche client</h3>
-              <button onClick={() => clientDrawer.close()} className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
+          <div className="relative w-full max-w-md bg-card shadow-xl h-full overflow-y-auto animate-in slide-in-from-right duration-300">
+            <div className="sticky top-0 bg-card px-6 py-4 border-b border-border flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-foreground">Fiche client</h3>
+              <button onClick={() => clientDrawer.close()} className="p-2 rounded-lg hover:bg-muted">
                 <X className="w-5 h-5" />
               </button>
             </div>
@@ -269,9 +269,9 @@ export const ClientsPage: React.FC = () => {
             <div className="p-6 space-y-6">
               {/* Profile */}
               <div className="text-center">
-                <Avatar initials={selectedClient.nom.split(" ").map((n) => n[0]).join("").slice(0, 2)} color="#6366f1" size="lg" className="mx-auto" />
-                <h4 className="mt-3 text-xl font-semibold text-slate-800 dark:text-white">{selectedClient.nom}</h4>
-                <p className="text-slate-500 dark:text-slate-400">{selectedClient.type}</p>
+                <Avatar initials={selectedClient.nom.split(" ").map((n) => n[0]).join("").slice(0, 2)} color="#1a2b6d" size="lg" className="mx-auto" />
+                <h4 className="mt-3 text-xl font-semibold text-foreground">{selectedClient.nom}</h4>
+                <p className="text-muted-foreground">{selectedClient.type}</p>
                 <Badge variant={selectedClient.type === "VIP" ? "warning" : "default"} className="mt-2">
                   {selectedClient.type}
                 </Badge>
@@ -279,41 +279,41 @@ export const ClientsPage: React.FC = () => {
 
               {/* Contact Info */}
               <div className="space-y-3">
-                <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                  <Phone className="w-5 h-5 text-slate-400" />
-                  <span className="text-slate-700 dark:text-slate-300">{selectedClient.telephone}</span>
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                  <Phone className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-foreground">{selectedClient.telephone}</span>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                  <Mail className="w-5 h-5 text-slate-400" />
-                  <span className="text-slate-700 dark:text-slate-300">{selectedClient.email}</span>
+                <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                  <Mail className="w-5 h-5 text-muted-foreground" />
+                  <span className="text-foreground">{selectedClient.email}</span>
                 </div>
               </div>
 
               {/* Stats */}
               <div className="grid grid-cols-2 gap-4">
                 <Card padding="sm" className="text-center">
-                  <p className="text-2xl font-bold text-slate-800 dark:text-white">{formatCurrency(selectedClient.caTotal)}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">CA Total</p>
+                  <p className="text-2xl font-bold text-foreground">{formatCurrency(selectedClient.caTotal)}</p>
+                  <p className="text-xs text-muted-foreground">CA Total</p>
                 </Card>
                 <Card padding="sm" className="text-center">
-                  <p className={`text-2xl font-bold ${selectedClient.solde >= 0 ? "text-emerald-600" : "text-rose-600"}`}>
+                  <p className={`text-2xl font-bold ${selectedClient.solde >= 0 ? "text-stockpro-stock-ok-fg" : "text-stockpro-stock-error-fg"}`}>
                     {formatCurrency(selectedClient.solde)}
                   </p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">Solde</p>
+                  <p className="text-xs text-muted-foreground">Solde</p>
                 </Card>
               </div>
 
               {/* Recent Orders */}
               <div>
-                <h5 className="font-medium text-slate-800 dark:text-white mb-3">Dernières ventes</h5>
+                <h5 className="font-medium text-foreground mb-3">Dernières ventes</h5>
                 <div className="space-y-2">
                   {MOCK_TRANSACTIONS.slice(0, 3).map((t) => (
-                    <div key={t.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                    <div key={t.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div>
-                        <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{t.produit}</p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">{t.date}</p>
+                        <p className="text-sm font-medium text-foreground">{t.produit}</p>
+                        <p className="text-xs text-muted-foreground">{t.date}</p>
                       </div>
-                      <p className="font-semibold text-slate-800 dark:text-white">{formatCurrency(t.montant)}</p>
+                      <p className="font-semibold text-foreground">{formatCurrency(t.montant)}</p>
                     </div>
                   ))}
                 </div>
@@ -347,28 +347,28 @@ export const ClientsPage: React.FC = () => {
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Nom complet <span className="text-rose-500">*</span>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Nom complet <span className="text-stockpro-stock-error-fg">*</span>
               </label>
               <Input placeholder="Ex: Amadou Koné" required />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Téléphone <span className="text-rose-500">*</span>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Téléphone <span className="text-stockpro-stock-error-fg">*</span>
               </label>
               <Input placeholder="+223 70 00 00 00" required />
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Email <span className="text-slate-400 text-xs">(optionnel)</span>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Email <span className="text-muted-foreground text-xs">(optionnel)</span>
               </label>
               <Input type="email" placeholder="email@exemple.com" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Type de client <span className="text-rose-500">*</span>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Type de client <span className="text-stockpro-stock-error-fg">*</span>
               </label>
               <Select
                 value=""
@@ -382,25 +382,25 @@ export const ClientsPage: React.FC = () => {
                 placeholder="Sélectionner le type"
                 required
               />
-              <p className="text-xs text-slate-400 mt-1">💡 VIP = client fidèle, Grossiste = achats en gros</p>
+              <p className="text-xs text-muted-foreground mt-1">💡 VIP = client fidèle, Grossiste = achats en gros</p>
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Adresse <span className="text-slate-400 text-xs">(optionnel)</span>
+            <label className="block text-sm font-medium text-foreground mb-1">
+              Adresse <span className="text-muted-foreground text-xs">(optionnel)</span>
             </label>
             <textarea
               rows={2}
               placeholder="Adresse complète..."
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
             />
           </div>
           <div className="flex items-center gap-2">
-            <input type="checkbox" id="newsletter" className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" />
-            <label htmlFor="newsletter" className="text-sm text-slate-600 dark:text-slate-400">Envoyer les promotions par SMS</label>
+            <input type="checkbox" id="newsletter" className="w-4 h-4 rounded border-border text-stockpro-navy dark:text-stockpro-signal focus:ring-stockpro-signal" />
+            <label htmlFor="newsletter" className="text-sm text-muted-foreground">Envoyer les promotions par SMS</label>
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" onClick={() => newClientModal.close()}>
               Annuler
             </Button>
@@ -421,7 +421,7 @@ export const ClientsPage: React.FC = () => {
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom complet</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Nom complet</label>
               <Input
                 value={editClientData.nom}
                 onChange={(e) => setEditClientData({ ...editClientData, nom: e.target.value })}
@@ -430,7 +430,7 @@ export const ClientsPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Téléphone</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Téléphone</label>
               <Input
                 value={editClientData.telephone}
                 onChange={(e) => setEditClientData({ ...editClientData, telephone: e.target.value })}
@@ -441,7 +441,7 @@ export const ClientsPage: React.FC = () => {
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Email</label>
               <Input
                 type="email"
                 value={editClientData.email}
@@ -450,7 +450,7 @@ export const ClientsPage: React.FC = () => {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Type de client</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Type de client</label>
               <Select
                 value={editClientData.type}
                 onChange={(v) => setEditClientData({ ...editClientData, type: v })}
@@ -465,15 +465,15 @@ export const ClientsPage: React.FC = () => {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Notes</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Notes</label>
             <textarea
               rows={2}
               placeholder="Notes sur le client..."
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" onClick={() => editClientModal.close()}>
               Annuler
             </Button>

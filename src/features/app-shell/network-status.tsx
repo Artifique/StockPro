@@ -43,7 +43,7 @@ export const NetworkStatus: React.FC = () => {
           initial={{ y: -100, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           exit={{ y: -100, opacity: 0 }}
-          className="fixed top-0 left-0 right-0 z-[200] bg-amber-500 text-white py-2 px-4 text-center text-sm font-medium"
+          className="fixed top-0 left-0 right-0 z-[200] bg-stockpro-stock-low-fg text-white py-2 px-4 text-center text-sm font-medium"
         >
           <div className="flex items-center justify-center gap-2">
             <AlertTriangle className="w-4 h-4" />
@@ -51,7 +51,7 @@ export const NetworkStatus: React.FC = () => {
             <button
               type="button"
               onClick={() => offlineBanner.close()}
-              className="ml-4 p-1 hover:bg-amber-600 rounded"
+              className="ml-4 rounded p-1 hover:bg-stockpro-stock-low-fg"
             >
               <X className="w-4 h-4" />
             </button>

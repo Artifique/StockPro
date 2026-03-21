@@ -185,19 +185,6 @@ export const POSPage: React.FC = () => {
     setStockErrors({});
   }, [cart, total, selectedClient, paymentMethod, posCatalog]);
 
-  // F12 keyboard shortcut for validating sale
-  useEffect(() => {
-    const handleF12 = (e: KeyboardEvent) => {
-      if (e.key === "F12") {
-        e.preventDefault();
-        handleValidateSale();
-      }
-    };
-
-    window.addEventListener("keydown", handleF12);
-    return () => window.removeEventListener("keydown", handleF12);
-  }, [handleValidateSale]);
-
   return (
     <div className="h-[calc(100vh-8rem)] flex flex-col lg:flex-row gap-4">
       {/* Products Section */}
@@ -220,8 +207,8 @@ export const POSPage: React.FC = () => {
               showToast(isScanning ? "Scanner désactivé" : "Scanner activé - Tapez un SKU puis Entrée", "info");
             }}
             className={`relative px-4 py-2 rounded-lg border transition-colors group flex items-center gap-2 ${isScanning
-              ? "bg-amber-500 text-white border-amber-500 shadow-lg shadow-amber-500/20"
-              : "bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-300"
+              ? "bg-stockpro-stock-low-fg text-white border-stockpro-stock-low-fg shadow-lg shadow-stockpro-stock-low-fg/20"
+              : "bg-card border-border text-muted-foreground"
               }`}
             title="Activer/Désactiver le scan code-barres (tapez un SKU puis Entrée)"
           >
@@ -234,13 +221,13 @@ export const POSPage: React.FC = () => {
                 initial={{ scale: 0 }}
                 animate={{ scale: [1, 1.2, 1] }}
                 transition={{ repeat: Infinity, duration: 1 }}
-                className="absolute -top-1 -right-1 w-3 h-3 bg-green-400 rounded-full border-2 border-white"
+                className="absolute -top-1 -right-1 w-3 h-3 bg-stockpro-signal rounded-full border-2 border-white"
               />
             )}
             {/* Tooltip */}
-            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-slate-800 text-white text-xs rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+            <div className="absolute bottom-full left-1/2 z-50 mb-2 whitespace-nowrap rounded-lg bg-stockpro-navy-night px-3 py-1.5 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none">
               {isScanning ? "Cliquer pour désactiver" : "Scanner code-barres (tapez SKU + Entrée)"}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-slate-800" />
+              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-stockpro-navy-night" />
             </div>
           </motion.button>
         </div>
@@ -251,12 +238,12 @@ export const POSPage: React.FC = () => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
-            className="mb-4 p-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg"
+            className="mb-4 p-3 border border-stockpro-stock-low-fg/30 bg-stockpro-stock-low-bg dark:border-stockpro-stock-low-fg/40 dark:bg-stockpro-stock-low-fg/10 rounded-lg"
           >
-            <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 text-sm">
-              <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+            <div className="flex items-center gap-2 text-stockpro-stock-low-fg text-sm">
+              <div className="w-2 h-2 bg-stockpro-stock-low-fg rounded-full animate-pulse" />
               <span className="font-medium">Scanner actif</span>
-              <span className="text-amber-600 dark:text-amber-500">- Tapez un code SKU puis appuyez sur Entrée</span>
+              <span className="text-stockpro-stock-low-fg">- Tapez un code SKU puis appuyez sur Entrée</span>
             </div>
           </motion.div>
         )}
@@ -268,8 +255,8 @@ export const POSPage: React.FC = () => {
             whileTap={{ scale: 0.98 }}
             onClick={() => setSearchProduct("")}
             className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${searchProduct === ""
-              ? "bg-indigo-500 text-white"
-              : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+              ? "bg-stockpro-navy/80 text-white"
+              : "bg-muted text-muted-foreground"
               }`}
           >
             Tous
@@ -281,8 +268,8 @@ export const POSPage: React.FC = () => {
               whileTap={{ scale: 0.98 }}
               onClick={() => setSearchProduct(cat.nom)}
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${searchProduct === cat.nom
-                ? "bg-indigo-500 text-white"
-                : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300"
+                ? "bg-stockpro-navy/80 text-white"
+                : "bg-muted text-muted-foreground"
                 }`}
             >
               {cat.nom}
@@ -313,15 +300,15 @@ export const POSPage: React.FC = () => {
                 whileHover={{ scale: 1.03, y: -2 }}
                 whileTap={{ scale: 0.97 }}
                 onClick={() => addToCart(product)}
-                className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-600 hover:shadow-lg transition-all text-left"
+                className="p-3 bg-card rounded-xl border border-border hover:border-stockpro-navy/35 dark:hover:border-stockpro-signal/40 hover:shadow-lg transition-all text-left"
               >
-                <div className="w-full h-16 bg-slate-100 dark:bg-slate-700 rounded-lg flex items-center justify-center mb-2">
-                  <Package className="w-8 h-8 text-slate-400" />
+                <div className="w-full h-16 bg-muted rounded-lg flex items-center justify-center mb-2">
+                  <Package className="w-8 h-8 text-muted-foreground" />
                 </div>
-                <p className="font-medium text-sm text-slate-800 dark:text-white truncate">{product.nom}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">{product.sku}</p>
+                <p className="font-medium text-sm text-foreground truncate">{product.nom}</p>
+                <p className="text-xs text-muted-foreground">{product.sku}</p>
                 <div className="flex items-center justify-between mt-2">
-                  <p className="font-semibold text-indigo-600 dark:text-indigo-400">{formatCurrency(product.prixVente)}</p>
+                  <p className="font-semibold text-stockpro-navy dark:text-stockpro-signal">{formatCurrency(product.prixVente)}</p>
                   <Badge variant={product.stock > product.stockMin ? "success" : "warning"}>{product.stock}</Badge>
                 </div>
               </motion.button>
@@ -331,9 +318,9 @@ export const POSPage: React.FC = () => {
       </div>
 
       {/* Cart Section */}
-      <div className="w-full lg:w-96 flex flex-col bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
-          <h3 className="font-semibold text-lg text-slate-800 dark:text-white flex items-center gap-2">
+      <div className="w-full lg:w-96 flex flex-col bg-card rounded-xl border border-border">
+        <div className="p-4 border-b border-border flex items-center justify-between">
+          <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
             <ShoppingCart className="w-5 h-5" />
             Panier ({cart.reduce((sum, item) => sum + item.quantity, 0)} articles)
           </h3>
@@ -351,7 +338,7 @@ export const POSPage: React.FC = () => {
                   showToast("Panier vidé avec succès", "success");
                 }
               }}
-              className="text-rose-500 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
+              className="text-stockpro-stock-error-fg hover:bg-stockpro-stock-error-bg hover:opacity-90 dark:hover:bg-stockpro-stock-error-fg/12"
               title="Vider le panier"
             >
               <Trash2 className="w-4 h-4" />
@@ -365,29 +352,29 @@ export const POSPage: React.FC = () => {
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center py-8 text-slate-500 dark:text-slate-400"
+                className="text-center py-8 text-muted-foreground"
               >
                 <ShoppingCart className="w-12 h-12 mx-auto mb-2 opacity-50" />
                 <p className="font-medium">Panier vide</p>
                 <p className="text-sm mb-4">Cliquez sur un produit pour l&apos;ajouter</p>
                 {/* Guide pour les nouveaux utilisateurs */}
-                <div className="bg-slate-100 dark:bg-slate-700/50 rounded-lg p-3 text-left text-xs space-y-2">
-                  <p className="font-medium text-slate-700 dark:text-slate-300 flex items-center gap-2">
+                <div className="bg-muted/50 rounded-lg p-3 text-left text-xs space-y-2">
+                  <p className="font-medium text-foreground flex items-center gap-2">
                     <HelpCircle className="w-3.5 h-3.5" />
                     Comment ajouter des produits ?
                   </p>
-                  <ul className="space-y-1 text-slate-500 dark:text-slate-400">
+                  <ul className="space-y-1 text-muted-foreground">
                     <li className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-[10px] font-bold">1</span>
+                      <span className="w-4 h-4 rounded-full bg-stockpro-navy/10 dark:bg-stockpro-signal/12 text-stockpro-navy dark:text-stockpro-signal flex items-center justify-center text-[10px] font-bold">1</span>
                       Cliquez sur un produit à gauche
                     </li>
                     <li className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-[10px] font-bold">2</span>
+                      <span className="w-4 h-4 rounded-full bg-stockpro-navy/10 dark:bg-stockpro-signal/12 text-stockpro-navy dark:text-stockpro-signal flex items-center justify-center text-[10px] font-bold">2</span>
                       Ou utilisez le scanner code-barres
                     </li>
                     <li className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center text-[10px] font-bold">3</span>
-                      Raccourci: <kbd className="px-1 bg-slate-200 dark:bg-slate-600 rounded">F12</kbd> pour valider
+                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-stockpro-navy/10 text-[10px] font-bold text-stockpro-navy dark:bg-stockpro-signal/12 dark:text-stockpro-signal">3</span>
+                      Validez avec le bouton « Valider la vente »
                     </li>
                   </ul>
                 </div>
@@ -400,20 +387,20 @@ export const POSPage: React.FC = () => {
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: 20, height: 0 }}
                   transition={{ delay: index * 0.03 }}
-                  className="flex items-center gap-3 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg"
+                  className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
                 >
-                  <div className="w-12 h-12 bg-slate-200 dark:bg-slate-600 rounded-lg flex items-center justify-center">
-                    <Package className="w-6 h-6 text-slate-400" />
+                  <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
+                    <Package className="w-6 h-6 text-muted-foreground" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="font-medium text-sm text-slate-800 dark:text-white truncate">{item.product.nom}</p>
-                    <p className="text-sm text-slate-500 dark:text-slate-400">{formatCurrency(item.product.prixVente)}</p>
+                    <p className="font-medium text-sm text-foreground truncate">{item.product.nom}</p>
+                    <p className="text-sm text-muted-foreground">{formatCurrency(item.product.prixVente)}</p>
                   </div>
                   <div className="flex items-center gap-2">
                     <motion.button
                       whileTap={{ scale: 0.9 }}
                       onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                      className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-500"
+                      className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted"
                     >
                       <Minus className="w-4 h-4" />
                     </motion.button>
@@ -421,19 +408,19 @@ export const POSPage: React.FC = () => {
                       key={item.quantity}
                       initial={{ scale: 1.2 }}
                       animate={{ scale: 1 }}
-                      className="w-8 text-center font-medium text-slate-800 dark:text-white"
+                      className="w-8 text-center font-medium text-foreground"
                     >
                       {item.quantity}
                     </motion.span>
                     <motion.button
                       whileTap={{ scale: 0.9 }}
                       onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                      className="w-8 h-8 rounded-lg bg-slate-200 dark:bg-slate-600 flex items-center justify-center text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-500"
+                      className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted"
                     >
                       <Plus className="w-4 h-4" />
                     </motion.button>
                   </div>
-                  <button onClick={() => removeFromCart(item.product.id)} className="p-1 text-rose-500 hover:text-rose-600">
+                  <button onClick={() => removeFromCart(item.product.id)} className="p-1 text-stockpro-stock-error-fg hover:text-stockpro-stock-error-fg">
                     <X className="w-4 h-4" />
                   </button>
                 </motion.div>
@@ -443,7 +430,7 @@ export const POSPage: React.FC = () => {
         </div>
 
         {/* Client & Payment */}
-        <div className="p-4 border-t border-slate-200 dark:border-slate-700 space-y-3">
+        <div className="p-4 border-t border-border space-y-3">
           <Select
             value={selectedClient}
             onChange={setSelectedClient}
@@ -463,8 +450,8 @@ export const POSPage: React.FC = () => {
                 whileTap={{ scale: 0.98 }}
                 onClick={() => setPaymentMethod(method.id)}
                 className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors flex items-center justify-center gap-1 ${paymentMethod === method.id
-                  ? "border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"
-                  : "border-slate-200 dark:border-slate-600 text-slate-600 dark:text-slate-400"
+                  ? "border-primary bg-stockpro-navy/8 text-stockpro-navy dark:bg-stockpro-signal/12 dark:text-stockpro-signal"
+                  : "border-border text-muted-foreground"
                   }`}
               >
                 {method.icon}
@@ -475,19 +462,19 @@ export const POSPage: React.FC = () => {
 
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm text-slate-600 dark:text-slate-400">Remise (%):</span>
+              <span className="text-sm text-muted-foreground">Remise (%):</span>
               <input
                 type="number"
                 value={discount}
                 onChange={(e) => handleDiscountChange(Number(e.target.value))}
-                className={`w-20 px-2 py-1 rounded-lg border bg-white dark:bg-slate-700 text-slate-800 dark:text-white text-center ${discountError ? "border-rose-500 ring-1 ring-rose-500" : "border-slate-200 dark:border-slate-600"
+                className={`w-20 px-2 py-1 rounded-lg border bg-card text-foreground text-center ${discountError ? "border-stockpro-stock-error-fg ring-1 ring-stockpro-stock-error-fg" : "border-border"
                   }`}
                 min={0}
                 max={100}
               />
             </div>
             {discountError && (
-              <p className="text-xs text-rose-500 flex items-center gap-1">
+              <p className="text-xs text-stockpro-stock-error-fg flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
                 {discountError}
               </p>
@@ -496,13 +483,13 @@ export const POSPage: React.FC = () => {
         </div>
 
         {/* Totals */}
-        <div className="p-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
-          <div className="flex justify-between text-sm text-slate-600 dark:text-slate-400">
+        <div className="p-4 border-t border-border space-y-2">
+          <div className="flex justify-between text-sm text-muted-foreground">
             <span>Sous-total</span>
             <span>{formatCurrency(subtotal)}</span>
           </div>
           {discount > 0 && (
-            <div className="flex justify-between text-sm text-rose-500">
+            <div className="flex justify-between text-sm text-stockpro-stock-error-fg">
               <span>Remise ({discount}%)</span>
               <span>-{formatCurrency(discountAmount)}</span>
             </div>
@@ -511,7 +498,7 @@ export const POSPage: React.FC = () => {
             key={total}
             initial={{ scale: 1.05 }}
             animate={{ scale: 1 }}
-            className="flex justify-between text-lg font-bold text-slate-800 dark:text-white pt-2 border-t border-slate-200 dark:border-slate-700"
+            className="flex justify-between text-lg font-bold text-foreground pt-2 border-t border-border"
           >
             <span>Total</span>
             <span>{formatCurrency(total)}</span>
@@ -526,7 +513,7 @@ export const POSPage: React.FC = () => {
             <Button
               onClick={handleValidateSale}
               className={`w-full relative overflow-hidden group ${cart.length > 0
-                ? "bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-600 hover:to-emerald-700"
+                ? "bg-gradient-to-r from-stockpro-signal to-stockpro-navy hover:brightness-95 dark:to-stockpro-navy-night"
                 : ""
                 }`}
               size="lg"
@@ -539,7 +526,7 @@ export const POSPage: React.FC = () => {
                   <span className="ml-2 relative z-10 opacity-90">• {formatCurrency(total)}</span>
                   {/* Animated background */}
                   <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-emerald-500"
+                    className="absolute inset-0 bg-gradient-to-r from-stockpro-signal to-stockpro-navy"
                     initial={{ x: "-100%" }}
                     animate={{ x: "100%" }}
                     transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
@@ -553,13 +540,6 @@ export const POSPage: React.FC = () => {
                 </>
               )}
             </Button>
-
-            {/* Keyboard shortcut hint */}
-            {cart.length > 0 && (
-              <p className="text-center text-xs text-slate-400 dark:text-slate-500 mt-2">
-                💡 Raccourci: <kbd className="px-1.5 py-0.5 bg-slate-100 dark:bg-slate-700 rounded text-slate-600 dark:text-slate-300">F12</kbd> pour valider
-              </p>
-            )}
           </motion.div>
         </div>
       </div>

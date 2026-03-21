@@ -3,23 +3,25 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Package,
   Eye,
   EyeOff,
   Mail,
   Lock,
   AlertTriangle,
-  Zap,
+  ChevronDown,
 } from "lucide-react";
 import { MOCK_USERS, type StockProUser } from "@/data/stock-mock";
-import { Button, Card, Input } from "@/components/ui";
+import { Button, Input } from "@/components/ui";
 import { showToast } from "@/lib/app-toast";
 import { Alert, Avatar } from "@/components/stock-pro/primitives";
+
+/** Champs : fond clair, accent vert signal au focus (charte StockPro). */
+const fieldClass =
+  "h-11 rounded-xl border-border bg-card text-[15px] text-foreground shadow-sm transition-[border-color,box-shadow] duration-200 placeholder:text-muted-foreground focus:border-stockpro-signal/60 focus:ring-2 focus:ring-stockpro-signal/25 dark:bg-card/80 dark:focus:border-stockpro-signal/50 dark:focus:ring-stockpro-signal/20";
 
 export const LoginPage: React.FC<{
   onLogin: (user: StockProUser) => void;
 }> = ({ onLogin }) => {
-  // State - initialize with defaults for SSR consistency
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -37,9 +39,7 @@ export const LoginPage: React.FC<{
     };
   }, []);
 
-  // Load saved email after mount (client-side only)
   useEffect(() => {
-    // Defer setState calls to avoid synchronous updates in effect
     const timer = setTimeout(() => {
       const savedUser = localStorage.getItem("stockpro_user");
       if (savedUser) {
@@ -56,7 +56,6 @@ export const LoginPage: React.FC<{
     return () => clearTimeout(timer);
   }, []);
 
-  // Caps lock detection
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.getModifierState) {
@@ -103,7 +102,6 @@ export const LoginPage: React.FC<{
     }
   }, [rememberMe]);
 
-  // Quick login for demo accounts (cookie httpOnly + profil public)
   const handleQuickLogin = useCallback(
     async (user: (typeof MOCK_USERS)[0]) => {
       setLoading(true);
@@ -134,6 +132,20 @@ export const LoginPage: React.FC<{
     [onLogin, persistUserPreference]
   );
 
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (!e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
+      const n = parseInt(e.key, 10);
+      if (n >= 1 && n <= 5) {
+        e.preventDefault();
+        const u = MOCK_USERS[n - 1];
+        if (u) void handleQuickLogin(u);
+      }
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [handleQuickLogin]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -156,7 +168,7 @@ export const LoginPage: React.FC<{
         if (res.status === 401) {
           setErrors({
             general: emailExists
-              ? "Mot de passe incorrect. Vérifiez votre saisie ou utilisez 'Mot de passe oublié'."
+              ? "Mot de passe incorrect. Vérifiez votre saisie ou utilisez « Mot de passe oublié »."
               : "Aucun compte trouvé avec cet email. Vérifiez votre adresse ou demandez un accès.",
           });
         } else {
@@ -175,230 +187,230 @@ export const LoginPage: React.FC<{
     }
   };
 
-  // Keyboard shortcuts for quick login (Ctrl+1-5)
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && !e.shiftKey && !e.altKey) {
-        const key = parseInt(e.key);
-        if (key >= 1 && key <= 5) {
-          e.preventDefault();
-          const user = MOCK_USERS[key - 1];
-          if (user) {
-            handleQuickLogin(user);
-          }
-        }
-      }
-    };
+  const shell = (
+    <>
+      <div
+        className="pointer-events-none absolute inset-0 bg-gradient-to-b from-stockpro-page via-white to-stockpro-page dark:from-[#060a14] dark:via-stockpro-navy-night dark:to-[#0a0e1a]"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_90%_50%_at_50%_-5%,rgba(109,193,58,0.16),transparent_55%)] dark:bg-[radial-gradient(ellipse_85%_45%_at_50%_-8%,rgba(109,193,58,0.12),transparent_50%)]"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -right-24 -top-20 h-[min(70vw,420px)] w-[min(70vw,420px)] rounded-full bg-stockpro-signal/20 blur-[90px] dark:bg-stockpro-signal/15"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -bottom-28 -left-20 h-[min(65vw,380px)] w-[min(65vw,380px)] rounded-full bg-stockpro-navy/20 blur-[90px] dark:bg-stockpro-navy-night/40"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(15,23,42,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(15,23,42,0.04)_1px,transparent_1px)] bg-[size:36px_36px] dark:bg-[linear-gradient(to_right,rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.05)_1px,transparent_1px)]"
+        aria-hidden
+      />
+    </>
+  );
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [handleQuickLogin]);
-
-  // Show loading skeleton during hydration to prevent mismatch
   if (!hydrated) {
     return (
-      <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 mb-4 animate-pulse">
-              <Package className="w-8 h-8 text-white" />
+      <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-5 sm:p-8">
+        {shell}
+        <div className="relative z-10 w-full max-w-[420px]">
+          <div className="animate-pulse rounded-2xl border border-border/90 bg-white p-8 shadow-xl shadow-slate-200/50 sm:p-9 dark:border-border dark:bg-background dark:shadow-black/40">
+            <div className="mx-auto mb-8 h-16 w-72 max-w-full rounded-xl bg-muted sm:h-20 sm:w-80" />
+            <div className="space-y-5">
+              <div className="h-11 rounded-xl bg-muted" />
+              <div className="h-11 rounded-xl bg-muted" />
+              <div className="h-12 rounded-xl bg-muted" />
             </div>
-            <div className="h-8 w-48 mx-auto bg-slate-700 rounded animate-pulse" />
-          </div>
-          <div className="bg-slate-800/95 rounded-xl p-6 space-y-6 animate-pulse">
-            <div className="h-10 bg-slate-700 rounded-lg" />
-            <div className="h-10 bg-slate-700 rounded-lg" />
-            <div className="h-12 bg-slate-700 rounded-lg" />
           </div>
         </div>
       </div>
     );
   }
 
+  const linkClass =
+    "text-sm font-medium text-stockpro-navy underline-offset-4 transition-colors hover:text-stockpro-signal hover:underline dark:text-stockpro-signal dark:hover:text-white";
+
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-900">
-      <div className="w-full max-w-md">
-        {/* Logo & Title */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-600 mb-4">
-            <Package className="w-8 h-8 text-white" />
-          </div>
-          <h1 className="text-3xl font-bold text-white">StockPro Manager</h1>
-          <p className="mt-2 text-slate-400">Gestion de stock pour commerçants</p>
-        </div>
+    <div className="relative flex min-h-screen items-center justify-center overflow-hidden p-5 sm:p-8">
+      {shell}
 
-        {/* Login Card */}
-        <Card className="backdrop-blur-lg bg-white/95 dark:bg-slate-800/95">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* General Error */}
-            {errors.general && (
-              <Alert variant="danger">
-                {errors.general}
-              </Alert>
-            )}
+      <motion.div
+        className="relative z-10 w-full max-w-[420px]"
+        initial={{ opacity: 0, y: 18 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      >
+        <div className="relative overflow-hidden rounded-2xl border border-border/90 bg-white shadow-xl shadow-slate-300/40 ring-1 ring-slate-100/80 sm:rounded-[1.35rem] dark:border-border dark:bg-background dark:shadow-black/50 dark:ring-card/80">
+          <div
+            className="pointer-events-none absolute inset-x-0 top-0 h-0.5 bg-gradient-to-r from-transparent via-stockpro-signal to-transparent opacity-90"
+            aria-hidden
+          />
+          <div
+            className="pointer-events-none absolute -right-16 top-24 h-40 w-40 rounded-full bg-stockpro-signal/[0.08] blur-2xl dark:bg-stockpro-signal/10"
+            aria-hidden
+          />
 
-            {/* Email Field */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Adresse email
-              </label>
-              <Input
-                type="email"
-                placeholder="votre@email.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                error={errors.email}
-                icon={<Mail className="w-5 h-5" />}
+          <div className="relative px-8 pb-9 pt-10 sm:px-10 sm:pt-11">
+            <h1 className="sr-only">Connexion</h1>
+
+            <div className="mb-10 flex justify-center">
+              <img
+                src="/logo-stockpro.png"
+                alt="StockPro"
+                width={360}
+                height={144}
+                className="h-16 w-auto max-w-[min(100%,340px)] object-contain object-center select-none sm:h-20 sm:max-w-[min(100%,380px)]"
+                decoding="async"
               />
             </div>
 
-            {/* Password Field */}
-            <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
-                Mot de passe
-              </label>
-              <div className="relative">
+            <form onSubmit={handleSubmit} className="space-y-5">
+              {errors.general && <Alert variant="danger">{errors.general}</Alert>}
+
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="login-email"
+                  className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                >
+                  Adresse email
+                </label>
                 <Input
-                  type={showPassword ? "text" : "password"}
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  error={errors.password}
-                  icon={<Lock className="w-5 h-5" />}
-                  onFocus={() => setFocusedField("password")}
-                  onBlur={() => setFocusedField(null)}
+                  id="login-email"
+                  type="email"
+                  autoComplete="email"
+                  placeholder="vous@entreprise.com"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  error={errors.email}
+                  icon={<Mail className="h-5 w-5 text-muted-foreground" />}
+                  className={fieldClass}
                 />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
-                  title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-                  aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
-                >
-                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-                </button>
               </div>
-              {/* Caps Lock Warning */}
-              <AnimatePresence>
-                {capsLockOn && focusedField === "password" && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    className="flex items-center gap-2 mt-2 text-amber-600 dark:text-amber-400 text-sm"
+
+              <div className="space-y-1.5">
+                <label
+                  htmlFor="login-password"
+                  className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+                >
+                  Mot de passe
+                </label>
+                <div className="relative">
+                  <Input
+                    id="login-password"
+                    type={showPassword ? "text" : "password"}
+                    autoComplete="current-password"
+                    placeholder="••••••••"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    error={errors.password}
+                    icon={<Lock className="h-5 w-5 text-muted-foreground" />}
+                    onFocus={() => setFocusedField("password")}
+                    onBlur={() => setFocusedField(null)}
+                    className={`${fieldClass} pr-12`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 rounded-lg p-1 text-muted-foreground transition-colors hover:bg-muted hover:text-foreground dark:hover:bg-muted/80"
+                    title={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
+                    aria-label={showPassword ? "Masquer le mot de passe" : "Afficher le mot de passe"}
                   >
-                    <AlertTriangle className="w-4 h-4" />
-                    <span>Verrouillage majuscules activé</span>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                  </button>
+                </div>
+                <AnimatePresence>
+                  {capsLockOn && focusedField === "password" && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -6 }}
+                      className="flex items-center gap-2 pt-1 text-sm text-stockpro-stock-low-fg dark:text-stockpro-stock-low-fg"
+                    >
+                      <AlertTriangle className="h-4 w-4 shrink-0" />
+                      <span>Verrouillage majuscules activé</span>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
-            {/* Remember Me & Forgot Password */}
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={rememberMe}
-                  onChange={(e) => setRememberMe(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
-                />
-                <span className="text-sm text-slate-600 dark:text-slate-400">Se souvenir de moi</span>
-              </label>
-              <button
-                type="button"
-                onClick={() => showToast("Fonctionnalité en cours de développement. Contactez l'administrateur.", "info")}
-                className="text-sm text-indigo-600 hover:text-indigo-700 dark:text-indigo-400"
-              >
-                Mot de passe oublié ?
-              </button>
-            </div>
-
-            {/* Submit Button */}
-            <Button type="submit" className="w-full" size="lg" loading={loading}>
-              Se connecter
-            </Button>
-
-            {/* Register Link */}
-            <div className="text-center pt-2">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Pas encore de compte ?{" "}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <label className="flex cursor-pointer items-center gap-2.5 select-none">
+                  <input
+                    type="checkbox"
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                    className="h-4 w-4 rounded border-border bg-card text-stockpro-signal focus:ring-2 focus:ring-stockpro-signal/40 focus:ring-offset-0"
+                  />
+                  <span className="text-sm text-muted-foreground">Se souvenir de moi</span>
+                </label>
                 <button
                   type="button"
-                  onClick={() => showToast("Contactez l'administrateur pour créer un compte", "info")}
-                  className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 font-medium"
+                  onClick={() =>
+                    showToast("Fonctionnalité en cours de développement. Contactez l'administrateur.", "info")
+                  }
+                  className={linkClass}
                 >
-                  Demander un accès
+                  Mot de passe oublié ?
                 </button>
-              </p>
-            </div>
-
-            {/* Demo Accounts */}
-            <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-              <div className="flex items-center justify-between mb-3">
-                <p className="text-xs text-slate-500 dark:text-slate-400">
-                  💡 Comptes de démonstration
-                </p>
-                <span className="text-xs text-slate-400 dark:text-slate-500">
-                  Connexion rapide
-                </span>
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs">
-                {MOCK_USERS.map((user) => (
-                  <div key={user.id} className="relative group/card">
-                    <button
-                      type="button"
-                      onClick={() => handleQuickLogin(user)}
-                      disabled={loading}
-                      className="w-full flex items-center gap-2 p-2.5 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/30 hover:border-indigo-300 dark:hover:border-indigo-600 border border-transparent transition-all text-left group disabled:opacity-70 disabled:cursor-not-allowed"
-                    >
-                      <Avatar initials={user.avatar} color={user.color} size="sm" />
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-slate-700 dark:text-slate-300 truncate group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                          {user.role}
-                        </p>
-                        <p className="text-[10px] text-slate-400 dark:text-slate-500 truncate">
-                          {user.email}
-                        </p>
-                      </div>
-                      {loading ? (
-                        <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Zap className="w-4 h-4 text-amber-500 opacity-0 group-hover:opacity-100 transition-opacity" />
-                      )}
-                    </button>
-                    {/* Secondary button to fill form only - maintenant plus visible */}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEmail(user.email);
-                        showToast(`Email rempli pour ${user.role}. Saisissez le mot de passe ou utilisez la connexion rapide.`, "info");
-                      }}
-                      className="absolute -right-1 -top-1 px-1.5 py-0.5 rounded-full bg-slate-200 dark:bg-slate-600 text-slate-500 dark:text-slate-400 hover:bg-indigo-100 dark:hover:bg-indigo-900 text-[9px] font-medium opacity-0 group-hover/card:opacity-100 transition-opacity flex items-center gap-1"
-                      title="Remplir uniquement l'email"
-                    >
-                      <Mail className="w-2.5 h-2.5" />
-                      Email
-                    </button>
+
+              <Button
+                type="submit"
+                size="lg"
+                loading={loading}
+                className="mt-1 w-full rounded-xl !bg-stockpro-navy py-3.5 text-[15px] font-semibold !text-white shadow-md shadow-slate-400/25 transition-[transform,box-shadow] hover:!bg-stockpro-navy-hover hover:shadow-lg hover:shadow-slate-400/30 focus-visible:!ring-2 focus-visible:!ring-stockpro-signal focus-visible:!ring-offset-2 focus-visible:!ring-offset-white dark:!bg-stockpro-signal dark:!text-stockpro-navy-night dark:hover:brightness-110 dark:shadow-black/40 dark:focus-visible:!ring-offset-background"
+              >
+                Se connecter
+              </Button>
+
+              <div className="border-t border-border pt-5">
+                <details className="group">
+                  <summary className="flex cursor-pointer list-none items-center justify-center gap-1.5 text-[11px] font-semibold uppercase tracking-[0.12em] text-muted-foreground outline-none transition-colors hover:text-stockpro-navy dark:hover:text-stockpro-signal [&::-webkit-details-marker]:hidden">
+                    <span>Comptes démo</span>
+                    <ChevronDown
+                      className="h-3.5 w-3.5 shrink-0 text-muted-foreground transition-transform duration-200 group-open:rotate-180 dark:text-muted-foreground"
+                      aria-hidden
+                    />
+                  </summary>
+                  <div className="pt-3">
+                    <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] sm:flex-wrap sm:justify-center sm:overflow-x-visible [&::-webkit-scrollbar]:hidden">
+                      {MOCK_USERS.map((user) => (
+                        <button
+                          key={user.id}
+                          type="button"
+                          disabled={loading}
+                          title={`${user.role} — ${user.email}`}
+                          onClick={() => handleQuickLogin(user)}
+                          className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-muted/60 py-1 pl-1 pr-2 text-left transition-[border-color,background-color,transform] hover:border-stockpro-signal/50 hover:bg-stockpro-signal/10 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-55 dark:bg-card/60 dark:hover:border-stockpro-signal/40 dark:hover:bg-stockpro-signal/10"
+                        >
+                          <Avatar initials={user.avatar} color={user.color} size="xs" />
+                          <span className="max-w-[5.75rem] truncate text-[11px] font-medium text-foreground">
+                            {user.role}
+                          </span>
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                ))}
-              </div>
-              <p className="mt-3 text-[10px] text-slate-400 dark:text-slate-500 text-center flex items-center justify-center gap-1">
-                <Zap className="w-3 h-3 text-amber-500" />
-                Connexion rapide sécurisée (session serveur) • Mots de passe non affichés
-              </p>
-              <p className="mt-1 text-[10px] text-slate-400 dark:text-slate-500 text-center">
-                <kbd className="px-1 py-0.5 bg-slate-200 dark:bg-slate-600 rounded text-[10px]">Ctrl+1-5</kbd> connexion rapide • <kbd className="px-1 py-0.5 bg-slate-200 dark:bg-slate-600 rounded text-[10px]">Tab</kbd> navigation
-              </p>
-            </div>
-          </form>
-        </Card>
+                </details>
 
-        {/* Footer */}
-        <p className="mt-6 text-center text-sm text-slate-500">
-          © 2024 StockPro Manager. Tous droits réservés.
-        </p>
-      </div>
+                <p className="mt-5 text-center text-sm text-muted-foreground">
+                  Pas encore de compte ?{" "}
+                  <button
+                    type="button"
+                    onClick={() => showToast("Contactez l'administrateur pour créer un compte", "info")}
+                    className={linkClass}
+                  >
+                    Demander un accès
+                  </button>
+                </p>
+              </div>
+            </form>
+          </div>
+        </div>
+      </motion.div>
     </div>
   );
 };

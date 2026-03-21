@@ -24,7 +24,7 @@ export const ScrollToTop: React.FC = () => {
       exit={{ opacity: 0, scale: 0.8 }}
       type="button"
       onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-      className="fixed bottom-24 right-6 z-40 p-3 rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 transition-colors"
+      className="fixed bottom-24 right-6 z-40 p-3 rounded-full bg-primary text-primary-foreground shadow-lg hover:bg-stockpro-navy-hover dark:hover:brightness-110 transition-colors"
       title="Retour en haut"
     >
       <ArrowUp className="w-5 h-5" />

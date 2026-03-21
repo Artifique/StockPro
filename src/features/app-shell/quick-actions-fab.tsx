@@ -15,10 +15,10 @@ export const QuickActionsFAB: React.FC<{
 }> = ({ userRole, onNavigate, onToggleTheme, darkMode }) => {
   const fabMenu = useDisclosure();
   const actions = [
-    { icon: ShoppingCart, label: "Nouvelle vente", color: "bg-emerald-500", action: () => onNavigate("pos"), roles: ["Super Admin", "Gérant", "Caissier", "Responsable Stock"] },
-    { icon: Package, label: "Ajouter produit", color: "bg-indigo-500", action: () => onNavigate("produits"), roles: ["Super Admin", "Gérant", "Responsable Stock"] },
-    { icon: Users, label: "Nouveau client", color: "bg-sky-500", action: () => onNavigate("clients"), roles: ["Super Admin", "Gérant", "Caissier"] },
-    { icon: darkMode ? Sun : Moon, label: darkMode ? "Mode clair" : "Mode sombre", color: "bg-violet-500", action: onToggleTheme, roles: ["Super Admin", "Gérant", "Caissier", "Responsable Stock", "Comptable"] },
+    { icon: ShoppingCart, label: "Nouvelle vente", color: "bg-stockpro-signal", action: () => onNavigate("pos"), roles: ["Super Admin", "Gérant", "Caissier", "Responsable Stock"] },
+    { icon: Package, label: "Ajouter produit", color: "bg-stockpro-navy", action: () => onNavigate("produits"), roles: ["Super Admin", "Gérant", "Responsable Stock"] },
+    { icon: Users, label: "Nouveau client", color: "bg-stockpro-navy", action: () => onNavigate("clients"), roles: ["Super Admin", "Gérant", "Caissier"] },
+    { icon: darkMode ? Sun : Moon, label: darkMode ? "Mode clair" : "Mode sombre", color: "bg-stockpro-navy-mid", action: onToggleTheme, roles: ["Super Admin", "Gérant", "Caissier", "Responsable Stock", "Comptable"] },
   ];
   const visible = actions.filter((a) => a.roles.includes(userRole));
   return (
@@ -56,7 +56,7 @@ export const QuickActionsFAB: React.FC<{
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
         onClick={() => fabMenu.toggle()}
-        className={`w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-colors ${fabMenu.isOpen ? "bg-slate-600 text-white" : "bg-emerald-500 text-white hover:bg-emerald-600"}`}
+        className={`flex h-12 w-12 items-center justify-center rounded-full shadow-lg transition-colors ${fabMenu.isOpen ? "bg-stockpro-navy-night text-white" : "bg-stockpro-signal text-stockpro-navy-night hover:brightness-95"}`}
       >
         {fabMenu.isOpen ? <X className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
       </motion.button>

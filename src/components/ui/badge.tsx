@@ -10,12 +10,15 @@ export const Badge: React.FC<{
   className?: string;
 }> = ({ children, variant = "default", className = "" }) => {
   const variants: Record<BadgeVariant, string> = {
-    default: "bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-200",
-    success: "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400",
-    warning: "bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400",
-    danger: "bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400",
-    info: "bg-sky-100 text-sky-700 dark:bg-sky-900/30 dark:text-sky-400",
-    outline: "border border-slate-200 text-slate-600 dark:border-slate-600 dark:text-slate-400",
+    default: "bg-muted text-muted-foreground",
+    success:
+      "bg-stockpro-stock-ok-bg text-stockpro-stock-ok-fg dark:bg-stockpro-stock-ok-fg/15 dark:text-stockpro-stock-ok-fg",
+    warning:
+      "bg-stockpro-stock-low-bg text-stockpro-stock-low-fg dark:bg-stockpro-stock-low-fg/15 dark:text-stockpro-stock-low-fg",
+    danger:
+      "bg-stockpro-stock-error-bg text-stockpro-stock-error-fg dark:bg-stockpro-stock-error-fg/15 dark:text-stockpro-stock-error-fg",
+    info: "bg-stockpro-navy/10 text-stockpro-navy dark:bg-stockpro-signal/15 dark:text-stockpro-signal",
+    outline: "border border-border text-muted-foreground",
   };
 
   return (

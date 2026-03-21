@@ -127,21 +127,21 @@ export const ProfilePage: React.FC<{
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header avec avatar et infos rapides */}
       <Card className="overflow-hidden">
-        <div className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 h-32" />
+        <div className="bg-gradient-to-r from-stockpro-navy via-stockpro-navy-mid to-stockpro-signal h-32" />
         <div className="px-6 pb-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-12">
             <div className="relative">
-              <Avatar initials={user.avatar} color={user.color} size="lg" className="w-24 h-24 text-2xl ring-4 ring-white dark:ring-slate-800" />
+              <Avatar initials={user.avatar} color={user.color} size="lg" className="w-24 h-24 text-2xl ring-4 ring-white dark:ring-card" />
               <button
-                className="absolute bottom-0 right-0 p-1.5 bg-white dark:bg-slate-700 rounded-full shadow-lg hover:bg-slate-50 dark:hover:bg-slate-600 transition-colors"
+                className="absolute bottom-0 right-0 rounded-full bg-card p-1.5 shadow-lg transition-colors hover:bg-muted"
                 title="Changer la photo"
               >
-                <Edit className="w-3.5 h-3.5 text-slate-600 dark:text-slate-300" />
+                <Edit className="w-3.5 h-3.5 text-muted-foreground" />
               </button>
             </div>
             <div className="flex-1">
-              <h1 className="text-2xl font-bold text-slate-800 dark:text-white">{user.nom}</h1>
-              <p className="text-slate-500 dark:text-slate-400">{user.role}</p>
+              <h1 className="text-2xl font-bold text-foreground">{user.nom}</h1>
+              <p className="text-muted-foreground">{user.role}</p>
             </div>
             <Badge variant={user.statut === "actif" ? "success" : "danger"} className="mt-2 sm:mt-0">
               {user.statut === "actif" ? "Actif" : "Inactif"}
@@ -163,8 +163,8 @@ export const ProfilePage: React.FC<{
                   key={section.id}
                   onClick={() => setActiveSection(section.id)}
                   className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all ${isActive
-                    ? "bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400"
-                    : "text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-700"
+                    ? "bg-stockpro-navy/8 text-stockpro-navy dark:bg-stockpro-signal/12 dark:text-stockpro-signal"
+                    : "text-muted-foreground hover:bg-muted"
                     }`}
                 >
                   <Icon className="w-5 h-5" />
@@ -181,7 +181,7 @@ export const ProfilePage: React.FC<{
           {activeSection === "informations" && (
             <div className="space-y-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
+                <h2 className="text-lg font-semibold text-foreground">
                   Informations personnelles
                 </h2>
                 <Button
@@ -205,7 +205,7 @@ export const ProfilePage: React.FC<{
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Nom complet
                   </label>
                   <Input
@@ -216,7 +216,7 @@ export const ProfilePage: React.FC<{
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Email
                   </label>
                   <Input
@@ -227,7 +227,7 @@ export const ProfilePage: React.FC<{
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Téléphone
                   </label>
                   <Input
@@ -238,7 +238,7 @@ export const ProfilePage: React.FC<{
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  <label className="block text-sm font-medium text-foreground mb-1">
                     Adresse
                   </label>
                   <Input
@@ -251,7 +251,7 @@ export const ProfilePage: React.FC<{
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                <label className="block text-sm font-medium text-foreground mb-1">
                   Bio
                 </label>
                 <textarea
@@ -259,23 +259,23 @@ export const ProfilePage: React.FC<{
                   onChange={(e) => setProfileData({ ...profileData, bio: e.target.value })}
                   disabled={!isEditing}
                   rows={3}
-                  className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal disabled:opacity-70 disabled:cursor-not-allowed"
                 />
               </div>
 
               {/* Rôle et permissions */}
-              <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+              <div className="pt-4 border-t border-border">
+                <h3 className="text-sm font-semibold text-foreground mb-3">
                   Rôle et permissions
                 </h3>
-                <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4">
+                <div className="bg-muted/50 rounded-lg p-4">
                   <div className="flex items-center gap-3 mb-3">
-                    <div className="p-2 rounded-lg bg-indigo-100 dark:bg-indigo-900/30">
-                      <Key className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
+                    <div className="p-2 rounded-lg bg-stockpro-navy/10 dark:bg-stockpro-signal/12">
+                      <Key className="w-5 h-5 text-stockpro-navy dark:text-stockpro-signal" />
                     </div>
                     <div>
-                      <p className="font-medium text-slate-800 dark:text-white">{user.role}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">Niveau d&apos;accès</p>
+                      <p className="font-medium text-foreground">{user.role}</p>
+                      <p className="text-xs text-muted-foreground">Niveau d&apos;accès</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -321,20 +321,20 @@ export const ProfilePage: React.FC<{
           {/* Section: Sécurité */}
           {activeSection === "securite" && (
             <div className="space-y-6">
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
+              <h2 className="text-lg font-semibold text-foreground">
                 Sécurité du compte
               </h2>
 
               {/* Changement de mot de passe */}
-              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4">
+              <div className="bg-muted/50 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 rounded-lg bg-amber-100 dark:bg-amber-900/30">
-                      <Lock className="w-5 h-5 text-amber-600 dark:text-amber-400" />
+                    <div className="p-2 rounded-lg bg-stockpro-stock-low-bg dark:bg-stockpro-stock-low-fg/12">
+                      <Lock className="w-5 h-5 text-stockpro-stock-low-fg" />
                     </div>
                     <div>
-                      <p className="font-medium text-slate-800 dark:text-white">Mot de passe</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                      <p className="font-medium text-foreground">Mot de passe</p>
+                      <p className="text-sm text-muted-foreground">
                         Dernière modification: il y a 30 jours
                       </p>
                     </div>
@@ -346,17 +346,17 @@ export const ProfilePage: React.FC<{
               </div>
 
               {/* Authentification à deux facteurs */}
-              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-4">
+              <div className="bg-muted/50 rounded-lg p-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${twoFAEnabled ? "bg-emerald-100 dark:bg-emerald-900/30" : "bg-slate-100 dark:bg-slate-600"}`}>
-                      <Smartphone className={`w-5 h-5 ${twoFAEnabled ? "text-emerald-600 dark:text-emerald-400" : "text-slate-400"}`} />
+                    <div className={`p-2 rounded-lg ${twoFAEnabled ? "bg-stockpro-stock-ok-bg dark:bg-stockpro-stock-ok-fg/12" : "bg-muted"}`}>
+                      <Smartphone className={`w-5 h-5 ${twoFAEnabled ? "text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg" : "text-muted-foreground"}`} />
                     </div>
                     <div>
-                      <p className="font-medium text-slate-800 dark:text-white">
+                      <p className="font-medium text-foreground">
                         Authentification à deux facteurs
                       </p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">
+                      <p className="text-sm text-muted-foreground">
                         {twoFAEnabled ? "Activée - Votre compte est protégé" : "Sécurité renforcée pour votre compte"}
                       </p>
                     </div>
@@ -377,37 +377,37 @@ export const ProfilePage: React.FC<{
 
               {/* Sessions actives */}
               <div>
-                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                <h3 className="text-sm font-semibold text-foreground mb-3">
                   Sessions actives
                 </h3>
                 <div className="space-y-2">
-                  <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-emerald-500 rounded-full" />
+                      <div className="w-2 h-2 bg-stockpro-signal rounded-full" />
                       <div>
-                        <p className="text-sm font-medium text-slate-800 dark:text-white">
+                        <p className="text-sm font-medium text-foreground">
                           Chrome sur Windows
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                        <p className="text-xs text-muted-foreground">
                           Bamako, Mali • Session actuelle
                         </p>
                       </div>
                     </div>
                     <Badge variant="success">Actif</Badge>
                   </div>
-                  <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                  <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div className="flex items-center gap-3">
-                      <div className="w-2 h-2 bg-slate-400 rounded-full" />
+                      <div className="h-2 w-2 rounded-full bg-muted-foreground/50" />
                       <div>
-                        <p className="text-sm font-medium text-slate-800 dark:text-white">
+                        <p className="text-sm font-medium text-foreground">
                           Safari sur iPhone
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                        <p className="text-xs text-muted-foreground">
                           Bamako, Mali • Il y a 2 heures
                         </p>
                       </div>
                     </div>
-                    <Button variant="ghost" size="sm" className="text-rose-500">
+                    <Button variant="ghost" size="sm" className="text-stockpro-stock-error-fg">
                       Déconnecter
                     </Button>
                   </div>
@@ -415,8 +415,8 @@ export const ProfilePage: React.FC<{
               </div>
 
               {/* Zone de danger */}
-              <div className="pt-4 border-t border-slate-200 dark:border-slate-700">
-                <h3 className="text-sm font-semibold text-rose-600 dark:text-rose-400 mb-3">
+              <div className="pt-4 border-t border-border">
+                <h3 className="text-sm font-semibold text-stockpro-stock-error-fg mb-3">
                   Zone de danger
                 </h3>
                 <Button
@@ -438,7 +438,7 @@ export const ProfilePage: React.FC<{
           {/* Section: Notifications */}
           {activeSection === "notifications" && (
             <div className="space-y-6">
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
+              <h2 className="text-lg font-semibold text-foreground">
                 Préférences de notifications
               </h2>
 
@@ -453,19 +453,19 @@ export const ProfilePage: React.FC<{
                   const Icon = item.icon;
                   const isEnabled = notifications[item.id as keyof typeof notifications];
                   return (
-                    <div key={item.id} className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                    <div key={item.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
                       <div className="flex items-center gap-3">
-                        <div className="p-2 rounded-lg bg-slate-200 dark:bg-slate-600">
-                          <Icon className="w-5 h-5 text-slate-600 dark:text-slate-300" />
+                        <div className="p-2 rounded-lg bg-muted">
+                          <Icon className="w-5 h-5 text-muted-foreground" />
                         </div>
                         <div>
-                          <p className="font-medium text-slate-800 dark:text-white">{item.label}</p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">{item.description}</p>
+                          <p className="font-medium text-foreground">{item.label}</p>
+                          <p className="text-sm text-muted-foreground">{item.description}</p>
                         </div>
                       </div>
                       <button
                         onClick={() => setNotifications({ ...notifications, [item.id]: !isEnabled })}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isEnabled ? "bg-indigo-600" : "bg-slate-200 dark:bg-slate-600"
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isEnabled ? "bg-stockpro-signal" : "bg-muted"
                           }`}
                       >
                         <span
@@ -483,7 +483,7 @@ export const ProfilePage: React.FC<{
           {/* Section: Activité */}
           {activeSection === "activite" && (
             <div className="space-y-6">
-              <h2 className="text-lg font-semibold text-slate-800 dark:text-white">
+              <h2 className="text-lg font-semibold text-foreground">
                 Activité récente
               </h2>
 
@@ -491,15 +491,15 @@ export const ProfilePage: React.FC<{
                 {recentActivity.map((activity) => {
                   const Icon = activity.icon;
                   return (
-                    <div key={activity.id} className="flex items-center gap-4 p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                      <div className="p-2 rounded-lg bg-slate-200 dark:bg-slate-600">
-                        <Icon className="w-4 h-4 text-slate-600 dark:text-slate-300" />
+                    <div key={activity.id} className="flex items-center gap-4 p-3 bg-muted/50 rounded-lg">
+                      <div className="p-2 rounded-lg bg-muted">
+                        <Icon className="w-4 h-4 text-muted-foreground" />
                       </div>
                       <div className="flex-1">
-                        <p className="text-sm font-medium text-slate-800 dark:text-white">
+                        <p className="text-sm font-medium text-foreground">
                           {activity.action}
                         </p>
-                        <p className="text-xs text-slate-500 dark:text-slate-400">
+                        <p className="text-xs text-muted-foreground">
                           {activity.date}
                         </p>
                       </div>
@@ -533,7 +533,7 @@ export const ProfilePage: React.FC<{
       >
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Mot de passe actuel
             </label>
             <Input
@@ -545,7 +545,7 @@ export const ProfilePage: React.FC<{
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Nouveau mot de passe
             </label>
             <Input
@@ -557,7 +557,7 @@ export const ProfilePage: React.FC<{
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Confirmer le nouveau mot de passe
             </label>
             <Input
@@ -589,60 +589,60 @@ export const ProfilePage: React.FC<{
         <div className="space-y-4">
           {twoFAStep === "setup" ? (
             <>
-              <div className="flex items-center gap-3 p-4 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg">
-                <div className="p-2 rounded-lg bg-emerald-100 dark:bg-emerald-900/30">
-                  <Smartphone className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+              <div className="flex items-center gap-3 p-4 rounded-lg bg-stockpro-stock-ok-bg dark:bg-stockpro-stock-ok-fg/10">
+                <div className="p-2 rounded-lg bg-stockpro-stock-ok-bg dark:bg-stockpro-stock-ok-fg/12">
+                  <Smartphone className="w-6 h-6 text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg" />
                 </div>
                 <div>
-                  <p className="font-medium text-emerald-800 dark:text-emerald-300">Protection renforcée</p>
-                  <p className="text-sm text-emerald-600 dark:text-emerald-400">
+                  <p className="font-medium text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">Protection renforcée</p>
+                  <p className="text-sm text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">
                     L'authentification à deux facteurs ajoute une couche de sécurité supplémentaire à votre compte.
                   </p>
                 </div>
               </div>
 
               <div className="space-y-3">
-                <h4 className="font-medium text-slate-800 dark:text-white">Comment ça fonctionne ?</h4>
+                <h4 className="font-medium text-foreground">Comment ça fonctionne ?</h4>
                 <div className="space-y-2">
                   <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xs font-medium text-indigo-600 dark:text-indigo-400">1</div>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">Installez une application d'authentification (Google Authenticator, Authy, etc.)</p>
+                    <div className="w-6 h-6 rounded-full bg-stockpro-navy/10 dark:bg-stockpro-signal/12 flex items-center justify-center text-xs font-medium text-stockpro-navy dark:text-stockpro-signal">1</div>
+                    <p className="text-sm text-muted-foreground">Installez une application d'authentification (Google Authenticator, Authy, etc.)</p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xs font-medium text-indigo-600 dark:text-indigo-400">2</div>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">Scannez le code QR ou entrez la clé manuellement</p>
+                    <div className="w-6 h-6 rounded-full bg-stockpro-navy/10 dark:bg-stockpro-signal/12 flex items-center justify-center text-xs font-medium text-stockpro-navy dark:text-stockpro-signal">2</div>
+                    <p className="text-sm text-muted-foreground">Scannez le code QR ou entrez la clé manuellement</p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="w-6 h-6 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-xs font-medium text-indigo-600 dark:text-indigo-400">3</div>
-                    <p className="text-sm text-slate-600 dark:text-slate-300">Entrez le code à 6 chiffres pour confirmer</p>
+                    <div className="w-6 h-6 rounded-full bg-stockpro-navy/10 dark:bg-stockpro-signal/12 flex items-center justify-center text-xs font-medium text-stockpro-navy dark:text-stockpro-signal">3</div>
+                    <p className="text-sm text-muted-foreground">Entrez le code à 6 chiffres pour confirmer</p>
                   </div>
                 </div>
               </div>
 
               {/* QR Code simulé */}
-              <div className="bg-slate-50 dark:bg-slate-700/50 rounded-lg p-6 text-center">
-                <div className="w-32 h-32 mx-auto bg-white dark:bg-slate-600 rounded-lg flex items-center justify-center border-2 border-slate-200 dark:border-slate-500">
+              <div className="bg-muted/50 rounded-lg p-6 text-center">
+                <div className="w-32 h-32 mx-auto bg-white dark:bg-muted rounded-lg flex items-center justify-center border-2 border-border dark:border-border">
                   <div className="grid grid-cols-5 gap-1 p-2">
                     {Array.from({ length: 25 }).map((_, i) => (
                       <div
                         key={i}
-                        className={`w-4 h-4 rounded-sm ${((i * 17 + 3) % 5 < 2) ? "bg-slate-800 dark:bg-slate-200" : "bg-transparent"}`}
+                        className={`h-4 w-4 rounded-sm ${((i * 17 + 3) % 5 < 2) ? "bg-foreground dark:bg-muted-foreground" : "bg-transparent"}`}
                       />
                     ))}
                   </div>
                 </div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">
+                <p className="text-xs text-muted-foreground mt-3">
                   Clé secrète: <span className="font-mono font-medium">JBSWY3DPEHPK3PXP</span>
                 </p>
               </div>
             </>
           ) : (
             <div className="space-y-4">
-              <p className="text-sm text-slate-600 dark:text-slate-300">
+              <p className="text-sm text-muted-foreground">
                 Entrez le code à 6 chiffres affiché dans votre application d'authentification.
               </p>
               <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                <label className="block text-sm font-medium text-foreground mb-2">
                   Code de vérification
                 </label>
                 <Input
@@ -656,7 +656,7 @@ export const ProfilePage: React.FC<{
             </div>
           )}
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" onClick={closeTwoFAModal}>
               Annuler
             </Button>

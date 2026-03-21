@@ -4,6 +4,25 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  /* Palette StockPro (logo) — utilitaires Tailwind : bg-stockpro-navy, text-stockpro-signal, etc. */
+  --color-stockpro-navy: #1a2b6d;
+  --color-stockpro-navy-night: #0f1a45;
+  --color-stockpro-signal: #6dc13a;
+  --color-stockpro-page: #f5f6fa;
+  --color-stockpro-white: #ffffff;
+  --color-stockpro-stock-ok-fg: #6dc13a;
+  --color-stockpro-stock-ok-bg: #e8f7da;
+  --color-stockpro-stock-low-fg: #e8932d;
+  --color-stockpro-stock-low-bg: #fff4e5;
+  --color-stockpro-stock-error-fg: #d93f3f;
+  --color-stockpro-stock-error-bg: #fdecec;
+  --color-stockpro-navy-hover: #152456;
+  /** Ton intermédiaire (dégradés, survols) — aligné charte */
+  --color-stockpro-navy-mid: #2a3d8f;
+  --color-stockpro-rail: #0f1a45;
+  /* Surélévation opaque sur le rail sombre (logo, cartes) — jamais de blanc pur en fond */
+  --color-stockpro-rail-elevated: #141e42;
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
@@ -45,71 +64,91 @@
 
 :root {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
+  /* Alias sémantiques (réf. charte) */
+  --stockpro-navy: #1a2b6d;
+  --stockpro-navy-night: #0f1a45;
+  --stockpro-navy-hover: #152456;
+  --stockpro-signal: #6dc13a;
+  --stockpro-page-bg: #f5f6fa;
+  --stockpro-stock-ok-fg: #6dc13a;
+  --stockpro-stock-ok-bg: #e8f7da;
+  --stockpro-stock-low-fg: #e8932d;
+  --stockpro-stock-low-bg: #fff4e5;
+  --stockpro-stock-error-fg: #d93f3f;
+  --stockpro-stock-error-bg: #fdecec;
+  --stockpro-rail-elevated: #141e42;
+  --stockpro-navy-mid: #2a3d8f;
+
+  --background: #f5f6fa;
+  --foreground: #0f172a;
+  --card: #ffffff;
+  --card-foreground: #0f172a;
+  --popover: #ffffff;
+  --popover-foreground: #0f172a;
+  --primary: #1a2b6d;
+  --primary-foreground: #ffffff;
+  --secondary: #e8ecf4;
+  --secondary-foreground: #1a2b6d;
+  --muted: #e8ecf4;
+  --muted-foreground: #64748b;
+  --accent: #e8f7da;
+  --accent-foreground: #1a2b6d;
+  --destructive: #d93f3f;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --ring: #6dc13a;
   --chart-1: oklch(0.646 0.222 41.116);
   --chart-2: oklch(0.6 0.118 184.704);
   --chart-3: oklch(0.398 0.07 227.392);
   --chart-4: oklch(0.828 0.189 84.429);
   --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --sidebar: #ffffff;
+  --sidebar-foreground: #1a2b6d;
+  --sidebar-primary: #1a2b6d;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #f1f5f9;
+  --sidebar-accent-foreground: #1a2b6d;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ring: #6dc13a;
 }
 
+/**
+ * Mode sombre :
+ * - Rails (sidebar / header / footer / mobile) : #0F1A45 + surfaces surélevées #141e42 (pas de blanc en fond de rail).
+ * - Primaire interactif : vert signal #6DC13A ; toile contenu : #0a0e1a.
+ */
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
+  --background: #0a0e1a;
+  --foreground: #e8edf5;
+  --card: #121a33;
+  --card-foreground: #e8edf5;
+  --popover: #121a33;
+  --popover-foreground: #e8edf5;
+  --primary: #6dc13a;
+  --primary-foreground: #0f1a45;
+  --secondary: #1a2548;
+  --secondary-foreground: #e8edf5;
+  --muted: #1a2548;
+  --muted-foreground: #94a3b8;
+  --accent: #1e3a1a;
+  --accent-foreground: #b8e986;
+  --destructive: #e85d5d;
+  --border: rgb(255 255 255 / 12%);
+  --input: rgb(255 255 255 / 14%);
+  --ring: #6dc13a;
   --chart-1: oklch(0.488 0.243 264.376);
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  --sidebar: #0f1a45;
+  --sidebar-foreground: #e8edf5;
+  --sidebar-primary: #6dc13a;
+  --sidebar-primary-foreground: #0f1a45;
+  --sidebar-accent: rgb(255 255 255 / 8%);
+  --sidebar-accent-foreground: #e8edf5;
+  --sidebar-border: rgb(255 255 255 / 12%);
+  --sidebar-ring: #6dc13a;
 }
 
 @layer base {
@@ -117,6 +156,48 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background font-sans text-foreground antialiased;
+  }
+}
+
+/**
+ * Typographie du shell (header, sidebar, footer, barre mobile) — une seule échelle pour tout le chrome.
+ */
+@layer components {
+  .app-shell-title {
+    @apply font-sans text-lg font-semibold leading-tight tracking-tight text-foreground;
+  }
+  .app-shell-nav {
+    @apply font-sans text-sm font-medium leading-snug;
+  }
+  .app-shell-nav-icon {
+    @apply h-[1.25rem] w-[1.25rem] shrink-0;
+  }
+  .app-shell-menu-item {
+    @apply font-sans text-sm font-normal leading-normal text-muted-foreground;
+  }
+  .app-shell-menu-heading {
+    @apply font-sans text-sm font-semibold leading-tight text-foreground;
+  }
+  .app-shell-menu-meta {
+    @apply font-sans text-sm font-normal leading-normal text-muted-foreground;
+  }
+  .app-shell-caption {
+    @apply font-sans text-xs font-medium leading-tight text-muted-foreground;
+  }
+  .app-shell-footer {
+    @apply font-sans text-sm font-normal leading-normal text-muted-foreground;
+  }
+  .app-shell-tab-label {
+    @apply font-sans text-xs font-medium leading-tight;
+  }
+  .app-shell-tooltip {
+    @apply font-sans text-xs font-medium leading-tight text-foreground;
+  }
+  .app-shell-control {
+    @apply font-sans text-sm font-normal leading-normal;
+  }
+  .app-shell-overline {
+    @apply font-sans text-xs font-semibold uppercase leading-tight tracking-wide text-muted-foreground;
   }
 }

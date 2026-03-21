@@ -23,7 +23,7 @@ export function RapportsCharts({ activeTab }: { activeTab: string }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card className="lg:col-span-2">
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">
+        <h3 className="text-lg font-semibold text-foreground mb-4">
           {activeTab === "ventes" && "Évolution des ventes"}
           {activeTab === "achats" && "Évolution des achats"}
           {activeTab === "stock" && "Évolution du stock"}
@@ -35,22 +35,22 @@ export function RapportsCharts({ activeTab }: { activeTab: string }) {
             <RechartsAreaChart data={VENTES_MENSUELLES}>
               <defs>
                 <linearGradient id="reportGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
-                  <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                  <stop offset="5%" stopColor="#1a2b6d" stopOpacity={0.8} />
+                  <stop offset="95%" stopColor="#1a2b6d" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis dataKey="mois" stroke="#94a3b8" />
               <YAxis stroke="#94a3b8" tickFormatter={formatShortCurrency} />
               <Tooltip formatter={(value: number) => formatCurrency(value)} />
-              <Area type="monotone" dataKey="ventes" stroke="#6366f1" fill="url(#reportGradient)" />
+              <Area type="monotone" dataKey="ventes" stroke="#1a2b6d" fill="url(#reportGradient)" />
             </RechartsAreaChart>
           </ResponsiveContainer>
         </div>
       </Card>
 
       <Card>
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Répartition</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">Répartition</h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <RechartsPieChart>
@@ -67,7 +67,7 @@ export function RapportsCharts({ activeTab }: { activeTab: string }) {
       </Card>
 
       <Card>
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Comparaison</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">Comparaison</h3>
         <div className="h-64">
           <ResponsiveContainer width="100%" height="100%">
             <RechartsBarChart data={TOP_PRODUITS.slice(0, 5)}>
@@ -75,7 +75,7 @@ export function RapportsCharts({ activeTab }: { activeTab: string }) {
               <XAxis dataKey="nom" tick={{ fontSize: 10 }} />
               <YAxis tickFormatter={formatShortCurrency} />
               <Tooltip formatter={(value: number) => formatCurrency(value)} />
-              <Bar dataKey="ca" fill="#6366f1" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="ca" fill="#1a2b6d" radius={[4, 4, 0, 0]} />
             </RechartsBarChart>
           </ResponsiveContainer>
         </div>

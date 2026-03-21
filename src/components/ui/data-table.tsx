@@ -210,16 +210,16 @@ export function DataTable(props: DataTableProps) {
 
   return (
     <Card padding="none">
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border-b border-slate-200 dark:border-slate-700">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 border-b border-border">
         {searchable && (
           <div className="relative w-full sm:w-72">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <input
               type="text"
               placeholder={searchPlaceholder}
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full pl-10 pr-4 py-2 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
             />
           </div>
         )}
@@ -240,14 +240,14 @@ export function DataTable(props: DataTableProps) {
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
-            <tr className="bg-slate-50 dark:bg-slate-700/50">
+            <tr className="bg-muted/50">
               {selectable && (
                 <th className="px-4 py-3 text-left">
                   <input
                     type="checkbox"
                     checked={selectedRows.size === paginatedData.length && paginatedData.length > 0}
                     onChange={toggleSelectAll}
-                    className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                    className="w-4 h-4 rounded border-border text-stockpro-navy focus:ring-stockpro-signal"
                   />
                 </th>
               )}
@@ -255,8 +255,8 @@ export function DataTable(props: DataTableProps) {
                 <th
                   key={col.key}
                   className={
-                    "px-4 py-3 text-left text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wider " +
-                    (col.sortable ? "cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-600" : "")
+                    "px-4 py-3 text-left text-xs font-semibold text-muted-foreground uppercase tracking-wider " +
+                    (col.sortable ? "cursor-pointer hover:bg-muted" : "")
                   }
                   onClick={() => col.sortable && handleSort(col.key)}
                 >
@@ -267,40 +267,40 @@ export function DataTable(props: DataTableProps) {
                 </th>
               ))}
               {actions && (
-                <th className="px-4 py-3 text-right text-xs font-semibold text-slate-600 dark:text-slate-300 uppercase">Actions</th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-muted-foreground uppercase">Actions</th>
               )}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-700">
+          <tbody className="divide-y divide-border">
             {paginatedData.length === 0 ? (
               <tr>
                 <td colSpan={columns.length + (selectable ? 1 : 0) + (actions ? 1 : 0)} className="px-4 py-12">
                   <div className="flex flex-col items-center justify-center text-center">
-                    <div className="w-16 h-16 rounded-full bg-slate-100 dark:bg-slate-700 flex items-center justify-center mb-4">
-                      <Package className="w-8 h-8 text-slate-400 dark:text-slate-500" />
+                    <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+                      <Package className="w-8 h-8 text-muted-foreground" />
                     </div>
-                    <p className="text-slate-600 dark:text-slate-400 font-medium">{emptyMessage}</p>
+                    <p className="text-muted-foreground font-medium">{emptyMessage}</p>
                     {search && (
-                      <p className="text-sm text-slate-400 dark:text-slate-500 mt-1">Essayez de modifier vos critères de recherche</p>
+                      <p className="text-sm text-muted-foreground mt-1">Essayez de modifier vos critères de recherche</p>
                     )}
                   </div>
                 </td>
               </tr>
             ) : (
               paginatedData.map((row, rowIndex) => (
-                <tr key={rowIndex} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                <tr key={rowIndex} className="hover:bg-muted/50 transition-colors">
                   {selectable && (
                     <td className="px-4 py-3">
                       <input
                         type="checkbox"
                         checked={selectedRows.has(rowIndex)}
                         onChange={() => toggleRow(rowIndex)}
-                        className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                        className="w-4 h-4 rounded border-border text-stockpro-navy focus:ring-stockpro-signal"
                       />
                     </td>
                   )}
                   {columns.map((col) => (
-                    <td key={col.key} className="px-4 py-3 text-sm text-slate-700 dark:text-slate-300">
+                    <td key={col.key} className="px-4 py-3 text-sm text-foreground">
                       {col.render ? col.render(row[col.key], row) : String(row[col.key] ?? "")}
                     </td>
                   ))}
@@ -313,8 +313,8 @@ export function DataTable(props: DataTableProps) {
       </div>
 
       {pagination && totalPages > 1 && (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-slate-200 dark:border-slate-700">
-          <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t border-border">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
             <span>Afficher</span>
             <select
               value={rowsPerPage}
@@ -322,7 +322,7 @@ export function DataTable(props: DataTableProps) {
                 setRowsPerPage(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="px-2 py-1 rounded border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200"
+              className="px-2 py-1 rounded border border-border bg-card text-foreground"
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
@@ -334,7 +334,7 @@ export function DataTable(props: DataTableProps) {
             <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage(currentPage - 1)}>
               <ChevronLeft className="w-4 h-4" />
             </Button>
-            <span className="px-4 py-2 text-sm text-slate-600 dark:text-slate-400">
+            <span className="px-4 py-2 text-sm text-muted-foreground">
               Page {currentPage} sur {totalPages}
             </span>
             <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage(currentPage + 1)}>

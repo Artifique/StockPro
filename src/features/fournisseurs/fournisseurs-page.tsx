@@ -41,12 +41,12 @@ export const FournisseursPage: React.FC<{
       sortable: true,
       render: (value: unknown, row: Record<string, unknown>) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-            <Building className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+          <div className="w-10 h-10 rounded-lg bg-stockpro-stock-ok-bg dark:bg-stockpro-stock-ok-fg/12 flex items-center justify-center">
+            <Building className="w-5 h-5 text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg" />
           </div>
           <div>
-            <p className="font-medium text-slate-800 dark:text-white">{String(value)}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">{String(row.contact)}</p>
+            <p className="font-medium text-foreground">{String(value)}</p>
+            <p className="text-xs text-muted-foreground">{String(row.contact)}</p>
           </div>
         </div>
       ),
@@ -76,8 +76,8 @@ export const FournisseursPage: React.FC<{
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Fournisseurs</h2>
-          <p className="text-slate-500 dark:text-slate-400">Gérez vos partenaires fournisseurs</p>
+          <h2 className="text-2xl font-bold text-foreground">Fournisseurs</h2>
+          <p className="text-muted-foreground">Gérez vos partenaires fournisseurs</p>
         </div>
         <Button onClick={() => newFournisseurModal.open()}>
           <Plus className="w-4 h-4 mr-2" />
@@ -88,26 +88,26 @@ export const FournisseursPage: React.FC<{
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="text-center">
-          <p className="text-3xl font-bold text-slate-800 dark:text-white">{MOCK_FOURNISSEURS.length}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Total fournisseurs</p>
+          <p className="text-3xl font-bold text-foreground">{MOCK_FOURNISSEURS.length}</p>
+          <p className="text-sm text-muted-foreground">Total fournisseurs</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400">
+          <p className="text-3xl font-bold text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">
             {MOCK_FOURNISSEURS.filter((f) => f.statut === "actif").length}
           </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Actifs</p>
+          <p className="text-sm text-muted-foreground">Actifs</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">
+          <p className="text-3xl font-bold text-stockpro-navy dark:text-stockpro-signal">
             {formatCurrency(MOCK_FOURNISSEURS.reduce((sum, f) => sum + f.commandeTotal, 0))}
           </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">CA Total</p>
+          <p className="text-sm text-muted-foreground">CA Total</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-sky-600 dark:text-sky-400">
+          <p className="text-3xl font-bold text-stockpro-navy dark:text-stockpro-signal">
             {new Set(MOCK_FOURNISSEURS.map((f) => f.categorie)).size}
           </p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Catégories</p>
+          <p className="text-sm text-muted-foreground">Catégories</p>
         </Card>
       </div>
 
@@ -122,7 +122,7 @@ export const FournisseursPage: React.FC<{
           return (
             <div className="flex items-center justify-end gap-1">
               <button
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
                 title="Voir les détails"
                 onClick={() => {
                   setSelectedFournisseur(fournisseur || null);
@@ -132,7 +132,7 @@ export const FournisseursPage: React.FC<{
                 <Eye className="w-4 h-4" />
               </button>
               <button
-                className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-navy dark:text-stockpro-signal hover:bg-stockpro-navy/8 dark:hover:bg-stockpro-signal/10"
                 title="Modifier le fournisseur"
                 onClick={() => {
                   if (fournisseur) {
@@ -152,7 +152,7 @@ export const FournisseursPage: React.FC<{
                 <Edit className="w-4 h-4" />
               </button>
               <button
-                className="p-1.5 rounded-lg text-slate-400 hover:text-emerald-600 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-stock-ok-fg hover:bg-stockpro-stock-ok-bg dark:hover:bg-stockpro-stock-ok-fg/10"
                 title="Voir les commandes"
                 onClick={() => {
                   if (onNavigate) {
@@ -180,25 +180,25 @@ export const FournisseursPage: React.FC<{
           }}
         >
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom de l&apos;entreprise</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Nom de l&apos;entreprise</label>
             <Input placeholder="Nom du fournisseur" required />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Contact</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Contact</label>
               <Input placeholder="Nom du contact" />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Téléphone</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Téléphone</label>
               <Input placeholder="+223 XX XX XX XX" />
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Email</label>
             <Input type="email" placeholder="email@exemple.com" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Catégorie</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Catégorie</label>
             <Select
               value=""
               onChange={() => { }}
@@ -207,15 +207,15 @@ export const FournisseursPage: React.FC<{
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Adresse</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Adresse</label>
             <textarea
               rows={2}
               placeholder="Adresse complète..."
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" onClick={newFournisseurModal.close}>
               Annuler
             </Button>
@@ -235,7 +235,7 @@ export const FournisseursPage: React.FC<{
           }}
         >
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom de l&apos;entreprise</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Nom de l&apos;entreprise</label>
             <Input
               value={editFournisseurData.nom}
               onChange={(e) => setEditFournisseurData({ ...editFournisseurData, nom: e.target.value })}
@@ -244,14 +244,14 @@ export const FournisseursPage: React.FC<{
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Contact</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Contact</label>
               <Input
                 value={editFournisseurData.contact}
                 onChange={(e) => setEditFournisseurData({ ...editFournisseurData, contact: e.target.value })}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Téléphone</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Téléphone</label>
               <Input
                 value={editFournisseurData.telephone}
                 onChange={(e) => setEditFournisseurData({ ...editFournisseurData, telephone: e.target.value })}
@@ -259,7 +259,7 @@ export const FournisseursPage: React.FC<{
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Email</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Email</label>
             <Input
               type="email"
               value={editFournisseurData.email}
@@ -267,7 +267,7 @@ export const FournisseursPage: React.FC<{
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Catégorie</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Catégorie</label>
             <Select
               value={editFournisseurData.categorie}
               onChange={(v) => setEditFournisseurData({ ...editFournisseurData, categorie: v })}
@@ -276,16 +276,16 @@ export const FournisseursPage: React.FC<{
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Adresse</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Adresse</label>
             <textarea
               value={editFournisseurData.adresse}
               onChange={(e) => setEditFournisseurData({ ...editFournisseurData, adresse: e.target.value })}
               rows={2}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" onClick={editFournisseurModal.close}>
               Annuler
             </Button>
@@ -299,12 +299,12 @@ export const FournisseursPage: React.FC<{
         {selectedFournisseur && (
           <div className="space-y-6">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-xl bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center">
-                <Building className="w-8 h-8 text-emerald-600 dark:text-emerald-400" />
+              <div className="w-16 h-16 rounded-xl bg-stockpro-stock-ok-bg dark:bg-stockpro-stock-ok-fg/12 flex items-center justify-center">
+                <Building className="w-8 h-8 text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-slate-800 dark:text-white">{selectedFournisseur.nom}</h3>
-                <p className="text-slate-500 dark:text-slate-400">{selectedFournisseur.categorie}</p>
+                <h3 className="text-xl font-semibold text-foreground">{selectedFournisseur.nom}</h3>
+                <p className="text-muted-foreground">{selectedFournisseur.categorie}</p>
                 <Badge variant={selectedFournisseur.statut === "actif" ? "success" : "default"} className="mt-2">
                   {selectedFournisseur.statut === "actif" ? "Actif" : "Inactif"}
                 </Badge>
@@ -312,61 +312,61 @@ export const FournisseursPage: React.FC<{
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+              <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 mb-1">
-                  <User className="w-4 h-4 text-slate-400" />
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Contact</p>
+                  <User className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">Contact</p>
                 </div>
-                <p className="font-medium text-slate-800 dark:text-white">{selectedFournisseur.contact}</p>
+                <p className="font-medium text-foreground">{selectedFournisseur.contact}</p>
               </div>
-              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+              <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 mb-1">
-                  <Phone className="w-4 h-4 text-slate-400" />
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Téléphone</p>
+                  <Phone className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">Téléphone</p>
                 </div>
-                <p className="font-medium text-slate-800 dark:text-white">{selectedFournisseur.telephone}</p>
+                <p className="font-medium text-foreground">{selectedFournisseur.telephone}</p>
               </div>
-              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+              <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 mb-1">
-                  <Mail className="w-4 h-4 text-slate-400" />
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Email</p>
+                  <Mail className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">Email</p>
                 </div>
-                <p className="font-medium text-slate-800 dark:text-white">{selectedFournisseur.email}</p>
+                <p className="font-medium text-foreground">{selectedFournisseur.email}</p>
               </div>
-              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+              <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 mb-1">
-                  <MapPin className="w-4 h-4 text-slate-400" />
-                  <p className="text-sm text-slate-500 dark:text-slate-400">Adresse</p>
+                  <MapPin className="w-4 h-4 text-muted-foreground" />
+                  <p className="text-sm text-muted-foreground">Adresse</p>
                 </div>
-                <p className="font-medium text-slate-800 dark:text-white">{selectedFournisseur.adresse}</p>
+                <p className="font-medium text-foreground">{selectedFournisseur.adresse}</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <Card padding="sm" className="text-center">
-                <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(selectedFournisseur.commandeTotal)}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">CA Total</p>
+                <p className="text-2xl font-bold text-stockpro-navy dark:text-stockpro-signal">{formatCurrency(selectedFournisseur.commandeTotal)}</p>
+                <p className="text-xs text-muted-foreground">CA Total</p>
               </Card>
               <Card padding="sm" className="text-center">
-                <p className="text-2xl font-bold text-slate-800 dark:text-white">
+                <p className="text-2xl font-bold text-foreground">
                   {MOCK_COMMANDES.filter((c) => c.fournisseur === selectedFournisseur.nom).length}
                 </p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Commandes</p>
+                <p className="text-xs text-muted-foreground">Commandes</p>
               </Card>
             </div>
 
             {/* Recent Orders */}
             <div>
-              <h4 className="font-medium text-slate-800 dark:text-white mb-3">Dernières commandes</h4>
+              <h4 className="font-medium text-foreground mb-3">Dernières commandes</h4>
               <div className="space-y-2 max-h-48 overflow-y-auto">
                 {MOCK_COMMANDES.filter((c) => c.fournisseur === selectedFournisseur.nom).slice(0, 3).map((cmd) => (
-                  <div key={cmd.id} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
+                  <div key={cmd.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div>
-                      <p className="text-sm font-medium text-slate-700 dark:text-slate-300">{cmd.id}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{cmd.date} • {cmd.produits} articles</p>
+                      <p className="text-sm font-medium text-foreground">{cmd.id}</p>
+                      <p className="text-xs text-muted-foreground">{cmd.date} • {cmd.produits} articles</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-slate-800 dark:text-white">{formatCurrency(cmd.montant)}</p>
+                      <p className="font-semibold text-foreground">{formatCurrency(cmd.montant)}</p>
                       <Badge variant={cmd.statut === "Reçue" ? "success" : cmd.statut === "En transit" ? "info" : "warning"}>{cmd.statut}</Badge>
                     </div>
                   </div>
@@ -374,7 +374,7 @@ export const FournisseursPage: React.FC<{
               </div>
             </div>
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button variant="outline" onClick={detailsFournisseurModal.close}>
                 Fermer
               </Button>

@@ -77,17 +77,17 @@ export const ToastContainer: React.FC = () => {
   }, []);
 
   const typeGradientStyles: Record<ToastType, string> = {
-    success: "from-emerald-400 to-emerald-600",
-    error: "from-rose-400 to-rose-600",
-    warning: "from-amber-400 to-amber-600",
-    info: "from-sky-400 to-sky-600",
+    success: "from-stockpro-signal to-stockpro-navy",
+    error: "from-stockpro-stock-error-fg to-stockpro-navy-night",
+    warning: "from-stockpro-stock-low-fg to-stockpro-navy-mid",
+    info: "from-stockpro-navy to-stockpro-navy-mid",
   };
 
   const typeProgressColors: Record<ToastType, string> = {
-    success: "bg-emerald-200",
-    error: "bg-rose-200",
-    warning: "bg-amber-200",
-    info: "bg-sky-200",
+    success: "bg-white/40",
+    error: "bg-white/40",
+    warning: "bg-white/40",
+    info: "bg-white/40",
   };
 
   const typeIcons: Record<ToastType, React.ReactNode> = {

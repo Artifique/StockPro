@@ -60,6 +60,7 @@ import {
   STOCKPRO_WELCOME_RESET_EVENT,
 } from "@/lib/stockpro-storage-keys";
 import { Alert } from "@/components/stock-pro/primitives";
+import { getStockLevelTextClass } from "@/lib/stockpro-theme";
 
 const KPICard: React.FC<{
   title: string;
@@ -76,8 +77,8 @@ const KPICard: React.FC<{
   const chartData = sparklineData.map((v, i) => ({ i, v }));
   const TrendIcon = trend === "up" ? TrendingUp : TrendingDown;
   const changeColor =
-    trend === "up" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400";
-  const lineColor = trend === "up" ? "#10b981" : "#f43f5e";
+    trend === "up" ? "text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg" : "text-stockpro-stock-error-fg";
+  const lineColor = trend === "up" ? "#6dc13a" : "#d93f3f";
 
   return (
     <motion.div
@@ -94,20 +95,20 @@ const KPICard: React.FC<{
         }
       }}
     >
-      <Card padding="sm" className="h-full hover:border-indigo-300 dark:hover:border-indigo-600 transition-all overflow-hidden">
+      <Card padding="sm" className="h-full transition-all overflow-hidden hover:border-stockpro-signal/40 dark:hover:border-stockpro-signal/50">
         <div className="flex flex-col gap-2">
           <div className="flex items-start gap-3">
             <div className={`p-2.5 rounded-xl shrink-0 ${iconBg}`}>{icon}</div>
             <div className="min-w-0 flex-1">
-              <p className="text-xs text-slate-500 dark:text-slate-400 font-medium">{title}</p>
-              <p className="text-xl font-bold text-slate-800 dark:text-white truncate">{value}</p>
+              <p className="text-xs text-muted-foreground font-medium">{title}</p>
+              <p className="text-xl font-bold text-foreground truncate">{value}</p>
               <div className={`flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs font-medium mt-0.5 ${changeColor}`}>
                 <TrendIcon className="w-3.5 h-3.5 shrink-0" />
                 <span>
                   {change > 0 ? "+" : ""}
                   {change}%
                 </span>
-                <span className="text-slate-400 dark:text-slate-500 font-normal">· {hint}</span>
+                <span className="text-muted-foreground font-normal">· {hint}</span>
               </div>
             </div>
           </div>
@@ -119,7 +120,7 @@ const KPICard: React.FC<{
                 </RechartsLineChart>
               </ResponsiveContainer>
             ) : (
-              <div className="h-full w-full rounded-md bg-slate-100/80 dark:bg-slate-800/50" aria-hidden />
+              <div className="h-full w-full rounded-md bg-muted/70 dark:bg-muted/50" aria-hidden />
             )}
           </div>
         </div>
@@ -234,8 +235,8 @@ export const DashboardPage: React.FC<{
     {
       key: "stock",
       label: "Stock actuel",
-      render: (value: unknown) => (
-        <span className={value === 0 ? "text-rose-500 font-semibold" : "text-amber-500 font-semibold"}>
+      render: (value: unknown, row: Record<string, unknown>) => (
+        <span className={`font-semibold ${getStockLevelTextClass(Number(value), Number(row.stockMin))}`}>
           {String(value)}
         </span>
       ),
@@ -267,7 +268,7 @@ export const DashboardPage: React.FC<{
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-xl bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 p-6 text-white"
+          className="relative overflow-hidden rounded-xl bg-gradient-to-r from-stockpro-navy via-stockpro-navy-mid to-stockpro-signal p-6 text-white"
         >
           {/* Bouton de fermeture explicite pour améliorer l'UX */}
           <button
@@ -294,7 +295,7 @@ export const DashboardPage: React.FC<{
             <div className="flex flex-wrap gap-3">
               <Button
                 onClick={() => onNavigate("produits")}
-                className="bg-white text-indigo-600 hover:bg-white/90"
+                className="bg-white text-stockpro-navy hover:bg-white/90"
                 size="sm"
               >
                 <Package className="w-4 h-4 mr-2" />
@@ -336,21 +337,21 @@ export const DashboardPage: React.FC<{
       )}
 
       {/* Quick Actions */}
-      <Card padding="sm" className="bg-gradient-to-r from-indigo-50 to-sky-50 dark:from-indigo-900/20 dark:to-sky-900/20 border-indigo-100 dark:border-indigo-800">
+      <Card padding="sm" className="border-stockpro-navy/15 bg-gradient-to-r from-stockpro-page to-white dark:border-stockpro-signal/20 dark:from-stockpro-navy/20 dark:to-background/50">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h3 className="text-sm font-semibold text-indigo-800 dark:text-indigo-300 flex items-center gap-2">
-              <Zap className="w-4 h-4 text-amber-500" />
+            <h3 className="flex items-center gap-2 text-sm font-semibold text-stockpro-navy dark:text-stockpro-signal">
+              <Zap className="h-4 w-4 text-stockpro-stock-low-fg" />
               Actions rapides
             </h3>
-            <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Tâches fréquemment utilisées</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Tâches fréquemment utilisées</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => onNavigate("pos")}
-              className="bg-white dark:bg-slate-800"
+              className="bg-card"
             >
               <ShoppingCart className="w-4 h-4 mr-1" />
               Nouvelle vente
@@ -359,7 +360,7 @@ export const DashboardPage: React.FC<{
               variant="outline"
               size="sm"
               onClick={() => onNavigate("produits")}
-              className="bg-white dark:bg-slate-800"
+              className="bg-card"
             >
               <Package className="w-4 h-4 mr-1" />
               Ajouter produit
@@ -368,7 +369,7 @@ export const DashboardPage: React.FC<{
               variant="outline"
               size="sm"
               onClick={() => onNavigate("clients")}
-              className="bg-white dark:bg-slate-800"
+              className="bg-card"
             >
               <Users className="w-4 h-4 mr-1" />
               Nouveau client
@@ -377,7 +378,7 @@ export const DashboardPage: React.FC<{
               variant="outline"
               size="sm"
               onClick={() => onNavigate("rapports")}
-              className="bg-white dark:bg-slate-800"
+              className="bg-card"
             >
               <FileText className="w-4 h-4 mr-1" />
               Rapport
@@ -391,8 +392,8 @@ export const DashboardPage: React.FC<{
         {/* Favorite Products */}
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-              <Heart className="w-5 h-5 text-rose-500" />
+            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Heart className="w-5 h-5 text-stockpro-stock-error-fg" />
               Produits favoris
             </h3>
             <Badge variant="info">{favoriteProductsData.length}</Badge>
@@ -404,15 +405,15 @@ export const DashboardPage: React.FC<{
                   key={product.id}
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center">
-                      <Package className="w-5 h-5 text-indigo-500" />
+                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-stockpro-navy/10 dark:bg-stockpro-navy/25">
+                      <Package className="h-5 w-5 text-stockpro-navy dark:text-stockpro-signal" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-slate-800 dark:text-white">{product.nom}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{formatCurrency(product.prixVente)}</p>
+                      <p className="text-sm font-medium text-foreground">{product.nom}</p>
+                      <p className="text-xs text-muted-foreground">{formatCurrency(product.prixVente)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
@@ -423,7 +424,7 @@ export const DashboardPage: React.FC<{
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.9 }}
                       onClick={() => onToggleFavorite?.(product.id)}
-                      className="p-1.5 rounded-lg text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30"
+                      className="p-1.5 rounded-lg text-stockpro-stock-error-fg hover:bg-stockpro-stock-error-bg dark:hover:bg-stockpro-stock-error-fg/12"
                     >
                       <Heart className="w-4 h-4 fill-current" />
                     </motion.button>
@@ -433,8 +434,8 @@ export const DashboardPage: React.FC<{
             </div>
           ) : (
             <div className="text-center py-8">
-              <Heart className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-              <p className="text-sm text-slate-500 dark:text-slate-400">Aucun produit favori</p>
+              <Heart className="w-12 h-12 text-muted-foreground/40 dark:text-muted-foreground/60 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">Aucun produit favori</p>
               <Button variant="ghost" size="sm" onClick={() => onNavigate("produits")} className="mt-2">
                 Ajouter des favoris
               </Button>
@@ -445,8 +446,8 @@ export const DashboardPage: React.FC<{
         {/* Recently Viewed Products */}
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-slate-800 dark:text-white flex items-center gap-2">
-              <History className="w-5 h-5 text-slate-500" />
+            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <History className="w-5 h-5 text-muted-foreground" />
               Récemment consultés
             </h3>
             <Badge variant="default">{recentlyViewedData.length}</Badge>
@@ -462,28 +463,28 @@ export const DashboardPage: React.FC<{
                     onViewProduct?.(product.id);
                     onNavigate("produits");
                   }}
-                  className="flex items-center justify-between p-3 rounded-lg bg-slate-50 dark:bg-slate-700/50 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors cursor-pointer"
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-slate-200 dark:bg-slate-600 flex items-center justify-center">
-                      <Package className="w-5 h-5 text-slate-500" />
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                      <Package className="w-5 h-5 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium text-slate-800 dark:text-white">{product.nom}</p>
-                      <p className="text-xs text-slate-500 dark:text-slate-400">{product.categorie}</p>
+                      <p className="text-sm font-medium text-foreground">{product.nom}</p>
+                      <p className="text-xs text-muted-foreground">{product.categorie}</p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-sm font-semibold text-slate-800 dark:text-white">{formatCurrency(product.prixVente)}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">{product.stock} unités</p>
+                    <p className="text-sm font-semibold text-foreground">{formatCurrency(product.prixVente)}</p>
+                    <p className="text-xs text-muted-foreground">{product.stock} unités</p>
                   </div>
                 </motion.div>
               ))}
             </div>
           ) : (
             <div className="text-center py-8">
-              <History className="w-12 h-12 text-slate-300 dark:text-slate-600 mx-auto mb-3" />
-              <p className="text-sm text-slate-500 dark:text-slate-400">Aucun produit consulté récemment</p>
+              <History className="w-12 h-12 text-muted-foreground/40 dark:text-muted-foreground/60 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">Aucun produit consulté récemment</p>
               <Button variant="ghost" size="sm" onClick={() => onNavigate("produits")} className="mt-2">
                 Parcourir les produits
               </Button>
@@ -500,7 +501,7 @@ export const DashboardPage: React.FC<{
           change={12.4}
           trend="up"
           icon={<Wallet className="w-6 h-6 text-white" />}
-          iconBg="bg-indigo-500"
+          iconBg="bg-stockpro-navy"
           sparklineData={[180000, 220000, 195000, 250000, 284500]}
           onClick={() => onNavigate("rapports")}
           hint="Cliquez pour voir"
@@ -511,7 +512,7 @@ export const DashboardPage: React.FC<{
           change={8.1}
           trend="up"
           icon={<TrendingUp className="w-6 h-6 text-white" />}
-          iconBg="bg-emerald-500"
+          iconBg="bg-stockpro-signal"
           sparklineData={[6.2, 6.8, 7.1, 7.5, 8.3]}
           onClick={() => onNavigate("pos")}
           hint="POS"
@@ -522,7 +523,7 @@ export const DashboardPage: React.FC<{
           change={-2.3}
           trend="down"
           icon={<Package className="w-6 h-6 text-white" />}
-          iconBg="bg-sky-500"
+          iconBg="bg-stockpro-navy"
           onClick={() => onNavigate("produits")}
           hint="Voir produits"
         />
@@ -532,7 +533,7 @@ export const DashboardPage: React.FC<{
           change={5.7}
           trend="up"
           icon={<Users className="w-6 h-6 text-white" />}
-          iconBg="bg-amber-500"
+          iconBg="bg-stockpro-stock-low-fg"
           onClick={() => onNavigate("clients")}
           hint="Voir clients"
         />
@@ -546,13 +547,13 @@ export const DashboardPage: React.FC<{
           onClick={() => onNavigate("achats")}
           className="cursor-pointer"
         >
-          <Card className="flex items-center gap-4 hover:border-indigo-300 dark:hover:border-indigo-600 transition-all">
-            <div className="p-3 rounded-xl bg-indigo-100 dark:bg-indigo-900/30">
-              <ShoppingCart className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+          <Card className="flex items-center gap-4 hover:border-stockpro-navy/35 dark:hover:border-stockpro-signal/40 transition-all">
+            <div className="p-3 rounded-xl bg-stockpro-navy/10 dark:bg-stockpro-signal/12">
+              <ShoppingCart className="w-6 h-6 text-stockpro-navy dark:text-stockpro-signal" />
             </div>
             <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Commandes en cours</p>
-              <p className="text-2xl font-bold text-slate-800 dark:text-white">12</p>
+              <p className="text-sm text-muted-foreground">Commandes en cours</p>
+              <p className="text-2xl font-bold text-foreground">12</p>
             </div>
           </Card>
         </motion.div>
@@ -563,13 +564,13 @@ export const DashboardPage: React.FC<{
           onClick={() => onNavigate("stock", "rupture")}
           className="cursor-pointer"
         >
-          <Card className="flex items-center gap-4 hover:border-rose-300 dark:hover:border-rose-600 transition-all">
-            <div className="p-3 rounded-xl bg-rose-100 dark:bg-rose-900/30">
-              <AlertCircle className="w-6 h-6 text-rose-600 dark:text-rose-400 animate-pulse" />
+          <Card className="flex items-center gap-4 transition-all hover:border-stockpro-stock-error-fg/40 dark:hover:border-stockpro-stock-error-fg/50">
+            <div className="rounded-xl bg-stockpro-stock-error-bg p-3 dark:bg-stockpro-stock-error-fg/15">
+              <AlertCircle className="h-6 w-6 animate-pulse text-stockpro-stock-error-fg" />
             </div>
             <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Ruptures de stock</p>
-              <p className="text-2xl font-bold text-rose-600 dark:text-rose-400">{stockStats.rupture}</p>
+              <p className="text-sm text-muted-foreground">Ruptures de stock</p>
+              <p className="text-2xl font-bold text-stockpro-stock-error-fg">{stockStats.rupture}</p>
             </div>
           </Card>
         </motion.div>
@@ -580,13 +581,13 @@ export const DashboardPage: React.FC<{
           onClick={() => onNavigate("stock", "critique")}
           className="cursor-pointer"
         >
-          <Card className="flex items-center gap-4 hover:border-amber-300 dark:hover:border-amber-600 transition-all">
-            <div className="p-3 rounded-xl bg-amber-100 dark:bg-amber-900/30">
-              <AlertTriangle className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+          <Card className="flex items-center gap-4 transition-all hover:border-stockpro-stock-low-fg/40 dark:hover:border-stockpro-stock-low-fg/50">
+            <div className="rounded-xl bg-stockpro-stock-low-bg p-3 dark:bg-stockpro-stock-low-fg/15">
+              <AlertTriangle className="h-6 w-6 text-stockpro-stock-low-fg" />
             </div>
             <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">Stock critique</p>
-              <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{stockStats.critique}</p>
+              <p className="text-sm text-muted-foreground">Stock critique</p>
+              <p className="text-2xl font-bold text-stockpro-stock-low-fg">{stockStats.critique}</p>
             </div>
           </Card>
         </motion.div>
@@ -597,13 +598,13 @@ export const DashboardPage: React.FC<{
           onClick={() => onNavigate("rapports")}
           className="cursor-pointer"
         >
-          <Card className="flex items-center gap-4 hover:border-emerald-300 dark:hover:border-emerald-600 transition-all">
-            <div className="p-3 rounded-xl bg-emerald-100 dark:bg-emerald-900/30">
-              <CreditCard className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+          <Card className="flex items-center gap-4 transition-all hover:border-stockpro-signal/40 dark:hover:border-stockpro-signal/50">
+            <div className="rounded-xl bg-stockpro-stock-ok-bg p-3 dark:bg-stockpro-stock-ok-fg/15">
+              <CreditCard className="h-6 w-6 text-stockpro-stock-ok-fg" />
             </div>
             <div>
-              <p className="text-sm text-slate-500 dark:text-slate-400">CA annuel</p>
-              <p className="text-2xl font-bold text-slate-800 dark:text-white">96.8M</p>
+              <p className="text-sm text-muted-foreground">CA annuel</p>
+              <p className="text-2xl font-bold text-foreground">96.8M</p>
             </div>
           </Card>
         </motion.div>
@@ -612,18 +613,18 @@ export const DashboardPage: React.FC<{
       {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Évolution des ventes (12 mois)</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">Évolution des ventes (12 mois)</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <RechartsAreaChart data={VENTES_MENSUELLES}>
                 <defs>
                   <linearGradient id="colorVentes" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#1a2b6d" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#1a2b6d" stopOpacity={0} />
                   </linearGradient>
                   <linearGradient id="colorAchats" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#22c55e" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#22c55e" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#6dc13a" stopOpacity={0.8} />
+                    <stop offset="95%" stopColor="#6dc13a" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
@@ -634,15 +635,15 @@ export const DashboardPage: React.FC<{
                   contentStyle={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "8px" }}
                 />
                 <Legend />
-                <Area type="monotone" dataKey="ventes" name="Ventes" stroke="#6366f1" fillOpacity={1} fill="url(#colorVentes)" />
-                <Area type="monotone" dataKey="achats" name="Achats" stroke="#22c55e" fillOpacity={1} fill="url(#colorAchats)" />
+                <Area type="monotone" dataKey="ventes" name="Ventes" stroke="#1a2b6d" fillOpacity={1} fill="url(#colorVentes)" />
+                <Area type="monotone" dataKey="achats" name="Achats" stroke="#6dc13a" fillOpacity={1} fill="url(#colorAchats)" />
               </RechartsAreaChart>
             </ResponsiveContainer>
           </div>
         </Card>
 
         <Card>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Top 8 produits vendus</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">Top 8 produits vendus</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <RechartsBarChart data={TOP_PRODUITS} layout="vertical">
@@ -653,7 +654,7 @@ export const DashboardPage: React.FC<{
                   formatter={(value: number) => [formatCurrency(value), "CA"]}
                   contentStyle={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "8px" }}
                 />
-                <Bar dataKey="ca" name="CA" fill="#6366f1" radius={[0, 4, 4, 0]} />
+                <Bar dataKey="ca" name="CA" fill="#1a2b6d" radius={[0, 4, 4, 0]} />
               </RechartsBarChart>
             </ResponsiveContainer>
           </div>
@@ -663,7 +664,7 @@ export const DashboardPage: React.FC<{
       {/* Charts Row 2 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Répartition CA par catégorie</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">Répartition CA par catégorie</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <RechartsPieChart>
@@ -691,7 +692,7 @@ export const DashboardPage: React.FC<{
         </Card>
 
         <Card>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Évolution du stock (30 jours)</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">Évolution du stock (30 jours)</h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <RechartsLineChart data={STOCK_EVOLUTION}>
@@ -701,7 +702,7 @@ export const DashboardPage: React.FC<{
                 <Tooltip
                   contentStyle={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "8px" }}
                 />
-                <Line type="monotone" dataKey="stock" name="Stock" stroke="#8b5cf6" strokeWidth={2} dot={{ fill: "#8b5cf6", strokeWidth: 2 }} />
+                <Line type="monotone" dataKey="stock" name="Stock" stroke="#6dc13a" strokeWidth={2} dot={{ fill: "#6dc13a", strokeWidth: 2 }} />
               </RechartsLineChart>
             </ResponsiveContainer>
           </div>
@@ -710,7 +711,7 @@ export const DashboardPage: React.FC<{
 
       {/* Recent Transactions */}
       <Card>
-        <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Dernières transactions</h3>
+        <h3 className="text-lg font-semibold text-foreground mb-4">Dernières transactions</h3>
         <DataTable onToast={showToast}
           columns={transactionColumns}
           data={MOCK_TRANSACTIONS}
@@ -718,13 +719,13 @@ export const DashboardPage: React.FC<{
           pageSize={5}
           actions={() => (
             <div className="flex items-center justify-end gap-1">
-              <button className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700">
+              <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted">
                 <Eye className="w-4 h-4" />
               </button>
-              <button className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30">
-                <Edit className="w-4 h-4" />
+              <button className="rounded-lg p-1.5 text-muted-foreground hover:bg-stockpro-signal/10 hover:text-stockpro-navy dark:hover:bg-stockpro-signal/15 dark:hover:text-stockpro-signal">
+                <Edit className="h-4 w-4" />
               </button>
-              <button className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30">
+              <button className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-stock-error-fg hover:bg-stockpro-stock-error-bg dark:hover:bg-stockpro-stock-error-fg/12">
                 <Trash2 className="w-4 h-4" />
               </button>
             </div>
@@ -736,7 +737,7 @@ export const DashboardPage: React.FC<{
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Stock Critique */}
         <Card>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Produits en stock critique</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">Produits en stock critique</h3>
           <DataTable onToast={showToast}
             columns={stockCritiqueColumns}
             data={produitsCritiques}
@@ -754,7 +755,7 @@ export const DashboardPage: React.FC<{
 
         {/* Activity Timeline */}
         <Card>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-4">Activité récente</h3>
+          <h3 className="text-lg font-semibold text-foreground mb-4">Activité récente</h3>
           <div className="space-y-4 max-h-80 overflow-y-auto">
             {ACTIVITES_RECENTES.map((activity) => {
               const iconMap: Record<string, React.ReactNode> = {
@@ -769,26 +770,26 @@ export const DashboardPage: React.FC<{
               };
 
               const colorMap: Record<string, string> = {
-                shopping: "bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400",
-                stock: "bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400",
-                user: "bg-sky-100 text-sky-600 dark:bg-sky-900/30 dark:text-sky-400",
-                truck: "bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400",
-                edit: "bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400",
-                chart: "bg-pink-100 text-pink-600 dark:bg-pink-900/30 dark:text-pink-400",
+                shopping: "bg-stockpro-navy/10 text-stockpro-navy dark:bg-stockpro-navy/25 dark:text-stockpro-signal",
+                stock: "bg-stockpro-stock-low-bg text-stockpro-stock-low-fg dark:bg-stockpro-stock-low-fg/15 dark:text-stockpro-stock-low-fg",
+                user: "bg-stockpro-navy/10 text-stockpro-navy dark:bg-stockpro-signal/12 dark:text-stockpro-signal",
+                truck: "bg-stockpro-stock-ok-bg text-stockpro-stock-ok-fg dark:bg-stockpro-stock-ok-fg/15 dark:text-stockpro-stock-ok-fg",
+                edit: "bg-stockpro-navy-mid/15 text-stockpro-navy dark:bg-stockpro-navy-mid/22 dark:text-stockpro-signal",
+                chart: "bg-stockpro-stock-ok-bg text-stockpro-stock-ok-fg dark:bg-stockpro-stock-ok-fg/12 dark:text-stockpro-stock-ok-fg",
                 star: "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400",
-                alert: "bg-rose-100 text-rose-600 dark:bg-rose-900/30 dark:text-rose-400",
+                alert: "bg-stockpro-stock-error-bg text-stockpro-stock-error-fg dark:bg-stockpro-stock-error-fg/15 dark:text-stockpro-stock-error-fg",
               };
 
               return (
-                <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
+                <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
                   <div className={`p-2 rounded-lg ${colorMap[activity.icone]}`}>
                     {iconMap[activity.icone]}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-800 dark:text-white">{activity.action}</p>
-                    <p className="text-xs text-slate-500 dark:text-slate-400">par {activity.utilisateur}</p>
+                    <p className="text-sm font-medium text-foreground">{activity.action}</p>
+                    <p className="text-xs text-muted-foreground">par {activity.utilisateur}</p>
                   </div>
-                  <span className="text-xs text-slate-400 dark:text-slate-500">{activity.heure}</span>
+                  <span className="text-xs text-muted-foreground">{activity.heure}</span>
                 </div>
               );
             })}

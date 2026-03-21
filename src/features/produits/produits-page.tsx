@@ -77,8 +77,8 @@ export const ProduitsPage: React.FC<{
       key: "image",
       label: "Image",
       render: () => (
-        <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-          <Package className="w-5 h-5 text-slate-400" />
+        <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+          <Package className="w-5 h-5 text-muted-foreground" />
         </div>
       ),
     },
@@ -104,9 +104,9 @@ export const ProduitsPage: React.FC<{
       render: (value: unknown, row: Record<string, unknown>) => {
         const stock = value as number;
         const stockMin = row.stockMin as number;
-        let color = "text-emerald-600";
-        if (stock === 0) color = "text-rose-600";
-        else if (stock <= stockMin) color = "text-amber-600";
+        let color = "text-stockpro-stock-ok-fg";
+        if (stock === 0) color = "text-stockpro-stock-error-fg";
+        else if (stock <= stockMin) color = "text-stockpro-stock-low-fg";
         return <span className={`font-semibold ${color}`}>{stock}</span>;
       },
     },
@@ -188,8 +188,8 @@ export const ProduitsPage: React.FC<{
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Gestion des Produits</h2>
-          <p className="text-slate-500 dark:text-slate-400">Gérez votre catalogue de produits</p>
+          <h2 className="text-2xl font-bold text-foreground">Gestion des Produits</h2>
+          <p className="text-muted-foreground">Gérez votre catalogue de produits</p>
         </div>
         <Button onClick={() => addModal.open()}>
           <Plus className="w-4 h-4 mr-2" />
@@ -234,12 +234,12 @@ export const ProduitsPage: React.FC<{
           </div>
           {/* Active Filters & Clear Button */}
           {activeFiltersCount > 0 && (
-            <div className="flex items-center justify-between pt-2 border-t border-slate-100 dark:border-slate-700">
-              <div className="flex items-center gap-2 text-sm text-slate-500">
+            <div className="flex items-center justify-between pt-2 border-t border-border">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <Filter className="w-4 h-4" />
                 <span>{activeFiltersCount} filtre{activeFiltersCount > 1 ? "s" : ""} actif{activeFiltersCount > 1 ? "s" : ""}</span>
-                <span className="text-slate-400">•</span>
-                <span className="text-indigo-600 dark:text-indigo-400 font-medium">{filteredProduits.length} produit{filteredProduits.length > 1 ? "s" : ""}</span>
+                <span className="text-muted-foreground">•</span>
+                <span className="font-medium text-stockpro-navy dark:text-stockpro-signal">{filteredProduits.length} produit{filteredProduits.length > 1 ? "s" : ""}</span>
               </div>
               <Button
                 variant="ghost"
@@ -278,9 +278,9 @@ export const ProduitsPage: React.FC<{
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                className={`p-1.5 rounded-lg transition-colors ${isFavorite
-                  ? "text-rose-500 bg-rose-50 dark:bg-rose-900/30"
-                  : "text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/30"
+                className={`rounded-lg p-1.5 transition-colors ${isFavorite
+                  ? "bg-stockpro-stock-error-bg text-stockpro-stock-error-fg dark:bg-stockpro-stock-error-fg/12"
+                  : "text-muted-foreground hover:bg-stockpro-stock-error-bg hover:text-stockpro-stock-error-fg dark:hover:bg-stockpro-stock-error-fg/12"
                   }`}
                 title={isFavorite ? "Retirer des favoris" : "Ajouter aux favoris"}
                 onClick={() => {
@@ -293,7 +293,7 @@ export const ProduitsPage: React.FC<{
                 <Heart className={`w-4 h-4 ${isFavorite ? "fill-current" : ""}`} />
               </motion.button>
               <button
-                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-700"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted"
                 title="Voir les détails"
                 onClick={() => {
                   setSelectedProduct(product || null);
@@ -306,7 +306,7 @@ export const ProduitsPage: React.FC<{
                 <Eye className="w-4 h-4" />
               </button>
               <button
-                className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-stockpro-signal/10 hover:text-stockpro-navy dark:hover:bg-stockpro-signal/15 dark:hover:text-stockpro-signal"
                 title="Modifier le produit"
                 onClick={() => {
                   if (product) {
@@ -329,7 +329,7 @@ export const ProduitsPage: React.FC<{
                 <Edit className="w-4 h-4" />
               </button>
               <button
-                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/30"
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-stock-error-fg hover:bg-stockpro-stock-error-bg dark:hover:bg-stockpro-stock-error-fg/12"
                 title="Supprimer le produit"
                 onClick={() => {
                   setSelectedProduct(product || null);
@@ -376,27 +376,27 @@ export const ProduitsPage: React.FC<{
           {/* Indicateur de progression du formulaire - Amélioration UX */}
           <div className="mb-4">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-slate-500 dark:text-slate-400">
+              <span className="text-xs font-medium text-muted-foreground">
                 Progression du formulaire
               </span>
-              <span className={`text-xs font-bold ${formProgress === 100 ? 'text-emerald-500' : 'text-slate-400'}`}>
+              <span className={`text-xs font-bold ${formProgress === 100 ? 'text-stockpro-stock-ok-fg' : 'text-muted-foreground'}`}>
                 {formProgress}%
               </span>
             </div>
-            <div className="w-full h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
+            <div className="w-full h-2 bg-muted rounded-full overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
                 animate={{ width: `${formProgress}%` }}
                 className={`h-full rounded-full transition-colors ${formProgress === 100
-                  ? 'bg-emerald-500'
+                  ? 'bg-stockpro-signal'
                   : formProgress >= 50
-                    ? 'bg-amber-500'
-                    : 'bg-rose-500'
+                    ? 'bg-stockpro-stock-low-fg'
+                    : 'bg-stockpro-stock-error-fg'
                   }`}
               />
             </div>
             {formProgress < 100 && (
-              <p className="text-[10px] text-slate-400 mt-1">
+              <p className="text-[10px] text-muted-foreground mt-1">
                 {6 - Math.round(formProgress / 16.67)} champ(s) obligatoire(s) restant(s)
               </p>
             )}
@@ -404,8 +404,8 @@ export const ProduitsPage: React.FC<{
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Nom du produit <span className="text-rose-500">*</span>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Nom du produit <span className="text-stockpro-stock-error-fg">*</span>
               </label>
               <Input
                 name="nom"
@@ -419,8 +419,8 @@ export const ProduitsPage: React.FC<{
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Catégorie <span className="text-rose-500">*</span>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Catégorie <span className="text-stockpro-stock-error-fg">*</span>
               </label>
               <Select
                 value={newProductCategorie}
@@ -433,15 +433,15 @@ export const ProduitsPage: React.FC<{
                 required
               />
               {newProductFormTouched && !newProductCategorie && (
-                <p className="text-xs text-rose-500 mt-1">La catégorie est requise</p>
+                <p className="text-xs text-stockpro-stock-error-fg mt-1">La catégorie est requise</p>
               )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Prix d&apos;achat (FCFA) <span className="text-rose-500">*</span>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Prix d&apos;achat (FCFA) <span className="text-stockpro-stock-error-fg">*</span>
               </label>
               <Input
                 name="prixAchat"
@@ -457,8 +457,8 @@ export const ProduitsPage: React.FC<{
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Prix de vente (FCFA) <span className="text-rose-500">*</span>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Prix de vente (FCFA) <span className="text-stockpro-stock-error-fg">*</span>
               </label>
               <Input
                 name="prixVente"
@@ -477,8 +477,8 @@ export const ProduitsPage: React.FC<{
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Stock initial <span className="text-rose-500">*</span>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Stock initial <span className="text-stockpro-stock-error-fg">*</span>
               </label>
               <Input
                 name="stock"
@@ -494,14 +494,14 @@ export const ProduitsPage: React.FC<{
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Stock minimum <span className="text-slate-400 text-xs">(alerte)</span>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Stock minimum <span className="text-muted-foreground text-xs">(alerte)</span>
               </label>
               <Input name="stockMin" type="number" placeholder="Ex: 10" min={0} />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                Unité <span className="text-rose-500">*</span>
+              <label className="block text-sm font-medium text-foreground mb-1">
+                Unité <span className="text-stockpro-stock-error-fg">*</span>
               </label>
               <Select
                 value={newProductUnite}
@@ -514,24 +514,24 @@ export const ProduitsPage: React.FC<{
                 required
               />
               {newProductFormTouched && !newProductUnite && (
-                <p className="text-xs text-rose-500 mt-1">L'unité est requise</p>
+                <p className="text-xs text-stockpro-stock-error-fg mt-1">L'unité est requise</p>
               )}
             </div>
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-              Description <span className="text-slate-400 text-xs">(optionnel)</span>
+            <label className="block text-sm font-medium text-foreground mb-1">
+              Description <span className="text-muted-foreground text-xs">(optionnel)</span>
             </label>
             <textarea
               name="description"
               rows={3}
               placeholder="Description du produit..."
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" onClick={() => { addModal.close(); resetNewProductForm(); }}>
               Annuler
             </Button>
@@ -559,7 +559,7 @@ export const ProduitsPage: React.FC<{
         >
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Nom du produit</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Nom du produit</label>
               <Input
                 value={editFormData.nom}
                 onChange={(e) => setEditFormData({ ...editFormData, nom: e.target.value })}
@@ -567,7 +567,7 @@ export const ProduitsPage: React.FC<{
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Catégorie</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Catégorie</label>
               <Select
                 value={editFormData.categorie}
                 onChange={(v) => setEditFormData({ ...editFormData, categorie: v })}
@@ -579,7 +579,7 @@ export const ProduitsPage: React.FC<{
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prix d&apos;achat (FCFA)</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Prix d&apos;achat (FCFA)</label>
               <Input
                 type="number"
                 value={editFormData.prixAchat}
@@ -588,7 +588,7 @@ export const ProduitsPage: React.FC<{
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Prix de vente (FCFA)</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Prix de vente (FCFA)</label>
               <Input
                 type="number"
                 value={editFormData.prixVente}
@@ -600,7 +600,7 @@ export const ProduitsPage: React.FC<{
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Stock</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Stock</label>
               <Input
                 type="number"
                 value={editFormData.stock}
@@ -609,7 +609,7 @@ export const ProduitsPage: React.FC<{
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Stock minimum</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Stock minimum</label>
               <Input
                 type="number"
                 value={editFormData.stockMin}
@@ -618,7 +618,7 @@ export const ProduitsPage: React.FC<{
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Unité</label>
+              <label className="block text-sm font-medium text-foreground mb-1">Unité</label>
               <Select
                 value={editFormData.unite}
                 onChange={(v) => setEditFormData({ ...editFormData, unite: v })}
@@ -629,16 +629,16 @@ export const ProduitsPage: React.FC<{
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Description</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Description</label>
             <textarea
               value={editFormData.description}
               onChange={(e) => setEditFormData({ ...editFormData, description: e.target.value })}
               rows={3}
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" onClick={() => editModal.close()}>
               Annuler
             </Button>
@@ -668,12 +668,12 @@ export const ProduitsPage: React.FC<{
         {selectedProduct && (
           <div className="space-y-6">
             <div className="flex items-center gap-4">
-              <div className="w-20 h-20 rounded-xl bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                <Package className="w-10 h-10 text-slate-400" />
+              <div className="w-20 h-20 rounded-xl bg-muted flex items-center justify-center">
+                <Package className="w-10 h-10 text-muted-foreground" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-slate-800 dark:text-white">{selectedProduct.nom}</h3>
-                <p className="text-slate-500 dark:text-slate-400">SKU: {selectedProduct.sku}</p>
+                <h3 className="text-xl font-semibold text-foreground">{selectedProduct.nom}</h3>
+                <p className="text-muted-foreground">SKU: {selectedProduct.sku}</p>
                 <Badge variant={selectedProduct.stock > selectedProduct.stockMin ? "success" : selectedProduct.stock === 0 ? "danger" : "warning"} className="mt-2">
                   {selectedProduct.stock > selectedProduct.stockMin ? "Disponible" : selectedProduct.stock === 0 ? "Rupture" : "Stock faible"}
                 </Badge>
@@ -682,52 +682,52 @@ export const ProduitsPage: React.FC<{
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Card padding="sm" className="text-center">
-                <p className="text-2xl font-bold text-slate-800 dark:text-white">{selectedProduct.stock}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Stock actuel</p>
+                <p className="text-2xl font-bold text-foreground">{selectedProduct.stock}</p>
+                <p className="text-xs text-muted-foreground">Stock actuel</p>
               </Card>
               <Card padding="sm" className="text-center">
-                <p className="text-2xl font-bold text-amber-600 dark:text-amber-400">{selectedProduct.stockMin}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Stock min.</p>
+                <p className="text-2xl font-bold text-stockpro-stock-low-fg">{selectedProduct.stockMin}</p>
+                <p className="text-xs text-muted-foreground">Stock min.</p>
               </Card>
               <Card padding="sm" className="text-center">
-                <p className="text-2xl font-bold text-slate-800 dark:text-white">{formatCurrency(selectedProduct.prixAchat)}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Prix achat</p>
+                <p className="text-2xl font-bold text-foreground">{formatCurrency(selectedProduct.prixAchat)}</p>
+                <p className="text-xs text-muted-foreground">Prix achat</p>
               </Card>
               <Card padding="sm" className="text-center">
-                <p className="text-2xl font-bold text-emerald-600 dark:text-emerald-400">{formatCurrency(selectedProduct.prixVente)}</p>
-                <p className="text-xs text-slate-500 dark:text-slate-400">Prix vente</p>
+                <p className="text-2xl font-bold text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">{formatCurrency(selectedProduct.prixVente)}</p>
+                <p className="text-xs text-muted-foreground">Prix vente</p>
               </Card>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                <p className="text-sm text-slate-500 dark:text-slate-400">Catégorie</p>
-                <p className="font-medium text-slate-800 dark:text-white">{selectedProduct.categorie}</p>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">Catégorie</p>
+                <p className="font-medium text-foreground">{selectedProduct.categorie}</p>
               </div>
-              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                <p className="text-sm text-slate-500 dark:text-slate-400">Unité</p>
-                <p className="font-medium text-slate-800 dark:text-white">{selectedProduct.unite}</p>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">Unité</p>
+                <p className="font-medium text-foreground">{selectedProduct.unite}</p>
               </div>
-              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                <p className="text-sm text-slate-500 dark:text-slate-400">TVA</p>
-                <p className="font-medium text-slate-800 dark:text-white">{selectedProduct.tva}%</p>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">TVA</p>
+                <p className="font-medium text-foreground">{selectedProduct.tva}%</p>
               </div>
-              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                <p className="text-sm text-slate-500 dark:text-slate-400">Marge</p>
-                <p className="font-medium text-emerald-600 dark:text-emerald-400">
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">Marge</p>
+                <p className="font-medium text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">
                   {(((selectedProduct.prixVente - selectedProduct.prixAchat) / selectedProduct.prixAchat) * 100).toFixed(1)}%
                 </p>
               </div>
             </div>
 
             {selectedProduct.description && (
-              <div className="p-4 bg-slate-50 dark:bg-slate-700/50 rounded-lg">
-                <p className="text-sm text-slate-500 dark:text-slate-400 mb-1">Description</p>
-                <p className="text-slate-800 dark:text-white">{selectedProduct.description}</p>
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground mb-1">Description</p>
+                <p className="text-foreground">{selectedProduct.description}</p>
               </div>
             )}
 
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div className="flex justify-end gap-3 pt-4 border-t border-border">
               <Button variant="outline" onClick={() => detailsModal.close()}>
                 Fermer
               </Button>

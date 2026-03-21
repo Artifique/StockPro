@@ -23,6 +23,7 @@ import { Badge, Button, Card, DataTable, Input, Modal } from "@/components/ui";
 import { showToast } from "@/lib/app-toast";
 import { useDisclosure } from "@/hooks/use-disclosure";
 import { Alert, Select } from "@/components/stock-pro/primitives";
+import { getStockLevelTextClass } from "@/lib/stockpro-theme";
 
 export const StockPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("mouvements");
@@ -66,7 +67,7 @@ export const StockPage: React.FC = () => {
       label: "Quantité",
       sortable: true,
       render: (value: unknown) => (
-        <span className={Number(value) >= 0 ? "text-emerald-600 font-semibold" : "text-rose-600 font-semibold"}>
+        <span className={Number(value) >= 0 ? "text-stockpro-stock-ok-fg font-semibold" : "text-stockpro-stock-error-fg font-semibold"}>
           {Number(value) >= 0 ? "+" : ""}{String(value)}
         </span>
       ),
@@ -86,10 +87,9 @@ export const StockPage: React.FC = () => {
       render: (value: unknown, row: Record<string, unknown>) => {
         const stock = value as number;
         const stockMin = row.stockMin as number;
-        let color = "text-emerald-600";
-        if (stock === 0) color = "text-rose-600";
-        else if (stock <= stockMin) color = "text-amber-600";
-        return <span className={`font-bold text-lg ${color}`}>{stock}</span>;
+        return (
+          <span className={`text-lg font-bold ${getStockLevelTextClass(stock, stockMin)}`}>{stock}</span>
+        );
       },
     },
     { key: "stockMin", label: "Stock min" },
@@ -116,8 +116,8 @@ export const StockPage: React.FC = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-slate-800 dark:text-white">Gestion du Stock</h2>
-          <p className="text-slate-500 dark:text-slate-400">Suivez vos mouvements et alertes stock</p>
+          <h2 className="text-2xl font-bold text-foreground">Gestion du Stock</h2>
+          <p className="text-muted-foreground">Suivez vos mouvements et alertes stock</p>
         </div>
         <Button onClick={() => ajustementModal.open()}>
           <RefreshCw className="w-4 h-4 mr-2" />
@@ -128,30 +128,30 @@ export const StockPage: React.FC = () => {
       {/* Stats Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="text-center">
-          <p className="text-3xl font-bold text-slate-800 dark:text-white">{stats.total.toLocaleString()}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Articles en stock</p>
+          <p className="text-3xl font-bold text-foreground">{stats.total.toLocaleString()}</p>
+          <p className="text-sm text-muted-foreground">Articles en stock</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-rose-600 dark:text-rose-400">{stats.rupture}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Ruptures</p>
+          <p className="text-3xl font-bold text-stockpro-stock-error-fg">{stats.rupture}</p>
+          <p className="text-sm text-muted-foreground">Ruptures</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-amber-600 dark:text-amber-400">{stats.critique}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Stock critique</p>
+          <p className="text-3xl font-bold text-stockpro-stock-low-fg">{stats.critique}</p>
+          <p className="text-sm text-muted-foreground">Stock critique</p>
         </Card>
         <Card className="text-center">
-          <p className="text-3xl font-bold text-indigo-600 dark:text-indigo-400">{formatCurrency(stats.valeur)}</p>
-          <p className="text-sm text-slate-500 dark:text-slate-400">Valeur totale</p>
+          <p className="text-3xl font-bold text-stockpro-navy dark:text-stockpro-signal">{formatCurrency(stats.valeur)}</p>
+          <p className="text-sm text-muted-foreground">Valeur totale</p>
         </Card>
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-2 border-b border-slate-200 dark:border-slate-700">
+      <div className="flex gap-2 border-b border-border">
         <button
           onClick={() => setActiveTab("mouvements")}
           className={`px-4 py-2 font-medium transition-colors ${activeTab === "mouvements"
-            ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400"
-            : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+            ? "border-b-2 border-stockpro-navy text-stockpro-navy dark:border-stockpro-signal dark:text-stockpro-signal"
+            : "text-muted-foreground hover:text-foreground dark:hover:text-foreground"
             }`}
         >
           Mouvements
@@ -159,8 +159,8 @@ export const StockPage: React.FC = () => {
         <button
           onClick={() => setActiveTab("inventaire")}
           className={`px-4 py-2 font-medium transition-colors ${activeTab === "inventaire"
-            ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400"
-            : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+            ? "border-b-2 border-stockpro-navy text-stockpro-navy dark:border-stockpro-signal dark:text-stockpro-signal"
+            : "text-muted-foreground hover:text-foreground dark:hover:text-foreground"
             }`}
         >
           Inventaire
@@ -168,20 +168,20 @@ export const StockPage: React.FC = () => {
         <button
           onClick={() => setActiveTab("alertes")}
           className={`px-4 py-2 font-medium transition-colors ${activeTab === "alertes" || activeTab === "produits-alertes"
-            ? "text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400"
-            : "text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-300"
+            ? "border-b-2 border-stockpro-navy text-stockpro-navy dark:border-stockpro-signal dark:text-stockpro-signal"
+            : "text-muted-foreground hover:text-foreground dark:hover:text-foreground"
             }`}
         >
           Alertes
           {(stats.rupture > 0 || stats.critique > 0) && (
-            <span className="ml-2 px-1.5 py-0.5 text-xs font-semibold bg-rose-500 text-white rounded-full">
+            <span className="ml-2 rounded-full bg-stockpro-stock-error-fg px-1.5 py-0.5 text-xs font-semibold text-white">
               {stats.rupture + stats.critique}
             </span>
           )}
         </button>
         {activeTab === "produits-alertes" && (
           <button
-            className="px-4 py-2 font-medium text-indigo-600 dark:text-indigo-400 border-b-2 border-indigo-600 dark:border-indigo-400 flex items-center gap-1"
+            className="flex items-center gap-1 border-b-2 border-stockpro-navy px-4 py-2 font-medium text-stockpro-navy dark:border-stockpro-signal dark:text-stockpro-signal"
           >
             <ArrowRight className="w-4 h-4" />
             {alertFilter === "rupture" ? "Ruptures" : "Stock faible"}
@@ -214,7 +214,7 @@ export const StockPage: React.FC = () => {
                   ajustementModal.open();
                   showToast(`Ajustement pour: ${row.nom}`, "info");
                 }}
-                className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                className="rounded-lg p-1.5 text-muted-foreground hover:bg-stockpro-signal/10 hover:text-stockpro-navy dark:hover:bg-stockpro-signal/15 dark:hover:text-stockpro-signal"
                 title="Ajuster le stock"
               >
                 <Edit className="w-4 h-4" />
@@ -275,7 +275,7 @@ export const StockPage: React.FC = () => {
                   Produits sous le seuil minimum
                 </Badge>
               )}
-              <span className="text-slate-500 dark:text-slate-400 text-sm">
+              <span className="text-muted-foreground text-sm">
                 {alertFilter === "rupture"
                   ? `${MOCK_PRODUCTS.filter(p => p.stock === 0).length} produits`
                   : `${MOCK_PRODUCTS.filter(p => p.stock > 0 && p.stock <= p.stockMin).length} produits`
@@ -301,12 +301,12 @@ export const StockPage: React.FC = () => {
               {
                 key: "nom", label: "Produit", sortable: true, render: (value: unknown, row: Record<string, unknown>) => (
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                      <Package className="w-5 h-5 text-slate-400" />
+                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
+                      <Package className="w-5 h-5 text-muted-foreground" />
                     </div>
                     <div>
-                      <p className="font-medium text-slate-800 dark:text-white">{String(value)}</p>
-                      <p className="text-xs text-slate-500">{String(row.sku)}</p>
+                      <p className="font-medium text-foreground">{String(value)}</p>
+                      <p className="text-xs text-muted-foreground">{String(row.sku)}</p>
                     </div>
                   </div>
                 )
@@ -318,10 +318,12 @@ export const StockPage: React.FC = () => {
                 sortable: true,
                 render: (value: unknown, row: Record<string, unknown>) => (
                   <div className="text-center">
-                    <p className={`font-semibold ${Number(value) === 0 ? "text-rose-600" : "text-amber-600"}`}>
+                    <p
+                      className={`font-semibold ${getStockLevelTextClass(Number(value), Number(row.stockMin))}`}
+                    >
                       {String(value)} {String(row.unite)}
                     </p>
-                    <p className="text-xs text-slate-400">Min: {String(row.stockMin)}</p>
+                    <p className="text-xs text-muted-foreground">Min: {String(row.stockMin)}</p>
                   </div>
                 )
               },
@@ -366,7 +368,7 @@ export const StockPage: React.FC = () => {
                     ajustementModal.open();
                     showToast(`Ajustement pour: ${row.nom}`, "info");
                   }}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/30"
+                  className="rounded-lg p-1.5 text-muted-foreground hover:bg-stockpro-signal/10 hover:text-stockpro-navy dark:hover:bg-stockpro-signal/15 dark:hover:text-stockpro-signal"
                   title="Ajuster le stock"
                 >
                   <Edit className="w-4 h-4" />
@@ -408,7 +410,7 @@ export const StockPage: React.FC = () => {
           }}
         >
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Produit</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Produit</label>
             <Select
               value=""
               onChange={() => { }}
@@ -417,7 +419,7 @@ export const StockPage: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Type d&apos;ajustement</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Type d&apos;ajustement</label>
             <Select
               value=""
               onChange={() => { }}
@@ -430,19 +432,19 @@ export const StockPage: React.FC = () => {
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Quantité</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Quantité</label>
             <Input type="number" placeholder="0" />
           </div>
           <div>
-            <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Motif</label>
+            <label className="block text-sm font-medium text-foreground mb-1">Motif</label>
             <textarea
               rows={2}
               placeholder="Raison de l'ajustement..."
-              className="w-full px-4 py-2.5 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
             />
           </div>
 
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-200 dark:border-slate-700">
+          <div className="flex justify-end gap-3 pt-4 border-t border-border">
             <Button variant="outline" onClick={ajustementModal.close}>
               Annuler
             </Button>

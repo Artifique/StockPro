@@ -54,18 +54,18 @@ export const Modal: React.FC<{
           animate={{ opacity: 1, scale: 1, y: 0 }}
           exit={{ opacity: 0, scale: 0.95, y: 20 }}
           transition={{ type: "spring", damping: 25, stiffness: 300 }}
-          className={`relative w-full ${sizes[size]} bg-white dark:bg-slate-800 rounded-2xl shadow-xl`}
+          className={`relative w-full ${sizes[size]} rounded-2xl border border-border bg-card shadow-xl`}
         >
-          <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
-            <h3 id="modal-title" className="text-lg font-semibold text-slate-800 dark:text-white">
+          <div className="flex items-center justify-between border-b border-border p-6">
+            <h3 id="modal-title" className="text-lg font-semibold text-card-foreground">
               {title}
             </h3>
             <button
               onClick={onClose}
-              className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              className="rounded-lg p-2 transition-colors hover:bg-muted focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
               aria-label="Fermer"
             >
-              <X className="w-5 h-5 text-slate-500" />
+              <X className="h-5 w-5 text-muted-foreground" />
             </button>
           </div>
           <div className="p-6 max-h-[70vh] overflow-y-auto">{children}</div>
