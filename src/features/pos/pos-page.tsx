@@ -18,27 +18,51 @@ import {
   Zap,
   Smartphone,
 } from "lucide-react";
-import { CATEGORIES, MOCK_CLIENTS, MOCK_PRODUCTS } from "@/data/stock-mock";
-import { addLogWithCurrentUser } from "@/lib/app-logs";
 import { formatCurrency } from "@/lib/format";
 import { Badge, Button, Input } from "@/components/ui";
 import { showToast } from "@/lib/app-toast";
 import { Select } from "@/components/stock-pro/primitives";
+import { ProductService } from "@/services/product.service";
+import { ClientService } from "@/services/partner.service";
+import { SaleService } from "@/services/sale.service";
+import { Product } from "@/models/product.model";
+import { Client } from "@/models/partner.model";
+import { useAppShellSession } from "@/features/app-shell/app-shell-context";
 
 export const POSPage: React.FC = () => {
-  const [posCatalog, setPosCatalog] = useState(() => MOCK_PRODUCTS.map((p) => ({ ...p })));
-  const [cart, setCart] = useState<{ product: typeof MOCK_PRODUCTS[0]; quantity: number }[]>([]);
+  const { user } = useAppShellSession();
+  const [posCatalog, setPosCatalog] = useState<Product[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [cart, setCart] = useState<{ product: Product; quantity: number }[]>([]);
   const [searchProduct, setSearchProduct] = useState("");
-  const [selectedClient, setSelectedClient] = useState("");
-  const [paymentMethod, setPaymentMethod] = useState("especes");
+  const [selectedClientId, setSelectedClientId] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState("Espèces");
   const [discount, setDiscount] = useState(0);
   const [discountError, setDiscountError] = useState("");
-  /** Buffer code-barres (non affiché : ref uniquement pour éviter re-rendus et réabonnements clavier) */
   const barcodeBufferRef = useRef("");
   const [isScanning, setIsScanning] = useState(false);
-  const [, setStockErrors] = useState<{ [key: number]: string }>({});
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Handle discount input with validation
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [p, c] = await Promise.all([
+        ProductService.getAll(),
+        ClientService.getAll()
+      ]);
+      setPosCatalog(p);
+      setClients(c);
+    } catch (error) {
+      showToast("Erreur de chargement", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleDiscountChange = (value: number) => {
     if (value < 0) {
       setDiscount(0);
@@ -59,8 +83,7 @@ export const POSPage: React.FC = () => {
     );
   }, [searchProduct, posCatalog]);
 
-  const addToCart = useCallback((product: typeof MOCK_PRODUCTS[0]) => {
-    // Check if product is in stock
+  const addToCart = useCallback((product: Product) => {
     if (product.stock <= 0) {
       showToast(`${product.nom} est en rupture de stock`, "error");
       return;
@@ -70,16 +93,8 @@ export const POSPage: React.FC = () => {
       const existing = prevCart.find((item) => item.product.id === product.id);
       if (existing) {
         if (existing.quantity < product.stock) {
-          // Clear any previous stock error for this product
-          setStockErrors((prev) => {
-            const newErrors = { ...prev };
-            delete newErrors[product.id];
-            return newErrors;
-          });
           return prevCart.map((item) => (item.product.id === product.id ? { ...item, quantity: item.quantity + 1 } : item));
         } else {
-          // Show stock limit reached error
-          setStockErrors((prev) => ({ ...prev, [product.id]: `Stock maximum atteint (${product.stock} disponibles)` }));
           showToast(`Stock maximum atteint pour ${product.nom}`, "warning");
           return prevCart;
         }
@@ -88,27 +103,25 @@ export const POSPage: React.FC = () => {
     });
   }, []);
 
-  // Barcode scanner simulation (buffer en ref → listener stable)
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const input = barcodeBufferRef.current;
-      if (e.key === "Enter" && input) {
-        const product = posCatalog.find((p) => p.sku.toLowerCase() === input.toLowerCase() && p.stock > 0);
+      if (!isScanning) return;
+      if (e.key === "Enter" && barcodeBufferRef.current) {
+        const product = posCatalog.find((p) => p.sku.toLowerCase() === barcodeBufferRef.current.toLowerCase() && p.stock > 0);
         if (product) {
           addToCart(product);
           showToast(`Produit scanné: ${product.nom}`, "success");
         } else {
-          showToast(`Produit non trouvé: ${input}`, "error");
+          showToast(`Produit non trouvé: ${barcodeBufferRef.current}`, "error");
         }
         barcodeBufferRef.current = "";
       } else if (e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey) {
         barcodeBufferRef.current += e.key;
       }
     };
-
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [addToCart, posCatalog]);
+  }, [isScanning, posCatalog, addToCart]);
 
   const removeFromCart = (productId: number) => {
     setCart(cart.filter((item) => item.product.id !== productId));
@@ -118,78 +131,68 @@ export const POSPage: React.FC = () => {
     const product = posCatalog.find((p) => p.id === productId);
     if (product && quantity > 0 && quantity <= product.stock) {
       setCart(cart.map((item) => (item.product.id === productId ? { ...item, quantity } : item)));
-      // Clear stock error for this product
-      setStockErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[productId];
-        return newErrors;
-      });
     } else if (product && quantity > product.stock) {
       showToast(`Stock insuffisant. Maximum: ${product.stock}`, "error");
-      setStockErrors((prev) => ({ ...prev, [productId]: `Stock maximum: ${product.stock}` }));
     }
   };
 
-  const subtotal = cart.reduce((sum, item) => sum + item.product.prixVente * item.quantity, 0);
+  const subtotal = cart.reduce((sum, item) => sum + item.product.prix_vente * item.quantity, 0);
   const discountAmount = (subtotal * discount) / 100;
   const total = subtotal - discountAmount;
 
-  // Validate sale and decrement stock
-  const handleValidateSale = useCallback(() => {
+  const handleValidateSale = async () => {
     if (cart.length === 0) {
       showToast("Le panier est vide", "warning");
       return;
     }
 
-    const stockIssues = cart.filter((item) => {
-      const live = posCatalog.find((p) => p.id === item.product.id);
-      return !live || item.quantity > live.stock;
-    });
-    if (stockIssues.length > 0) {
-      showToast(`Stock insuffisant pour: ${stockIssues.map((i) => i.product.nom).join(", ")}`, "error");
-      return;
+    try {
+      const saleId = `TRX-${Date.now().toString().slice(-6)}`;
+      const total_ht = subtotal; // Simplified
+      const total_tva = subtotal * 0.18; // Example
+      
+      const transaction = {
+        id: saleId,
+        client_id: selectedClientId ? parseInt(selectedClientId) : null,
+        total_ht,
+        total_tva,
+        discount_rate: discount,
+        discount_amount: discountAmount,
+        total_ttc: total,
+        mode_paiement: paymentMethod as any,
+        statut: 'Payé' as const,
+        user_id: user?.id?.toString() || null,
+      };
+
+      const items = cart.map(item => ({
+        product_id: item.product.id,
+        quantite: item.quantity,
+        prix_unitaire: item.product.prix_vente,
+        tva_rate: 18,
+        total_ligne: item.product.prix_vente * item.quantity
+      }));
+
+      await SaleService.createTransaction(transaction, items);
+
+      // Decrement local stock
+      setPosCatalog(prev => prev.map(p => {
+        const item = cart.find(c => c.product.id === p.id);
+        return item ? { ...p, stock: p.stock - item.quantity } : p;
+      }));
+
+      showToast(`✅ Vente enregistrée !`, "success", 5000);
+      setCart([]);
+      setDiscount(0);
+      setSelectedClientId("");
+      loadData(); // Refresh all
+    } catch (error) {
+      showToast("Erreur lors de la validation", "error");
     }
-
-    setPosCatalog((prev) =>
-      prev.map((p) => {
-        const line = cart.find((c) => c.product.id === p.id);
-        if (!line) return p;
-        return { ...p, stock: p.stock - line.quantity };
-      })
-    );
-
-    const saleDetails = cart.map((item) => `${item.product.nom} x${item.quantity}`).join(", ");
-    const articlesCount = cart.reduce((sum, item) => sum + item.quantity, 0);
-    const saleId = `TRX-${Date.now().toString().slice(-6)}`;
-
-    addLogWithCurrentUser("SALE_CREATE",
-      `Vente ${saleId}: ${saleDetails} → ${formatCurrency(total)}`,
-      { saleId, amount: total, client: selectedClient || "Non spécifié", paymentMethod, articlesCount }
-    );
-
-    cart.forEach((item) => {
-      const before = posCatalog.find((p) => p.id === item.product.id);
-      const newStock = before ? before.stock - item.quantity : item.product.stock - item.quantity;
-      addLogWithCurrentUser("STOCK_EXIT",
-        `Sortie stock: ${item.product.nom} (-${item.quantity})`,
-        { product: item.product.nom, productId: item.product.id, quantity: -item.quantity, newStock, saleId }
-      );
-    });
-
-    // Show success message with longer duration for better feedback
-    showToast(`✅ Vente enregistrée ! ${articlesCount} article${articlesCount > 1 ? 's' : ''} vendu${articlesCount > 1 ? 's' : ''} pour ${formatCurrency(total)}`, "success", 5000);
-    setCart([]);
-    setDiscount(0);
-    setDiscountError("");
-    setSelectedClient("");
-    setStockErrors({});
-  }, [cart, total, selectedClient, paymentMethod, posCatalog]);
+  };
 
   return (
     <div className="h-[calc(100vh-8rem)] flex flex-col lg:flex-row gap-4">
-      {/* Products Section */}
       <div className="flex-1 flex flex-col min-h-0">
-        {/* Search and Scanner */}
         <div className="mb-4 flex gap-2">
           <div className="flex-1">
             <Input
@@ -210,137 +213,58 @@ export const POSPage: React.FC = () => {
               ? "bg-stockpro-stock-low-fg text-white border-stockpro-stock-low-fg shadow-lg shadow-stockpro-stock-low-fg/20"
               : "bg-card border-border text-muted-foreground"
               }`}
-            title="Activer/Désactiver le scan code-barres (tapez un SKU puis Entrée)"
           >
             <Zap className="w-5 h-5" />
-            <span className="hidden sm:inline text-sm font-medium">
-              {isScanning ? "Scanner ON" : "Scanner"}
-            </span>
-            {isScanning && (
-              <motion.span
-                initial={{ scale: 0 }}
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ repeat: Infinity, duration: 1 }}
-                className="absolute -top-1 -right-1 w-3 h-3 bg-stockpro-signal rounded-full border-2 border-white"
-              />
-            )}
-            {/* Tooltip */}
-            <div className="absolute bottom-full left-1/2 z-50 mb-2 whitespace-nowrap rounded-lg bg-stockpro-navy-night px-3 py-1.5 text-xs text-white opacity-0 transition-opacity group-hover:opacity-100 pointer-events-none">
-              {isScanning ? "Cliquer pour désactiver" : "Scanner code-barres (tapez SKU + Entrée)"}
-              <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-stockpro-navy-night" />
-            </div>
+            <span className="hidden sm:inline text-sm font-medium">{isScanning ? "Scanner ON" : "Scanner"}</span>
           </motion.button>
         </div>
 
-        {/* Indicateur de scanner actif */}
         {isScanning && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="mb-4 p-3 border border-stockpro-stock-low-fg/30 bg-stockpro-stock-low-bg dark:border-stockpro-stock-low-fg/40 dark:bg-stockpro-stock-low-fg/10 rounded-lg"
-          >
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="mb-4 p-3 border border-stockpro-stock-low-fg bg-stockpro-stock-low-bg rounded-lg">
             <div className="flex items-center gap-2 text-stockpro-stock-low-fg text-sm">
               <div className="w-2 h-2 bg-stockpro-stock-low-fg rounded-full animate-pulse" />
-              <span className="font-medium">Scanner actif</span>
-              <span className="text-stockpro-stock-low-fg">- Tapez un code SKU puis appuyez sur Entrée</span>
+              <span className="font-medium">Scanner actif - Tapez un SKU + Entrée</span>
             </div>
           </motion.div>
         )}
 
-        {/* Category Quick Filters */}
-        <div className="mb-4 flex gap-2 flex-wrap">
-          <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
-            onClick={() => setSearchProduct("")}
-            className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${searchProduct === ""
-              ? "bg-stockpro-navy/80 text-white"
-              : "bg-muted text-muted-foreground"
-              }`}
-          >
-            Tous
-          </motion.button>
-          {CATEGORIES.slice(0, 4).map((cat) => (
-            <motion.button
-              key={cat.id}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              onClick={() => setSearchProduct(cat.nom)}
-              className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${searchProduct === cat.nom
-                ? "bg-stockpro-navy/80 text-white"
-                : "bg-muted text-muted-foreground"
-                }`}
-            >
-              {cat.nom}
-            </motion.button>
-          ))}
-        </div>
-
         <div className="flex-1 overflow-y-auto">
-          <motion.div
-            className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3"
-            initial="hidden"
-            animate="visible"
-            variants={{
-              hidden: { opacity: 0 },
-              visible: {
-                opacity: 1,
-                transition: { staggerChildren: 0.03 },
-              },
-            }}
-          >
-            {filteredProducts.map((product) => (
-              <motion.button
-                key={product.id}
-                variants={{
-                  hidden: { opacity: 0, y: 20 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-                whileHover={{ scale: 1.03, y: -2 }}
-                whileTap={{ scale: 0.97 }}
-                onClick={() => addToCart(product)}
-                className="p-3 bg-card rounded-xl border border-border hover:border-stockpro-navy/35 dark:hover:border-stockpro-signal/40 hover:shadow-lg transition-all text-left"
-              >
-                <div className="w-full h-16 bg-muted rounded-lg flex items-center justify-center mb-2">
-                  <Package className="w-8 h-8 text-muted-foreground" />
-                </div>
-                <p className="font-medium text-sm text-foreground truncate">{product.nom}</p>
-                <p className="text-xs text-muted-foreground">{product.sku}</p>
-                <div className="flex items-center justify-between mt-2">
-                  <p className="font-semibold text-stockpro-navy dark:text-stockpro-signal">{formatCurrency(product.prixVente)}</p>
-                  <Badge variant={product.stock > product.stockMin ? "success" : "warning"}>{product.stock}</Badge>
-                </div>
-              </motion.button>
-            ))}
-          </motion.div>
+          {isLoading ? (
+            <div className="flex items-center justify-center h-full">Chargement...</div>
+          ) : (
+            <motion.div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3" initial="hidden" animate="visible" variants={{ visible: { transition: { staggerChildren: 0.03 } } }}>
+              {filteredProducts.map((product) => (
+                <motion.button
+                  key={product.id}
+                  variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+                  whileHover={{ scale: 1.03 }}
+                  whileTap={{ scale: 0.97 }}
+                  onClick={() => addToCart(product)}
+                  className="p-3 bg-card rounded-xl border border-border hover:border-stockpro-navy/35 hover:shadow-lg transition-all text-left"
+                >
+                  <div className="w-full h-16 bg-muted rounded-lg flex items-center justify-center mb-2 overflow-hidden">
+                    {product.image_url ? <img src={product.image_url} alt="" className="w-full h-full object-cover" /> : <Package className="w-8 h-8 text-muted-foreground" />}
+                  </div>
+                  <p className="font-medium text-sm text-foreground truncate">{product.nom}</p>
+                  <div className="flex items-center justify-between mt-2">
+                    <p className="font-semibold text-stockpro-navy dark:text-stockpro-signal">{formatCurrency(product.prix_vente)}</p>
+                    <Badge variant={product.stock > product.stock_min ? "success" : "warning"}>{product.stock}</Badge>
+                  </div>
+                </motion.button>
+              ))}
+            </motion.div>
+          )}
         </div>
       </div>
 
-      {/* Cart Section */}
       <div className="w-full lg:w-96 flex flex-col bg-card rounded-xl border border-border">
         <div className="p-4 border-b border-border flex items-center justify-between">
           <h3 className="font-semibold text-lg text-foreground flex items-center gap-2">
             <ShoppingCart className="w-5 h-5" />
-            Panier ({cart.reduce((sum, item) => sum + item.quantity, 0)} articles)
+            Panier ({cart.reduce((sum, item) => sum + item.quantity, 0)})
           </h3>
-          {/* Bouton Vider le panier - visible uniquement si le panier n'est pas vide */}
           {cart.length > 0 && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                if (confirm("Êtes-vous sûr de vouloir vider le panier ? Cette action est irréversible.")) {
-                  setCart([]);
-                  setDiscount(0);
-                  setDiscountError("");
-                  setStockErrors({});
-                  showToast("Panier vidé avec succès", "success");
-                }
-              }}
-              className="text-stockpro-stock-error-fg hover:bg-stockpro-stock-error-bg hover:opacity-90 dark:hover:bg-stockpro-stock-error-fg/12"
-              title="Vider le panier"
-            >
+            <Button variant="ghost" size="sm" onClick={() => setCart([])} className="text-stockpro-stock-error-fg">
               <Trash2 className="w-4 h-4" />
             </Button>
           )}
@@ -349,198 +273,63 @@ export const POSPage: React.FC = () => {
         <div className="flex-1 overflow-y-auto p-4 space-y-3">
           <AnimatePresence>
             {cart.length === 0 ? (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="text-center py-8 text-muted-foreground"
-              >
+              <div className="text-center py-8 text-muted-foreground">
                 <ShoppingCart className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                <p className="font-medium">Panier vide</p>
-                <p className="text-sm mb-4">Cliquez sur un produit pour l&apos;ajouter</p>
-                {/* Guide pour les nouveaux utilisateurs */}
-                <div className="bg-muted/50 rounded-lg p-3 text-left text-xs space-y-2">
-                  <p className="font-medium text-foreground flex items-center gap-2">
-                    <HelpCircle className="w-3.5 h-3.5" />
-                    Comment ajouter des produits ?
-                  </p>
-                  <ul className="space-y-1 text-muted-foreground">
-                    <li className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full bg-stockpro-navy/10 dark:bg-stockpro-signal/12 text-stockpro-navy dark:text-stockpro-signal flex items-center justify-center text-[10px] font-bold">1</span>
-                      Cliquez sur un produit à gauche
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="w-4 h-4 rounded-full bg-stockpro-navy/10 dark:bg-stockpro-signal/12 text-stockpro-navy dark:text-stockpro-signal flex items-center justify-center text-[10px] font-bold">2</span>
-                      Ou utilisez le scanner code-barres
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <span className="flex h-4 w-4 items-center justify-center rounded-full bg-stockpro-navy/10 text-[10px] font-bold text-stockpro-navy dark:bg-stockpro-signal/12 dark:text-stockpro-signal">3</span>
-                      Validez avec le bouton « Valider la vente »
-                    </li>
-                  </ul>
-                </div>
-              </motion.div>
+                <p>Panier vide</p>
+              </div>
             ) : (
-              cart.map((item, index) => (
-                <motion.div
-                  key={item.product.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: 20, height: 0 }}
-                  transition={{ delay: index * 0.03 }}
-                  className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg"
-                >
-                  <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-                    <Package className="w-6 h-6 text-muted-foreground" />
-                  </div>
+              cart.map((item) => (
+                <motion.div key={item.product.id} initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 20 }} className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                   <div className="flex-1 min-w-0">
                     <p className="font-medium text-sm text-foreground truncate">{item.product.nom}</p>
-                    <p className="text-sm text-muted-foreground">{formatCurrency(item.product.prixVente)}</p>
+                    <p className="text-sm text-muted-foreground">{formatCurrency(item.product.prix_vente)}</p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => updateQuantity(item.product.id, item.quantity - 1)}
-                      className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </motion.button>
-                    <motion.span
-                      key={item.quantity}
-                      initial={{ scale: 1.2 }}
-                      animate={{ scale: 1 }}
-                      className="w-8 text-center font-medium text-foreground"
-                    >
-                      {item.quantity}
-                    </motion.span>
-                    <motion.button
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => updateQuantity(item.product.id, item.quantity + 1)}
-                      className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center text-muted-foreground hover:bg-muted"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </motion.button>
+                    <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)} className="p-1 rounded-md bg-muted"><Minus className="w-3 h-3" /></button>
+                    <span className="w-6 text-center text-sm">{item.quantity}</span>
+                    <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)} className="p-1 rounded-md bg-muted"><Plus className="w-3 h-3" /></button>
                   </div>
-                  <button onClick={() => removeFromCart(item.product.id)} className="p-1 text-stockpro-stock-error-fg hover:text-stockpro-stock-error-fg">
-                    <X className="w-4 h-4" />
-                  </button>
+                  <button onClick={() => removeFromCart(item.product.id)} className="text-stockpro-stock-error-fg"><X className="w-4 h-4" /></button>
                 </motion.div>
               ))
             )}
           </AnimatePresence>
         </div>
 
-        {/* Client & Payment */}
         <div className="p-4 border-t border-border space-y-3">
           <Select
-            value={selectedClient}
-            onChange={setSelectedClient}
+            value={selectedClientId}
+            onChange={setSelectedClientId}
             placeholder="Sélectionner un client"
-            options={MOCK_CLIENTS.map((c) => ({ value: c.nom, label: c.nom }))}
+            options={clients.map((c) => ({ value: c.id.toString(), label: c.nom }))}
           />
 
           <div className="flex gap-2">
-            {[
-              { id: "especes", label: "Espèces", icon: <Wallet className="w-4 h-4" /> },
-              { id: "carte", label: "Carte", icon: <CreditCard className="w-4 h-4" /> },
-              { id: "mobile", label: "Mobile", icon: <Smartphone className="w-4 h-4" /> },
-            ].map((method) => (
-              <motion.button
-                key={method.id}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={() => setPaymentMethod(method.id)}
-                className={`flex-1 py-2 px-3 rounded-lg border text-sm font-medium transition-colors flex items-center justify-center gap-1 ${paymentMethod === method.id
-                  ? "border-primary bg-stockpro-navy/8 text-stockpro-navy dark:bg-stockpro-signal/12 dark:text-stockpro-signal"
-                  : "border-border text-muted-foreground"
-                  }`}
-              >
-                {method.icon}
-                <span className="hidden sm:inline">{method.label}</span>
-              </motion.button>
+            {["Espèces", "Carte", "Mobile Money"].map((m) => (
+              <button key={m} onClick={() => setPaymentMethod(m)} className={`flex-1 py-2 rounded-lg border text-xs ${paymentMethod === m ? "bg-stockpro-navy text-white" : "border-border text-muted-foreground"}`}>
+                {m}
+              </button>
             ))}
           </div>
 
-          <div className="space-y-1">
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Remise (%):</span>
-              <input
-                type="number"
-                value={discount}
-                onChange={(e) => handleDiscountChange(Number(e.target.value))}
-                className={`w-20 px-2 py-1 rounded-lg border bg-card text-foreground text-center ${discountError ? "border-stockpro-stock-error-fg ring-1 ring-stockpro-stock-error-fg" : "border-border"
-                  }`}
-                min={0}
-                max={100}
-              />
-            </div>
-            {discountError && (
-              <p className="text-xs text-stockpro-stock-error-fg flex items-center gap-1">
-                <AlertCircle className="w-3 h-3" />
-                {discountError}
-              </p>
-            )}
+          <div className="flex items-center gap-2">
+            <span className="text-sm text-muted-foreground">Remise (%):</span>
+            <input type="number" value={discount} onChange={(e) => handleDiscountChange(Number(e.target.value))} className="w-16 px-2 py-1 rounded border bg-transparent text-center" />
           </div>
         </div>
 
-        {/* Totals */}
         <div className="p-4 border-t border-border space-y-2">
           <div className="flex justify-between text-sm text-muted-foreground">
             <span>Sous-total</span>
             <span>{formatCurrency(subtotal)}</span>
           </div>
-          {discount > 0 && (
-            <div className="flex justify-between text-sm text-stockpro-stock-error-fg">
-              <span>Remise ({discount}%)</span>
-              <span>-{formatCurrency(discountAmount)}</span>
-            </div>
-          )}
-          <motion.div
-            key={total}
-            initial={{ scale: 1.05 }}
-            animate={{ scale: 1 }}
-            className="flex justify-between text-lg font-bold text-foreground pt-2 border-t border-border"
-          >
+          <div className="flex justify-between text-lg font-bold text-foreground pt-2 border-t border-border">
             <span>Total</span>
             <span>{formatCurrency(total)}</span>
-          </motion.div>
-
-          {/* Validation Button - More prominent */}
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="pt-2"
-          >
-            <Button
-              onClick={handleValidateSale}
-              className={`w-full relative overflow-hidden group ${cart.length > 0
-                ? "bg-gradient-to-r from-stockpro-signal to-stockpro-navy hover:brightness-95 dark:to-stockpro-navy-night"
-                : ""
-                }`}
-              size="lg"
-              disabled={cart.length === 0}
-            >
-              {cart.length > 0 ? (
-                <>
-                  <Check className="w-5 h-5 mr-2 relative z-10" />
-                  <span className="relative z-10">Valider la vente</span>
-                  <span className="ml-2 relative z-10 opacity-90">• {formatCurrency(total)}</span>
-                  {/* Animated background */}
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-stockpro-signal to-stockpro-navy"
-                    initial={{ x: "-100%" }}
-                    animate={{ x: "100%" }}
-                    transition={{ repeat: Infinity, duration: 2, ease: "linear" }}
-                    style={{ opacity: 0.3 }}
-                  />
-                </>
-              ) : (
-                <>
-                  <ShoppingCart className="w-5 h-5 mr-2" />
-                  Panier vide
-                </>
-              )}
-            </Button>
-          </motion.div>
+          </div>
+          <Button onClick={handleValidateSale} className="w-full mt-2" size="lg" disabled={cart.length === 0}>
+            Valider la vente
+          </Button>
         </div>
       </div>
     </div>

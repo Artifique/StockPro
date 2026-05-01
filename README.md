@@ -2,7 +2,7 @@
 
 Application Next.js (gestion de stock).
 
-**Dépôt :** [github.com/amasbarry223/STOCKPRO](https://github.com/amasbarry223/STOCKPRO)
+**Dépôt :** [github.com/Artifique/StockPro](https://github.com/Artifique/StockPro)
 
 ## Démarrage
 

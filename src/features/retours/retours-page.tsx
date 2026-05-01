@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Package,
   Boxes,
@@ -20,226 +20,140 @@ import {
   Printer,
 } from "lucide-react";
 import {
-  LOG_TYPES,
-  MOCK_CLIENTS,
-  MOCK_PRODUCTS,
-  MOCK_RETOURS,
   MOTIFS_RETOUR,
   STATUTS_RETOUR,
 } from "@/data/stock-mock";
-import { addLogWithCurrentUser } from "@/lib/app-logs";
 import { formatCurrency, formatShortCurrency } from "@/lib/format";
 import { loadJsPdf } from "@/lib/pdf";
 import { Badge, Button, Card, DataTable, Input, Modal } from "@/components/ui";
 import { showToast } from "@/lib/app-toast";
 import { useDisclosure } from "@/hooks/use-disclosure";
 import { Select } from "@/components/stock-pro/primitives";
-
-type RetourEntry = (typeof MOCK_RETOURS)[number];
+import { InventoryService } from "@/services/inventory.service";
+import { ClientService } from "@/services/partner.service";
+import { ProductService } from "@/services/product.service";
+import { Return } from "@/models/inventory.model";
+import { Client } from "@/models/partner.model";
+import { Product } from "@/models/product.model";
+import { useAppShellSession } from "@/features/app-shell/app-shell-context";
 
 export const RetoursPage: React.FC = () => {
-  // États
-  const [retours, setRetours] = useState<RetourEntry[]>([...MOCK_RETOURS]);
+  const { user } = useAppShellSession();
+  const [retours, setRetours] = useState<Return[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
   const [filterStatut, setFilterStatut] = useState("");
   const [filterType, setFilterType] = useState("");
   const [filterDateFrom, setFilterDateFrom] = useState("");
   const [filterDateTo, setFilterDateTo] = useState("");
+  
   const newRetourModal = useDisclosure();
   const retourDetailsModal = useDisclosure();
   const processRetourModal = useDisclosure();
   const printRetourModal = useDisclosure();
-  const [selectedRetour, setSelectedRetour] = useState<RetourEntry | null>(null);
-
-  const closeRetourDetailsModal = () => {
-    retourDetailsModal.close();
-    setSelectedRetour(null);
-  };
-
-  const closeProcessRetourModal = () => {
-    processRetourModal.close();
-    setSelectedRetour(null);
-    setExchangeProduct("");
-    setExchangeQuantity(1);
-  };
-
-  const closePrintRetourModal = () => {
-    printRetourModal.close();
-    setSelectedRetour(null);
-  };
-
-  // Nouveau retour
-  const [newRetour, setNewRetour] = useState({
-    client: "",
-    clientTelephone: "",
-    produit: "",
-    produitSku: "",
-    quantite: 1,
-    prixUnitaire: 0,
-    type: "retour",
-    motif: "",
-    motifDescription: "",
-    notes: ""
-  });
-
-  // Pour l'échange
+  
+  const [selectedRetour, setSelectedRetour] = useState<Return | null>(null);
   const [exchangeProduct, setExchangeProduct] = useState("");
   const [exchangeQuantity, setExchangeQuantity] = useState(1);
 
-  // Stats
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [r, c, p] = await Promise.all([
+        InventoryService.getAllReturns(),
+        ClientService.getAll(),
+        ProductService.getAll()
+      ]);
+      setRetours(r);
+      setClients(c);
+      setProducts(p);
+    } catch (error) {
+      showToast("Erreur lors du chargement", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const [newRetourState, setNewRetourState] = useState({
+    client_id: "",
+    product_id: "",
+    quantite: 1,
+    prix_unitaire: 0,
+    type: "retour" as const,
+    motif_id: "",
+    motif_description: "",
+    notes: ""
+  });
+
   const stats = useMemo(() => {
     const total = retours.length;
     const enAttente = retours.filter(r => r.statut === "en_attente" || r.statut === "demande").length;
-    const valides = retours.filter(r => r.statut === "valide" || r.statut === "rembourse" || r.statut === "echange").length;
-    const montantRembourse = retours.filter(r => r.statut === "rembourse").reduce((sum, r) => sum + r.montantRembourse, 0);
-    const montantEnAttente = retours.filter(r => r.statut === "en_attente" || r.statut === "demande").reduce((sum, r) => sum + r.montantTotal, 0);
+    const valides = retours.filter(r => ["valide", "rembourse", "echange"].includes(r.statut)).length;
+    const montantRembourse = retours.filter(r => r.statut === "rembourse").reduce((sum, r) => sum + (r.montant_rembourse || 0), 0);
+    const montantEnAttente = retours.filter(r => r.statut === "en_attente" || r.statut === "demande").reduce((sum, r) => sum + r.montant_total, 0);
     return { total, enAttente, valides, montantRembourse, montantEnAttente };
   }, [retours]);
 
-  // Filtrage
   const filteredRetours = useMemo(() => {
-    let result = retours;
-    if (filterStatut) {
-      result = result.filter(r => r.statut === filterStatut);
-    }
-    if (filterType) {
-      result = result.filter(r => r.type === filterType);
-    }
-    if (filterDateFrom) {
-      result = result.filter(r => r.dateDemande >= filterDateFrom);
-    }
-    if (filterDateTo) {
-      result = result.filter(r => r.dateDemande <= filterDateTo);
-    }
+    let result = [...retours];
+    if (filterStatut) result = result.filter(r => r.statut === filterStatut);
+    if (filterType) result = result.filter(r => r.type === filterType);
     return result;
-  }, [retours, filterStatut, filterType, filterDateFrom, filterDateTo]);
+  }, [retours, filterStatut, filterType]);
 
-  // Handler nouveau retour
-  const handleNewRetour = () => {
-    const client = MOCK_CLIENTS.find(c => c.nom === newRetour.client);
-    const produit = MOCK_PRODUCTS.find(p => p.nom === newRetour.produit);
-
-    if (!client || !produit) {
-      showToast("Veuillez sélectionner un client et un produit valides", "error");
+  const handleCreateRetour = async () => {
+    if (!newRetourState.client_id || !newRetourState.product_id) {
+      showToast("Veuillez remplir les champs obligatoires", "error");
       return;
     }
-
-    const retourId = `RET-2024-${String(retours.length + 1).padStart(3, '0')}`;
-    const montantTotal = newRetour.quantite * (newRetour.prixUnitaire || produit.prixVente);
-
-    const nouveauRetour = {
-      id: retourId,
-      dateDemande: new Date().toISOString().split('T')[0],
-      client: newRetour.client,
-      clientTelephone: client.telephone,
-      produit: newRetour.produit,
-      produitSku: produit.sku,
-      quantite: newRetour.quantite,
-      prixUnitaire: newRetour.prixUnitaire || produit.prixVente,
-      montantTotal,
-      type: newRetour.type,
-      motif: newRetour.motif,
-      motifDescription: newRetour.motifDescription,
-      statut: "demande",
-      dateValidation: null,
-      produitEchange: null,
-      montantRembourse: 0,
-      processedBy: null,
-      notes: newRetour.notes
-    };
-
-    setRetours([nouveauRetour, ...retours]);
-    newRetourModal.close();
-    setNewRetour({
-      client: "",
-      clientTelephone: "",
-      produit: "",
-      produitSku: "",
-      quantite: 1,
-      prixUnitaire: 0,
-      type: "retour",
-      motif: "",
-      motifDescription: "",
-      notes: ""
-    });
-
-    // Log de la demande de retour
-    addLogWithCurrentUser("RETURN_CREATE",
-      `Demande de retour ${retourId} créée pour ${newRetour.client}`,
-      { returnId: retourId, product: newRetour.produit, quantity: newRetour.quantite, reason: MOTIFS_RETOUR.find(m => m.id === newRetour.motif)?.label, type: newRetour.type }
-    );
-
-    showToast(`Demande de retour ${retourId} créée avec succès`, "success");
+    try {
+      const product = products.find(p => p.id.toString() === newRetourState.product_id);
+      await InventoryService.createReturn({
+        client_id: parseInt(newRetourState.client_id),
+        product_id: parseInt(newRetourState.product_id),
+        quantite: newRetourState.quantite,
+        prix_unitaire: newRetourState.prix_unitaire || product?.prix_vente || 0,
+        montant_total: newRetourState.quantite * (newRetourState.prix_unitaire || product?.prix_vente || 0),
+        type: newRetourState.type,
+        motif_id: newRetourState.motif_id,
+        motif_description: newRetourState.motif_description,
+        statut: 'demande',
+        date_validation: null,
+        product_echange_id: null,
+        montant_rembourse: 0,
+        processed_by: null,
+        notes: newRetourState.notes
+      });
+      showToast("Demande de retour créée", "success");
+      newRetourModal.close();
+      loadData();
+    } catch (error) {
+      showToast("Erreur lors de la création", "error");
+    }
   };
 
-  // Handler validation retour
-  const handleProcessRetour = (action: "valider" | "refuser" | "rembourser" | "echanger") => {
-    if (!selectedRetour) return;
-
-    const updatedRetours = retours.map(r => {
-      if (r.id === selectedRetour.id) {
-        const updates: Partial<typeof r> = {
-          dateValidation: new Date().toISOString().split('T')[0],
-          processedBy: "Utilisateur actuel"
-        };
-
-        if (action === "valider") {
-          updates.statut = "valide";
-        } else if (action === "refuser") {
-          updates.statut = "refuse";
-        } else if (action === "rembourser") {
-          updates.statut = "rembourse";
-          updates.montantRembourse = r.montantTotal;
-        } else if (action === "echanger") {
-          updates.statut = "echange";
-          const exchangeProd = MOCK_PRODUCTS.find(p => p.nom === exchangeProduct);
-          if (exchangeProd) {
-            updates.produitEchange = {
-              nom: exchangeProduct,
-              sku: exchangeProd.sku,
-              prix: exchangeProd.prixVente,
-              quantite: exchangeQuantity
-            };
-          }
-        }
-
-        return { ...r, ...updates };
-      }
-      return r;
-    });
-
-    setRetours(updatedRetours as RetourEntry[]);
-    processRetourModal.close();
-    setSelectedRetour(null);
-    setExchangeProduct("");
-    setExchangeQuantity(1);
-
-    const messages: Record<string, string> = {
-      valider: "validé",
-      refuser: "refusé",
-      rembourser: "remboursé",
-      echanger: "échangé"
-    };
-
-    // Log de l'action de traitement
-    const logTypes: Record<string, keyof typeof LOG_TYPES> = {
-      valider: "RETURN_VALIDATE",
-      refuser: "RETURN_REJECT",
-      rembourser: "RETURN_REFUND",
-      echanger: "RETURN_EXCHANGE"
-    };
-
-    addLogWithCurrentUser(logTypes[action],
-      `${selectedRetour.id} ${messages[action]}: ${selectedRetour.produit}`,
-      {
-        returnId: selectedRetour.id,
-        action,
-        product: selectedRetour.produit,
-        amount: action === "rembourser" ? selectedRetour.montantTotal : undefined,
-        exchangeProduct: action === "echanger" ? exchangeProduct : undefined
-      }
-    );
-
-    showToast(`Retour ${selectedRetour.id} ${messages[action]} avec succès`, "success");
+  const handleProcessRetour = async (action: "valider" | "refuser" | "rembourser" | "echanger") => {
+    if (!selectedRetour || !user) return;
+    try {
+      let status: Return['statut'] = 'demande';
+      if (action === "valider") status = "valide";
+      else if (action === "refuser") status = "refuse";
+      else if (action === "rembourser") status = "rembourse";
+      else if (action === "echanger") status = "echange";
+      
+      await InventoryService.updateReturnStatut(selectedRetour.id, status, user.id.toString());
+      showToast(`Retour ${action} avec succès`, "success");
+      processRetourModal.close();
+      loadData();
+    } catch (error) {
+      showToast("Erreur lors du traitement", "error");
+    }
   };
 
   // Colonnes du tableau
@@ -378,88 +292,39 @@ export const RetoursPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page Header */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold text-foreground">Retours & Échanges</h2>
           <p className="text-muted-foreground">Gérez les retours et échanges de produits</p>
         </div>
         <Button onClick={() => newRetourModal.open()}>
-          <Plus className="w-4 h-4 mr-2" />
-          Nouvelle demande
+          <Plus className="w-4 h-4 mr-2" /> Nouvelle demande
         </Button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-muted to-muted dark:from-muted dark:to-card rounded-bl-3xl" />
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 rounded-lg bg-muted">
-                <RefreshCw className="w-4 h-4 text-muted-foreground" />
-              </div>
-              <span className="text-xs text-muted-foreground">Total</span>
-            </div>
-            <p className="text-3xl font-bold text-foreground">{stats.total}</p>
-            <p className="text-xs text-muted-foreground">demandes</p>
-          </div>
+        <Card className="text-center">
+          <p className="text-3xl font-bold">{stats.total}</p>
+          <p className="text-xs text-muted-foreground">Total demandes</p>
         </Card>
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-stockpro-stock-low-bg to-stockpro-stock-low-bg dark:from-stockpro-stock-low-fg/12 dark:to-stockpro-stock-low-fg/8 rounded-bl-3xl" />
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 rounded-lg bg-stockpro-stock-low-bg dark:bg-stockpro-stock-low-fg/12">
-                <Clock className="w-4 h-4 text-stockpro-stock-low-fg" />
-              </div>
-              <span className="text-xs text-muted-foreground">En attente</span>
-            </div>
-            <p className="text-3xl font-bold text-stockpro-stock-low-fg">{stats.enAttente}</p>
-            <p className="text-xs text-muted-foreground">à traiter</p>
-          </div>
+        <Card className="text-center">
+          <p className="text-3xl font-bold text-stockpro-stock-low-fg">{stats.enAttente}</p>
+          <p className="text-xs text-muted-foreground">En attente</p>
         </Card>
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-stockpro-stock-ok-bg to-stockpro-stock-ok-bg dark:from-stockpro-stock-ok-fg/12 dark:to-stockpro-stock-ok-fg/8 rounded-bl-3xl" />
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 rounded-lg bg-stockpro-stock-ok-bg dark:bg-stockpro-stock-ok-fg/12">
-                <CheckCircle className="w-4 h-4 text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg" />
-              </div>
-              <span className="text-xs text-muted-foreground">Traitées</span>
-            </div>
-            <p className="text-3xl font-bold text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">{stats.valides}</p>
-            <p className="text-xs text-muted-foreground">terminées</p>
-          </div>
+        <Card className="text-center">
+          <p className="text-3xl font-bold text-stockpro-stock-ok-fg">{stats.valides}</p>
+          <p className="text-xs text-muted-foreground">Traitées</p>
         </Card>
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-stockpro-navy-mid/15 to-stockpro-navy-mid/22 dark:from-stockpro-navy-mid/18 dark:to-stockpro-navy-mid/12 rounded-bl-3xl" />
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 rounded-lg bg-stockpro-navy-mid/12 dark:bg-stockpro-navy-mid/15">
-                <Wallet className="w-4 h-4 text-stockpro-navy dark:text-stockpro-signal" />
-              </div>
-              <span className="text-xs text-muted-foreground">Remboursé</span>
-            </div>
-            <p className="text-xl font-bold text-stockpro-navy dark:text-stockpro-signal">{formatShortCurrency(stats.montantRembourse)}</p>
-            <p className="text-xs text-muted-foreground">FCFA</p>
-          </div>
+        <Card className="text-center">
+          <p className="text-xl font-bold text-stockpro-navy dark:text-stockpro-signal">{formatShortCurrency(stats.montantRembourse)}</p>
+          <p className="text-xs text-muted-foreground">Remboursé (FCFA)</p>
         </Card>
-        <Card className="relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-br from-stockpro-stock-error-bg to-stockpro-stock-error-bg dark:from-stockpro-stock-error-fg/12 dark:to-stockpro-stock-error-fg/8 rounded-bl-3xl" />
-          <div className="relative">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="p-2 rounded-lg bg-stockpro-stock-error-bg dark:bg-stockpro-stock-error-fg/12">
-                <AlertTriangle className="w-4 h-4 text-stockpro-stock-error-fg" />
-              </div>
-              <span className="text-xs text-muted-foreground">En attente</span>
-            </div>
-            <p className="text-xl font-bold text-stockpro-stock-error-fg">{formatShortCurrency(stats.montantEnAttente)}</p>
-            <p className="text-xs text-muted-foreground">FCFA</p>
-          </div>
+        <Card className="text-center">
+          <p className="text-xl font-bold text-stockpro-stock-error-fg">{formatShortCurrency(stats.montantEnAttente)}</p>
+          <p className="text-xs text-muted-foreground">En attente (FCFA)</p>
         </Card>
       </div>
 
-      {/* Filtres */}
       <Card padding="sm">
         <div className="flex flex-wrap items-center gap-4">
           <Filter className="w-5 h-5 text-muted-foreground" />
@@ -473,59 +338,68 @@ export const RetoursPage: React.FC = () => {
             value={filterType}
             onChange={setFilterType}
             placeholder="Tous les types"
-            options={[
-              { value: "retour", label: "Retour simple" },
-              { value: "echange", label: "Échange" }
-            ]}
+            options={[{ value: "retour", label: "Retour" }, { value: "echange", label: "Échange" }]}
           />
-          <div className="flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-muted-foreground" />
-            <input
-              type="date"
-              value={filterDateFrom}
-              onChange={(e) => setFilterDateFrom(e.target.value)}
-              className="h-9 px-3 text-sm bg-card border border-border rounded-lg text-foreground"
-              placeholder="Date début"
-            />
-            <span className="text-muted-foreground">→</span>
-            <input
-              type="date"
-              value={filterDateTo}
-              onChange={(e) => setFilterDateTo(e.target.value)}
-              className="h-9 px-3 text-sm bg-card border border-border rounded-lg text-foreground"
-              placeholder="Date fin"
-            />
-          </div>
-          {(filterStatut || filterType || filterDateFrom || filterDateTo) && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setFilterStatut("");
-                setFilterType("");
-                setFilterDateFrom("");
-                setFilterDateTo("");
-              }}
-            >
-              <X className="w-4 h-4 mr-1" />
-              Réinitialiser
-            </Button>
-          )}
         </div>
       </Card>
 
-      {/* Tableau */}
-      <Card>
-        <DataTable onToast={showToast}
-          columns={columns}
-          data={filteredRetours}
-          title="Liste des retours et échanges"
-          pageSize={5}
-          searchable={true}
-          searchPlaceholder="Rechercher par ID, client, produit..."
-          exportOptions
-        />
-      </Card>
+      <DataTable onToast={showToast}
+        columns={columns}
+        data={filteredRetours}
+        title="Liste des retours"
+        pageSize={5}
+        isLoading={isLoading}
+        actions={(row) => {
+          const retour = retours.find(r => r.id === row.id);
+          return (
+            <div className="flex items-center justify-end gap-1">
+              <button className="p-1.5 hover:bg-muted rounded" onClick={() => { setSelectedRetour(retour || null); retourDetailsModal.open(); }}><Eye className="w-4 h-4" /></button>
+              {(row.statut === "demande" || row.statut === "en_attente") && (
+                <button className="p-1.5 hover:bg-stockpro-stock-ok-bg rounded text-stockpro-stock-ok-fg" onClick={() => { setSelectedRetour(retour || null); processRetourModal.open(); }}><CheckCircle className="w-4 h-4" /></button>
+              )}
+            </div>
+          );
+        }}
+      />
+
+      <Modal isOpen={newRetourModal.isOpen} onClose={newRetourModal.close} title="Nouvelle demande" size="lg">
+        <form className="space-y-4" onSubmit={(e) => { e.preventDefault(); handleCreateRetour(); }}>
+          <div className="grid grid-cols-2 gap-4">
+            <Select value={newRetourState.client_id} onChange={(v) => setNewRetourState({ ...newRetourState, client_id: v })} options={clients.map(c => ({ value: String(c.id), label: c.nom }))} placeholder="Client" />
+            <Select value={newRetourState.product_id} onChange={(v) => setNewRetourState({ ...newRetourState, product_id: v })} options={products.map(p => ({ value: String(p.id), label: p.nom }))} placeholder="Produit" />
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            <Input type="number" value={String(newRetourState.quantite)} onChange={(e) => setNewRetourState({ ...newRetourState, quantite: parseInt(e.target.value) || 1 })} placeholder="Qté" />
+            <Select value={newRetourState.type} onChange={(v) => setNewRetourState({ ...newRetourState, type: v as any })} options={[{ value: "retour", label: "Retour" }, { value: "echange", label: "Échange" }]} />
+            <Select value={newRetourState.motif_id} onChange={(v) => setNewRetourState({ ...newRetourState, motif_id: v })} options={MOTIFS_RETOUR.map(m => ({ value: m.id, label: m.label }))} placeholder="Motif" />
+          </div>
+          <textarea className="w-full p-2 border rounded" placeholder="Description..." value={newRetourState.motif_description} onChange={(e) => setNewRetourState({ ...newRetourState, motif_description: e.target.value })} />
+          <div className="flex justify-end gap-3 pt-4 border-t">
+            <Button variant="outline" onClick={newRetourModal.close}>Annuler</Button>
+            <Button type="submit">Créer</Button>
+          </div>
+        </form>
+      </Modal>
+
+      <Modal isOpen={retourDetailsModal.isOpen} onClose={retourDetailsModal.close} title="Détails du retour">
+        {selectedRetour && (
+          <div className="space-y-4">
+            <div className="p-4 bg-muted/50 rounded-lg">
+              <p className="text-xs text-muted-foreground">Client</p>
+              <p className="font-semibold">{selectedRetour.client?.nom || "Inconnu"}</p>
+            </div>
+            <div className="p-4 border rounded-lg">
+              <p className="text-sm font-medium">Produit: {selectedRetour.product?.nom}</p>
+              <p className="text-sm">Quantité: {selectedRetour.quantite}</p>
+              <p className="text-sm font-bold">Total: {formatCurrency(selectedRetour.montant_total)}</p>
+            </div>
+            <div className="flex justify-end pt-4"><Button variant="outline" onClick={retourDetailsModal.close}>Fermer</Button></div>
+          </div>
+        )}
+      </Modal>
+    </div>
+  );
+};
 
       {/* Modal Nouveau Retour */}
       <Modal

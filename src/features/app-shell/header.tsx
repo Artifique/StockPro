@@ -17,20 +17,12 @@ import {
   Users,
   Truck,
 } from "lucide-react";
-import {
-  MOCK_CLIENTS,
-  MOCK_FOURNISSEURS,
-  MOCK_PRODUCTS,
-  type StockProUser,
-} from "@/data/stock-mock";
-import { formatCurrency } from "@/lib/format";
-import { showToast } from "@/lib/app-toast";
-import { useDisclosure } from "@/hooks/use-disclosure";
-import { NotificationPanel, Avatar } from "@/components/stock-pro/primitives";
-import { routePath, type AppRouteId } from "@/lib/stock-pro-routes";
+import { Profile } from "@/models/system.model";
+import { Product } from "@/models/product.model";
+import { Client, Supplier } from "@/models/partner.model";
 
 export const Header: React.FC<{
-  user: StockProUser;
+  user: Profile;
   sidebarCollapsed: boolean;
   setMobileOpen: (v: boolean) => void;
   darkMode: boolean;
@@ -253,7 +245,7 @@ export const Header: React.FC<{
                     <div key={idx}>
                       <h4 className="app-shell-overline mb-2">{group.type}</h4>
                       <div className="space-y-1">
-                        {group.type === "Produits" && (group.items as typeof MOCK_PRODUCTS).map((item: (typeof MOCK_PRODUCTS)[0]) => (
+                        {group.type === "Produits" && (group.items as Product[]).map((item) => (
                           <button
                             key={item.id}
                             onClick={() => {
@@ -266,11 +258,11 @@ export const Header: React.FC<{
                             <Package className="h-4 w-4 shrink-0 text-stockpro-navy dark:text-stockpro-signal" />
                             <div className="min-w-0">
                               <p className="app-shell-nav text-foreground">{item.nom}</p>
-                              <p className="app-shell-caption text-muted-foreground">{item.sku} • {formatCurrency(item.prixVente)}</p>
+                              <p className="app-shell-caption text-muted-foreground">{item.sku} • {formatCurrency(item.prix_vente)}</p>
                             </div>
                           </button>
                         ))}
-                        {group.type === "Clients" && (group.items as typeof MOCK_CLIENTS).map((item) => (
+                        {group.type === "Clients" && (group.items as Client[]).map((item) => (
                           <button
                             key={item.id}
                             onClick={() => {
@@ -287,7 +279,7 @@ export const Header: React.FC<{
                             </div>
                           </button>
                         ))}
-                        {group.type === "Fournisseurs" && (group.items as typeof MOCK_FOURNISSEURS).map((item) => (
+                        {group.type === "Fournisseurs" && (group.items as Supplier[]).map((item) => (
                           <button
                             key={item.id}
                             onClick={() => {
@@ -300,7 +292,7 @@ export const Header: React.FC<{
                             <Truck className="h-4 w-4 shrink-0 text-stockpro-stock-low-fg" />
                             <div className="min-w-0">
                               <p className="app-shell-nav text-foreground">{item.nom}</p>
-                              <p className="app-shell-caption text-muted-foreground">{item.contact}</p>
+                              <p className="app-shell-caption text-muted-foreground">{item.contact_person}</p>
                             </div>
                           </button>
                         ))}

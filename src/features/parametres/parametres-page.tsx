@@ -43,19 +43,11 @@ import {
   Copy,
 } from "lucide-react";
 import {
-  CATEGORIES,
   LOG_CATEGORIES,
   LOG_TYPES,
-  MOCK_CLIENTS,
-  MOCK_FACTURES,
-  MOCK_LOGS,
-  MOCK_PRODUCTS,
-  MOCK_TRANSACTIONS,
-  MOCK_USERS,
   SEVERITY_STYLES,
-  UNITES_MESURE,
 } from "@/data/stock-mock";
-import { addLogWithCurrentUser, getLogs, subscribeToLogs } from "@/lib/app-logs";
+import { addLogWithCurrentUser, subscribeToLogs } from "@/lib/app-logs";
 import { downloadCsvFile } from "@/lib/export-csv";
 import { Badge, Button, Card, DataTable, Input, Modal } from "@/components/ui";
 import { showToast } from "@/lib/app-toast";
@@ -65,28 +57,33 @@ import {
 } from "@/lib/stockpro-storage-keys";
 import { useDisclosure } from "@/hooks/use-disclosure";
 import { Alert, Select, Avatar } from "@/components/stock-pro/primitives";
+import { SystemService } from "@/services/system.service";
+import { ProductService } from "@/services/product.service";
+import { Profile, ActivityLog } from "@/models/system.model";
+import { Category, Unit } from "@/models/product.model";
 
 export const ParametresPage: React.FC<{
-  currentUser: typeof MOCK_USERS[0];
+  currentUser: Profile;
 }> = ({ currentUser }) => {
   const [activeTab, setActiveTab] = useState("utilisateurs");
-  const [users, setUsers] = useState(MOCK_USERS);
+  const [users, setUsers] = useState<Profile[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const newUserModal = useDisclosure();
   const editUserModal = useDisclosure();
   const resetPasswordModal = useDisclosure();
   const [resetPasswordTempPreview, setResetPasswordTempPreview] = useState("");
-  const [selectedUser, setSelectedUser] = useState<typeof MOCK_USERS[0] | null>(null);
+  const [selectedUser, setSelectedUser] = useState<Profile | null>(null);
   const [logStatsUseLiveDate] = useState(true);
   const [editUserData, setEditUserData] = useState({ nom: "", email: "", role: "" });
 
   const categoryModal = useDisclosure();
   const unitModal = useDisclosure();
-  const [categories, setCategories] = useState(CATEGORIES);
-  const [unites, setUnites] = useState(UNITES_MESURE);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [unites, setUnites] = useState<Unit[]>([]);
   const [newCategory, setNewCategory] = useState({ nom: "", color: "#1a2b6d" });
   const [newUnit, setNewUnit] = useState({ nom: "", abreviation: "" });
-  const [editingCategory, setEditingCategory] = useState<typeof CATEGORIES[0] | null>(null);
-  const [editingUnit, setEditingUnit] = useState<typeof UNITES_MESURE[0] | null>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingUnit, setEditingUnit] = useState<Unit | null>(null);
 
   // Enterprise settings state
   const [enterpriseSettings, setEnterpriseSettings] = useState({
@@ -98,6 +95,40 @@ export const ParametresPage: React.FC<{
     devise: "FCFA",
     logo: null as string | null,
   });
+
+  useEffect(() => {
+    loadAllData();
+  }, []);
+
+  const loadAllData = async () => {
+    setIsLoading(true);
+    try {
+      const [u, c, un, ent, inv, not, sec, bac, l] = await Promise.all([
+        SystemService.getAllProfiles(),
+        ProductService.getCategories(),
+        ProductService.getUnits(),
+        SystemService.getSetting("enterprise"),
+        SystemService.getSetting("invoice"),
+        SystemService.getSetting("notification"),
+        SystemService.getSetting("security"),
+        SystemService.getSetting("backup"),
+        SystemService.getLogs(100)
+      ]);
+      setUsers(u);
+      setCategories(c);
+      setUnites(un);
+      if (ent) setEnterpriseSettings(ent);
+      if (inv) setInvoiceSettings(inv);
+      if (not) setNotificationSettings(not);
+      if (sec) setSecuritySettings(sec);
+      if (bac) setBackupSettings(bac);
+      setLogs(l);
+    } catch (error) {
+      showToast("Erreur lors du chargement des paramètres", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Invoice settings state
   const [invoiceSettings, setInvoiceSettings] = useState({
@@ -432,6 +463,51 @@ export const ParametresPage: React.FC<{
     </div>
   );
 
+  const handleSaveEnterprise = async () => {
+    try {
+      await SystemService.saveSetting("enterprise", enterpriseSettings);
+      showToast("Paramètres de l'entreprise enregistrés", "success");
+    } catch (error) {
+      showToast("Erreur lors de l'enregistrement", "error");
+    }
+  };
+
+  const handleSaveInvoice = async () => {
+    try {
+      await SystemService.saveSetting("invoice", invoiceSettings);
+      showToast("Paramètres de facturation enregistrés", "success");
+    } catch (error) {
+      showToast("Erreur lors de l'enregistrement", "error");
+    }
+  };
+
+  const handleSaveNotification = async () => {
+    try {
+      await SystemService.saveSetting("notification", notificationSettings);
+      showToast("Paramètres de notifications enregistrés", "success");
+    } catch (error) {
+      showToast("Erreur lors de l'enregistrement", "error");
+    }
+  };
+
+  const handleSaveSecurity = async () => {
+    try {
+      await SystemService.saveSetting("security", securitySettings);
+      showToast("Paramètres de sécurité enregistrés", "success");
+    } catch (error) {
+      showToast("Erreur lors de l'enregistrement", "error");
+    }
+  };
+
+  const handleSaveBackup = async () => {
+    try {
+      await SystemService.saveSetting("backup", backupSettings);
+      showToast("Paramètres de sauvegarde enregistrés", "success");
+    } catch (error) {
+      showToast("Erreur lors de l'enregistrement", "error");
+    }
+  };
+
   // Render Enterprise Tab
   const renderEnterpriseTab = () => (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -507,7 +583,7 @@ export const ParametresPage: React.FC<{
       <Card title="Logo et image" description="Personnalisez l'apparence de vos documents">
         <div className="space-y-4">
           <div className="flex items-center gap-6">
-            <div className="w-24 h-24 rounded-xl bg-muted flex items-center justify-center border-2 border-dashed border-border dark:border-border overflow-hidden">
+            <div className="w-24 h-24 rounded-xl bg-muted flex items-center justify-center border-2 border-dashed border-border overflow-hidden">
               {enterpriseSettings.logo ? (
                 <img src={enterpriseSettings.logo} alt="Logo" className="w-full h-full object-cover rounded-xl" />
               ) : (
@@ -518,58 +594,28 @@ export const ParametresPage: React.FC<{
               <input
                 type="file"
                 id="logo-upload"
-                accept="image/png,image/jpeg,image/svg+xml"
+                accept="image/*"
                 className="hidden"
                 onChange={(e) => {
                   const file = e.target.files?.[0];
                   if (file) {
-                    if (file.size > 2 * 1024 * 1024) {
-                      showToast("Le fichier est trop volumineux (max 2MB)", "error");
-                      return;
-                    }
                     const reader = new FileReader();
-                    reader.onload = (event) => {
-                      setEnterpriseSettings({ ...enterpriseSettings, logo: event.target?.result as string });
-                      showToast("Logo chargé avec succès !", "success");
-                    };
+                    reader.onload = (event) => setEnterpriseSettings({ ...enterpriseSettings, logo: event.target?.result as string });
                     reader.readAsDataURL(file);
                   }
                 }}
               />
-              <Button
-                variant="outline"
-                onClick={() => {
-                  const input = document.getElementById('logo-upload');
-                  input?.click();
-                }}
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Charger un logo
+              <Button variant="outline" onClick={() => document.getElementById('logo-upload')?.click()}>
+                <Upload className="w-4 h-4 mr-2" /> Charger un logo
               </Button>
-              {enterpriseSettings.logo && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="ml-2"
-                  onClick={() => {
-                    setEnterpriseSettings({ ...enterpriseSettings, logo: null });
-                    showToast("Logo supprimé", "success");
-                  }}
-                >
-                  <Trash2 className="w-4 h-4 mr-1" />
-                  Supprimer
-                </Button>
-              )}
-              <p className="text-xs text-muted-foreground mt-2">PNG, JPG ou SVG. Max 2MB. Recommandé: 200x200px</p>
             </div>
           </div>
         </div>
       </Card>
 
       <div className="lg:col-span-2">
-        <Button onClick={() => showToast("Paramètres de l'entreprise enregistrés", "success")}>
-          <CheckCircle className="w-4 h-4 mr-2" />
-          Enregistrer les modifications
+        <Button onClick={handleSaveEnterprise}>
+          <CheckCircle className="w-4 h-4 mr-2" /> Enregistrer les modifications
         </Button>
       </div>
     </div>
@@ -613,9 +659,6 @@ export const ParametresPage: React.FC<{
               />
             </div>
           </div>
-          <div className="p-3 bg-muted/50 rounded-lg">
-            <p className="text-sm text-muted-foreground">Aperçu: <span className="font-mono font-semibold">{invoiceSettings.prefixFacture}-{invoiceSettings.numeroSuivant}</span></p>
-          </div>
         </div>
       </Card>
 
@@ -646,22 +689,12 @@ export const ParametresPage: React.FC<{
               onChange={(e) => setInvoiceSettings({ ...invoiceSettings, conditionsPaiement: e.target.value })}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Notes en pied de page</label>
-            <textarea
-              value={invoiceSettings.notesPied}
-              onChange={(e) => setInvoiceSettings({ ...invoiceSettings, notesPied: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
-              rows={2}
-            />
-          </div>
         </div>
       </Card>
 
       <div className="lg:col-span-2">
-        <Button onClick={() => showToast("Paramètres de facturation enregistrés", "success")}>
-          <CheckCircle className="w-4 h-4 mr-2" />
-          Enregistrer les modifications
+        <Button onClick={handleSaveInvoice}>
+          <CheckCircle className="w-4 h-4 mr-2" /> Enregistrer les modifications
         </Button>
       </div>
     </div>
@@ -670,119 +703,19 @@ export const ParametresPage: React.FC<{
   // Render Notifications Tab
   const renderNotificationsTab = () => (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <Card
-        className="lg:col-span-2"
-        title="Tableau de bord"
-        description="Bannière de bienvenue affichée lorsque vous n'avez pas encore de favoris ni de produits récemment consultés"
-      >
-        <p className="text-sm text-muted-foreground mb-3">
-          Si vous l&apos;avez fermée, vous pouvez la réafficher depuis ici avant de retourner sur le dashboard.
-        </p>
-        <Button
-          variant="outline"
-          onClick={() => {
-            try {
-              localStorage.removeItem(STOCKPRO_WELCOME_DISMISSED_KEY);
-            } catch {
-              /* ignore */
-            }
-            window.dispatchEvent(new Event(STOCKPRO_WELCOME_RESET_EVENT));
-            showToast(
-              "La bannière pourra réapparaître sur le tableau de bord (sans favoris ni historique récent).",
-              "success",
-            );
-          }}
-        >
-          Réafficher la bannière de bienvenue
-        </Button>
-      </Card>
-
       <Card title="Alertes automatiques" description="Configurez les alertes système">
         <div className="space-y-1">
-          <SettingRow
-            label="Alerte stock minimum"
-            description="Notification quand le stock atteint le seuil minimum"
-          >
-            <ToggleSwitch
-              enabled={notificationSettings.alerteStockMin}
-              onChange={(v) => setNotificationSettings({ ...notificationSettings, alerteStockMin: v })}
-            />
+          <SettingRow label="Alerte stock minimum" description="Notification quand le stock atteint le seuil minimum">
+            <ToggleSwitch enabled={notificationSettings.alerteStockMin} onChange={(v) => setNotificationSettings({ ...notificationSettings, alerteStockMin: v })} />
           </SettingRow>
-          <SettingRow
-            label="Alerte rupture de stock"
-            description="Notification immédiate en cas de rupture"
-          >
-            <ToggleSwitch
-              enabled={notificationSettings.alerteRupture}
-              onChange={(v) => setNotificationSettings({ ...notificationSettings, alerteRupture: v })}
-            />
-          </SettingRow>
-          <SettingRow
-            label="Confirmation de paiement"
-            description="Notification à chaque paiement reçu"
-          >
-            <ToggleSwitch
-              enabled={notificationSettings.alertePaiement}
-              onChange={(v) => setNotificationSettings({ ...notificationSettings, alertePaiement: v })}
-            />
-          </SettingRow>
-          <SettingRow
-            label="Rappel d'échéance"
-            description="Rappel pour les factures arrivant à échéance"
-          >
-            <ToggleSwitch
-              enabled={notificationSettings.rappelEcheance}
-              onChange={(v) => setNotificationSettings({ ...notificationSettings, rappelEcheance: v })}
-            />
-          </SettingRow>
-        </div>
-      </Card>
-
-      <Card title="Rapports automatiques" description="Fréquence des rapports envoyés">
-        <div className="space-y-1">
-          <SettingRow
-            label="Rapport journalier"
-            description="Recevoir un résumé quotidien par email"
-          >
-            <ToggleSwitch
-              enabled={notificationSettings.rapportJournalier}
-              onChange={(v) => setNotificationSettings({ ...notificationSettings, rapportJournalier: v })}
-            />
-          </SettingRow>
-          <SettingRow
-            label="Rapport hebdomadaire"
-            description="Recevoir un résumé hebdomadaire chaque lundi"
-          >
-            <ToggleSwitch
-              enabled={notificationSettings.rapportHebdo}
-              onChange={(v) => setNotificationSettings({ ...notificationSettings, rapportHebdo: v })}
-            />
+          <SettingRow label="Alerte rupture de stock" description="Notification immédiate en cas de rupture">
+            <ToggleSwitch enabled={notificationSettings.alerteRupture} onChange={(v) => setNotificationSettings({ ...notificationSettings, alerteRupture: v })} />
           </SettingRow>
         </div>
       </Card>
 
       <Card title="Canaux de notification" description="Moyens de réception des alertes">
-        <div className="space-y-1">
-          <SettingRow
-            label="Notifications par email"
-            description="Recevoir les alertes par email"
-          >
-            <ToggleSwitch
-              enabled={notificationSettings.emailNotifications}
-              onChange={(v) => setNotificationSettings({ ...notificationSettings, emailNotifications: v })}
-            />
-          </SettingRow>
-          <SettingRow
-            label="Notifications par SMS"
-            description="Recevoir les alertes critiques par SMS"
-          >
-            <ToggleSwitch
-              enabled={notificationSettings.smsNotifications}
-              onChange={(v) => setNotificationSettings({ ...notificationSettings, smsNotifications: v })}
-            />
-          </SettingRow>
-        </div>
-        <div className="mt-4 pt-4 border-t border-border space-y-4">
+        <div className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Email administrateur</label>
             <Input
@@ -791,20 +724,12 @@ export const ParametresPage: React.FC<{
               onChange={(e) => setNotificationSettings({ ...notificationSettings, emailAdmin: e.target.value })}
             />
           </div>
-          <div>
-            <label className="block text-sm font-medium text-foreground mb-1">Téléphone SMS</label>
-            <Input
-              value={notificationSettings.smsPhone}
-              onChange={(e) => setNotificationSettings({ ...notificationSettings, smsPhone: e.target.value })}
-            />
-          </div>
         </div>
       </Card>
 
       <div className="lg:col-span-2">
-        <Button onClick={() => showToast("Paramètres de notifications enregistrés", "success")}>
-          <CheckCircle className="w-4 h-4 mr-2" />
-          Enregistrer les modifications
+        <Button onClick={handleSaveNotification}>
+          <CheckCircle className="w-4 h-4 mr-2" /> Enregistrer les modifications
         </Button>
       </div>
     </div>
@@ -815,14 +740,8 @@ export const ParametresPage: React.FC<{
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <Card title="Authentification" description="Paramètres de connexion et session">
         <div className="space-y-1">
-          <SettingRow
-            label="Authentification 2FA"
-            description="Renforcer la sécurité avec double authentification"
-          >
-            <ToggleSwitch
-              enabled={securitySettings.authentification2FA}
-              onChange={(v) => setSecuritySettings({ ...securitySettings, authentification2FA: v })}
-            />
+          <SettingRow label="Authentification 2FA" description="Renforcer la sécurité avec double authentification">
+            <ToggleSwitch enabled={securitySettings.authentification2FA} onChange={(v) => setSecuritySettings({ ...securitySettings, authentification2FA: v })} />
           </SettingRow>
           <div className="flex items-center justify-between py-3 border-b border-border">
             <div className="flex-1 pr-4">
@@ -832,130 +751,44 @@ export const ParametresPage: React.FC<{
             <Select
               value={String(securitySettings.sessionTimeout)}
               onChange={(v) => setSecuritySettings({ ...securitySettings, sessionTimeout: parseInt(v) })}
-              options={[
-                { value: "15", label: "15 minutes" },
-                { value: "30", label: "30 minutes" },
-                { value: "60", label: "1 heure" },
-                { value: "120", label: "2 heures" },
-                { value: "480", label: "8 heures" },
-              ]}
-            />
-          </div>
-          <div className="flex items-center justify-between py-3 border-b border-border">
-            <div className="flex-1 pr-4">
-              <p className="text-sm font-medium text-foreground">Tentatives de connexion</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Verrouillage après échecs</p>
-            </div>
-            <Select
-              value={String(securitySettings.maxLoginAttempts)}
-              onChange={(v) => setSecuritySettings({ ...securitySettings, maxLoginAttempts: parseInt(v) })}
-              options={[
-                { value: "3", label: "3 tentatives" },
-                { value: "5", label: "5 tentatives" },
-                { value: "10", label: "10 tentatives" },
-              ]}
+              options={[{ value: "15", label: "15 min" }, { value: "30", label: "30 min" }, { value: "60", label: "1h" }]}
             />
           </div>
         </div>
-      </Card>
-
-      <Card title="Politique de mots de passe" description="Exigences de sécurité des mots de passe">
-        <div className="space-y-1">
-          <div className="flex items-center justify-between py-3 border-b border-border">
-            <div className="flex-1 pr-4">
-              <p className="text-sm font-medium text-foreground">Longueur minimum</p>
-              <p className="text-xs text-muted-foreground mt-0.5">Nombre de caractères requis</p>
-            </div>
-            <Select
-              value={String(securitySettings.passwordMinLength)}
-              onChange={(v) => setSecuritySettings({ ...securitySettings, passwordMinLength: parseInt(v) })}
-              options={[
-                { value: "6", label: "6 caractères" },
-                { value: "8", label: "8 caractères" },
-                { value: "10", label: "10 caractères" },
-                { value: "12", label: "12 caractères" },
-              ]}
-            />
-          </div>
-          <SettingRow
-            label="Exiger une majuscule"
-            description="Au moins une lettre majuscule"
-          >
-            <ToggleSwitch
-              enabled={securitySettings.passwordRequireUppercase}
-              onChange={(v) => setSecuritySettings({ ...securitySettings, passwordRequireUppercase: v })}
-            />
-          </SettingRow>
-          <SettingRow
-            label="Exiger un chiffre"
-            description="Au moins un chiffre"
-          >
-            <ToggleSwitch
-              enabled={securitySettings.passwordRequireNumber}
-              onChange={(v) => setSecuritySettings({ ...securitySettings, passwordRequireNumber: v })}
-            />
-          </SettingRow>
-          <SettingRow
-            label="Exiger un caractère spécial"
-            description="Au moins un caractère spécial (!@#$%...)"
-          >
-            <ToggleSwitch
-              enabled={securitySettings.passwordRequireSpecial}
-              onChange={(v) => setSecuritySettings({ ...securitySettings, passwordRequireSpecial: v })}
-            />
-          </SettingRow>
-        </div>
-      </Card>
-
-      <Card title="Journal d'activité" description="Historique des actions importantes">
-        <div className="space-y-3">
-          <div className="p-3 bg-muted/50 rounded-lg flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-foreground">Connexion réussie</p>
-              <p className="text-xs text-muted-foreground">Admin - Il y a 2h</p>
-            </div>
-            <Badge variant="success">Succès</Badge>
-          </div>
-          <div className="p-3 bg-muted/50 rounded-lg flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-foreground">Mot de passe modifié</p>
-              <p className="text-xs text-muted-foreground">Admin - Hier 14:30</p>
-            </div>
-            <Badge variant="info">Info</Badge>
-          </div>
-          <div className="p-3 bg-muted/50 rounded-lg flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-foreground">Tentative échouée</p>
-              <p className="text-xs text-muted-foreground">user@inconnu.com - Hier 09:15</p>
-            </div>
-            <Badge variant="warning">Alerte</Badge>
-          </div>
-        </div>
-        <Button variant="outline" className="w-full mt-4" onClick={() => {
-          const journalData = [
-            { action: "Connexion réussie", utilisateur: "Admin", date: "Il y a 2h", statut: "Succès" },
-            { action: "Mot de passe modifié", utilisateur: "Admin", date: "Hier 14:30", statut: "Info" },
-            { action: "Tentative échouée", utilisateur: "user@inconnu.com", date: "Hier 09:15", statut: "Alerte" },
-            { action: "Export données", utilisateur: "Admin", date: "12/12/2024 16:45", statut: "Succès" },
-            { action: "Nouveau produit ajouté", utilisateur: "Fatima N.", date: "12/12/2024 11:20", statut: "Info" },
-            { action: "Sauvegarde automatique", utilisateur: "Système", date: "12/12/2024 00:00", statut: "Succès" },
-          ];
-          const headers = "Action,Utilisateur,Date,Statut\n";
-          const rows = journalData.map(j =>
-            `"${j.action}","${j.utilisateur}","${j.date}","${j.statut}"`
-          ).join("\n");
-          downloadCsvFile(`journal_activite_${new Date().toISOString().split("T")[0]}.csv`, headers + rows);
-          showToast("Journal exporté avec succès !", "success");
-        }}>
-          <Download className="w-4 h-4 mr-2" />
-          Exporter le journal
-        </Button>
       </Card>
 
       <div className="lg:col-span-2">
-        <Button onClick={() => showToast("Paramètres de sécurité enregistrés", "success")}>
-          <CheckCircle className="w-4 h-4 mr-2" />
-          Enregistrer les modifications
+        <Button onClick={handleSaveSecurity}>
+          <CheckCircle className="w-4 h-4 mr-2" /> Enregistrer les modifications
+        </Button>
+      </div>
+    </div>
+  );
+
+  // Render Backup Tab
+  const renderBackupTab = () => (
+    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <Card title="Sauvegarde automatique" description="Configuration des sauvegardes">
+        <div className="space-y-1">
+          <SettingRow label="Sauvegarde automatique" description="Activer les sauvegardes planifiées">
+            <ToggleSwitch enabled={backupSettings.autoBackup} onChange={(v) => setBackupSettings({ ...backupSettings, autoBackup: v })} />
+          </SettingRow>
+          <div className="flex items-center justify-between py-3 border-b border-border">
+            <div className="flex-1 pr-4">
+              <p className="text-sm font-medium text-foreground">Fréquence</p>
+            </div>
+            <Select
+              value={backupSettings.backupFrequency}
+              onChange={(v) => setBackupSettings({ ...backupSettings, backupFrequency: v })}
+              options={[{ value: "daily", label: "Quotidienne" }, { value: "weekly", label: "Hebdomadaire" }]}
+            />
+          </div>
+        </div>
+      </Card>
+
+      <div className="lg:col-span-2">
+        <Button onClick={handleSaveBackup}>
+          <CheckCircle className="w-4 h-4 mr-2" /> Enregistrer les modifications
         </Button>
       </div>
     </div>

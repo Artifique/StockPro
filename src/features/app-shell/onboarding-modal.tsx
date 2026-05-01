@@ -3,10 +3,10 @@
 import React, { useState } from "react";
 import { Package, Boxes, ShoppingCart, BarChart3, X } from "lucide-react";
 import { Button } from "@/components/ui";
-import type { StockProUser } from "@/data/stock-mock";
+import { Profile } from "@/models/system.model";
 
 export const OnboardingModal: React.FC<{
-  user: StockProUser;
+  user: Profile;
   onClose: () => void;
 }> = ({ user: _user, onClose }) => {
   const [step, setStep] = useState(0);

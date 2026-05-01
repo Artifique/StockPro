@@ -17,7 +17,7 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import { type StockProUser } from "@/data/stock-mock";
+import { Profile } from "@/models/system.model";
 import { routePath, type AppRouteId } from "@/lib/stock-pro-routes";
 
 const navTooltip =
@@ -27,7 +27,7 @@ export const Sidebar: React.FC<{
   collapsed: boolean;
   setCollapsed: (v: boolean) => void;
   activeRoute: string;
-  user: StockProUser;
+  user: Profile;
   mobileOpen: boolean;
   setMobileOpen: (v: boolean) => void;
 }> = ({ collapsed, setCollapsed, activeRoute, user, mobileOpen, setMobileOpen }) => {

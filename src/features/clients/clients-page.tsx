@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   X,
   Search,
@@ -11,51 +11,77 @@ import {
   Send,
   Phone,
 } from "lucide-react";
-import {
-  MOCK_CLIENTS,
-  MOCK_TRANSACTIONS,
-} from "@/data/stock-mock";
 import { formatCurrency } from "@/lib/format";
 import { Badge, Button, Card, DataTable, Input, Modal } from "@/components/ui";
 import { showToast } from "@/lib/app-toast";
 import { useDisclosure } from "@/hooks/use-disclosure";
 import { Select, Avatar } from "@/components/stock-pro/primitives";
+import { ClientService } from "@/services/partner.service";
+import { Client } from "@/models/partner.model";
 
 export const ClientsPage: React.FC = () => {
   const clientDrawer = useDisclosure();
   const newClientModal = useDisclosure();
   const editClientModal = useDisclosure();
-  const [selectedClient, setSelectedClient] = useState<typeof MOCK_CLIENTS[0] | null>(null);
+  
+  const [clients, setClients] = useState<Client[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("");
-  const [editClientData, setEditClientData] = useState({
-    nom: "", telephone: "", email: "", type: "Particulier" as string
-  });
+  const [editClientData, setEditClientData] = useState<Partial<Client>>({});
+
+  // Form states for new client
+  const [newClientNom, setNewClientNom] = useState("");
+  const [newClientPhone, setNewClientPhone] = useState("");
+  const [newClientEmail, setNewClientEmail] = useState("");
+  const [newClientType, setNewClientType] = useState<Client['type']>("Particulier");
+  const [newClientAdresse, setNewClientAdresse] = useState("");
+  const [newClientNewsletter, setNewClientNewsletter] = useState(false);
+
+  useEffect(() => {
+    loadClients();
+  }, []);
+
+  const loadClients = async () => {
+    setIsLoading(true);
+    try {
+      const data = await ClientService.getAll();
+      setClients(data);
+    } catch (error) {
+      showToast("Erreur lors du chargement des clients", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const stats = useMemo(() => {
-    const total = MOCK_CLIENTS.length;
-    const vip = MOCK_CLIENTS.filter((c) => c.type === "VIP").length;
-    const creances = MOCK_CLIENTS.filter((c) => c.solde < 0).reduce((sum, c) => sum + Math.abs(c.solde), 0);
-    const nouveaux = 3; // Simulated
+    const total = clients.length;
+    const vip = clients.filter((c) => c.type === "VIP").length;
+    const creances = clients.filter((c) => c.solde < 0).reduce((sum, c) => sum + Math.abs(c.solde), 0);
+    const nouveaux = clients.filter(c => {
+      const date = c.created_at ? new Date(c.created_at) : new Date();
+      return date.getMonth() === new Date().getMonth();
+    }).length;
     return { total, vip, creances, nouveaux };
-  }, []);
+  }, [clients]);
 
   // Filter clients based on search and type
   const filteredClients = useMemo(() => {
-    let result = [...MOCK_CLIENTS];
+    let result = [...clients];
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
       result = result.filter((c) =>
         c.nom.toLowerCase().includes(query) ||
-        c.email.toLowerCase().includes(query) ||
-        c.telephone.includes(query)
+        (c.email?.toLowerCase().includes(query)) ||
+        (c.telephone?.includes(query))
       );
     }
     if (selectedType) {
       result = result.filter((c) => c.type === selectedType);
     }
     return result;
-  }, [searchQuery, selectedType]);
+  }, [clients, searchQuery, selectedType]);
 
   const columns = [
     {
@@ -67,7 +93,7 @@ export const ClientsPage: React.FC = () => {
           <Avatar initials={String(value).split(" ").map((n) => n[0]).join("").slice(0, 2)} color="#1a2b6d" size="sm" />
           <div>
             <p className="font-medium text-foreground">{String(value)}</p>
-            <p className="text-xs text-muted-foreground">{String(row.email)}</p>
+            <p className="text-xs text-muted-foreground">{String(row.email || "")}</p>
           </div>
         </div>
       ),
@@ -92,12 +118,6 @@ export const ClientsPage: React.FC = () => {
       },
     },
     {
-      key: "caTotal",
-      label: "CA Total",
-      sortable: true,
-      render: (value: unknown) => formatCurrency(value as number),
-    },
-    {
       key: "solde",
       label: "Solde",
       sortable: true,
@@ -118,9 +138,41 @@ export const ClientsPage: React.FC = () => {
     },
   ];
 
-  const viewClientDetails = (client: typeof MOCK_CLIENTS[0]) => {
+  const viewClientDetails = (client: Client) => {
     setSelectedClient(client);
     clientDrawer.open();
+  };
+
+  const handleCreateClient = async () => {
+    try {
+      await ClientService.create({
+        nom: newClientNom,
+        telephone: newClientPhone,
+        email: newClientEmail,
+        type: newClientType,
+        adresse: newClientAdresse,
+        newsletter_opt_in: newClientNewsletter,
+        solde: 0,
+        statut: 'actif'
+      });
+      showToast("Client créé avec succès !", "success");
+      newClientModal.close();
+      loadClients();
+    } catch (error) {
+      showToast("Erreur lors de la création", "error");
+    }
+  };
+
+  const handleUpdateClient = async () => {
+    if (!selectedClient) return;
+    try {
+      await ClientService.update(selectedClient.id, editClientData);
+      showToast(`Client "${editClientData.nom}" modifié avec succès`, "success");
+      editClientModal.close();
+      loadClients();
+    } catch (error) {
+      showToast("Erreur lors de la modification", "error");
+    }
   };
 
   return (

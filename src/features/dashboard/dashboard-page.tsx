@@ -5,22 +5,15 @@ import { motion } from "framer-motion";
 import {
   Package,
   ShoppingCart,
-  Boxes,
   Users,
   Truck,
   FileText,
   BarChart3,
   X,
-  Eye,
-  Edit,
-  Trash2,
   TrendingUp,
   TrendingDown,
   AlertTriangle,
-  User,
-  CreditCard,
   Wallet,
-  Star,
   AlertCircle,
   Zap,
   Heart,
@@ -44,12 +37,8 @@ import {
   Cell,
 } from "recharts";
 import {
-  ACTIVITES_RECENTES,
-  MOCK_PRODUCTS,
-  MOCK_TRANSACTIONS,
   REPARTITION_CA,
   STOCK_EVOLUTION,
-  TOP_PRODUITS,
   VENTES_MENSUELLES,
 } from "@/data/stock-mock";
 import { formatCurrency, formatShortCurrency } from "@/lib/format";
@@ -57,10 +46,16 @@ import { Badge, Button, Card, DataTable } from "@/components/ui";
 import { showToast } from "@/lib/app-toast";
 import {
   STOCKPRO_WELCOME_DISMISSED_KEY,
-  STOCKPRO_WELCOME_RESET_EVENT,
 } from "@/lib/stockpro-storage-keys";
 import { Alert } from "@/components/stock-pro/primitives";
-import { getStockLevelTextClass } from "@/lib/stockpro-theme";
+import { ProductService } from "@/services/product.service";
+import { ClientService } from "@/services/partner.service";
+import { SaleService } from "@/services/sale.service";
+import { InventoryService } from "@/services/inventory.service";
+import { SystemService } from "@/services/system.service";
+import { Product } from "@/models/product.model";
+import { Transaction } from "@/models/sale.model";
+import { ActivityLog } from "@/models/system.model";
 
 const KPICard: React.FC<{
   title: string;
@@ -69,15 +64,13 @@ const KPICard: React.FC<{
   trend: "up" | "down";
   icon: React.ReactNode;
   iconBg: string;
-  /** Données du mini graphique ; si absent ou vide, la zone graphique est masquée */
   sparklineData?: number[];
   onClick: () => void;
   hint: string;
 }> = ({ title, value, change, trend, icon, iconBg, sparklineData = [], onClick, hint }) => {
   const chartData = sparklineData.map((v, i) => ({ i, v }));
   const TrendIcon = trend === "up" ? TrendingUp : TrendingDown;
-  const changeColor =
-    trend === "up" ? "text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg" : "text-stockpro-stock-error-fg";
+  const changeColor = trend === "up" ? "text-stockpro-stock-ok-fg" : "text-stockpro-stock-error-fg";
   const lineColor = trend === "up" ? "#6dc13a" : "#d93f3f";
 
   return (
@@ -86,16 +79,8 @@ const KPICard: React.FC<{
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className="cursor-pointer"
-      role="button"
-      tabIndex={0}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onClick();
-        }
-      }}
     >
-      <Card padding="sm" className="h-full transition-all overflow-hidden hover:border-stockpro-signal/40 dark:hover:border-stockpro-signal/50">
+      <Card padding="sm" className="h-full hover:border-stockpro-signal/40">
         <div className="flex flex-col gap-2">
           <div className="flex items-start gap-3">
             <div className={`p-2.5 rounded-xl shrink-0 ${iconBg}`}>{icon}</div>
@@ -104,23 +89,18 @@ const KPICard: React.FC<{
               <p className="text-xl font-bold text-foreground truncate">{value}</p>
               <div className={`flex flex-wrap items-center gap-x-1 gap-y-0.5 text-xs font-medium mt-0.5 ${changeColor}`}>
                 <TrendIcon className="w-3.5 h-3.5 shrink-0" />
-                <span>
-                  {change > 0 ? "+" : ""}
-                  {change}%
-                </span>
+                <span>{change > 0 ? "+" : ""}{change}%</span>
                 <span className="text-muted-foreground font-normal">· {hint}</span>
               </div>
             </div>
           </div>
           <div className="h-10 w-full">
-            {chartData.length > 0 ? (
+            {chartData.length > 0 && (
               <ResponsiveContainer width="100%" height="100%">
-                <RechartsLineChart data={chartData} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+                <RechartsLineChart data={chartData}>
                   <Line type="monotone" dataKey="v" stroke={lineColor} strokeWidth={2} dot={false} isAnimationActive={false} />
                 </RechartsLineChart>
               </ResponsiveContainer>
-            ) : (
-              <div className="h-full w-full rounded-md bg-muted/70 dark:bg-muted/50" aria-hidden />
             )}
           </div>
         </div>
@@ -136,481 +116,192 @@ export const DashboardPage: React.FC<{
   onToggleFavorite?: (productId: number) => void;
   onViewProduct?: (productId: number) => void;
 }> = ({ onNavigate, favoriteProducts = [], recentlyViewedProducts = [], onToggleFavorite, onViewProduct }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [clientCount, setClientCount] = useState(0);
+  const [pendingOrders, setPendingOrders] = useState(0);
+
   const [welcomeHydrated, setWelcomeHydrated] = useState(false);
   const [welcomeDismissed, setWelcomeDismissed] = useState(false);
 
   useEffect(() => {
+    loadData();
     const id = requestAnimationFrame(() => {
       try {
         setWelcomeDismissed(localStorage.getItem(STOCKPRO_WELCOME_DISMISSED_KEY) === "true");
-      } catch {
-        /* ignore */
-      }
+      } catch { /* ignore */ }
       setWelcomeHydrated(true);
     });
     return () => cancelAnimationFrame(id);
   }, []);
 
-  useEffect(() => {
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === STOCKPRO_WELCOME_DISMISSED_KEY) {
-        setWelcomeDismissed(e.newValue === "true");
-      }
-    };
-    const onReset = () => setWelcomeDismissed(false);
-    window.addEventListener("storage", onStorage);
-    window.addEventListener(STOCKPRO_WELCOME_RESET_EVENT, onReset);
-    return () => {
-      window.removeEventListener("storage", onStorage);
-      window.removeEventListener(STOCKPRO_WELCOME_RESET_EVENT, onReset);
-    };
-  }, []);
-
-  const showWelcomeBanner =
-    welcomeHydrated &&
-    !welcomeDismissed &&
-    favoriteProducts.length === 0 &&
-    recentlyViewedProducts.length === 0;
-
-  const [alerts, setAlerts] = useState([
-    { id: 1, type: "danger" as const, message: "🚨 3 produits en rupture de stock", action: "stock" },
-    { id: 2, type: "warning" as const, message: "⚠️ 7 produits sous le seuil minimum", action: "stock" },
-    { id: 3, type: "info" as const, message: "📦 2 bons de commande en attente de réception", action: "achats" },
-  ]);
-
-  const dismissAlert = (id: number) => {
-    setAlerts(alerts.filter((a) => a.id !== id));
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [p, t, l, c, o] = await Promise.all([
+        ProductService.getAll(),
+        SaleService.getAllTransactions(),
+        SystemService.getLogs(10),
+        ClientService.getAll(),
+        InventoryService.getAllSupplierOrders()
+      ]);
+      setProducts(p);
+      setTransactions(t);
+      setActivityLogs(l);
+      setClientCount(c.length);
+      setPendingOrders(o.filter(ord => ["En attente", "En transit"].includes(ord.statut)).length);
+    } catch (error) {
+      showToast("Erreur de chargement du dashboard", "error");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  // Calculate stock stats
+  const showWelcomeBanner = welcomeHydrated && !welcomeDismissed && favoriteProducts.length === 0 && recentlyViewedProducts.length === 0;
+
   const stockStats = useMemo(() => {
-    const rupture = MOCK_PRODUCTS.filter((p) => p.stock === 0).length;
-    const critique = MOCK_PRODUCTS.filter((p) => p.stock > 0 && p.stock <= p.stockMin).length;
-    const totalStock = MOCK_PRODUCTS.reduce((sum, p) => sum + p.stock, 0);
+    const rupture = products.filter((p) => p.stock === 0).length;
+    const critique = products.filter((p) => p.stock > 0 && p.stock <= p.stock_min).length;
+    const totalStock = products.reduce((sum, p) => sum + p.stock, 0);
     return { rupture, critique, totalStock };
-  }, []);
+  }, [products]);
 
-  // Get favorite products data
-  const favoriteProductsData = useMemo(() => {
-    return MOCK_PRODUCTS.filter((p) => favoriteProducts.includes(p.id));
-  }, [favoriteProducts]);
+  const favoriteProductsData = useMemo(() => products.filter((p) => favoriteProducts.includes(p.id)), [products, favoriteProducts]);
+  const recentlyViewedData = useMemo(() => recentlyViewedProducts.map((id) => products.find((p) => p.id === id)).filter(Boolean) as Product[], [products, recentlyViewedProducts]);
 
-  // Get recently viewed products data
-  const recentlyViewedData = useMemo(() => {
-    return recentlyViewedProducts
-      .map((id) => MOCK_PRODUCTS.find((p) => p.id === id))
-      .filter(Boolean) as typeof MOCK_PRODUCTS;
-  }, [recentlyViewedProducts]);
+  const salesStats = useMemo(() => {
+    const today = new Date().toISOString().split('T')[0];
+    const caJour = transactions.filter(t => t.created_at?.startsWith(today)).reduce((sum, t) => sum + t.total_ttc, 0);
+    return { caJour };
+  }, [transactions]);
 
   const transactionColumns = [
     { key: "id", label: "#ID", sortable: true },
-    { key: "produit", label: "Produit", sortable: true },
-    { key: "client", label: "Client", sortable: true },
+    { 
+      key: "client", 
+      label: "Client", 
+      sortable: true,
+      render: (v: unknown) => (v as any)?.nom || "Particulier"
+    },
     {
-      key: "montant",
+      key: "total_ttc",
       label: "Montant",
       sortable: true,
       render: (value: unknown) => formatCurrency(value as number),
     },
-    { key: "modePaiement", label: "Mode", sortable: true },
+    { key: "mode_paiement", label: "Mode", sortable: true },
     {
       key: "statut",
       label: "Statut",
       sortable: true,
-      render: (value: unknown) => {
-        const statusMap: Record<string, { variant: "success" | "warning" | "danger"; label: string }> = {
-          Payé: { variant: "success", label: "Payé" },
-          "En attente": { variant: "warning", label: "En attente" },
-          Annulé: { variant: "danger", label: "Annulé" },
-        };
-        const status = statusMap[value as string] || { variant: "default" as const, label: String(value) };
-        return <Badge variant={status.variant}>{status.label}</Badge>;
-      },
-    },
-    { key: "date", label: "Date", sortable: true },
-  ];
-
-  const stockCritiqueColumns = [
-    { key: "nom", label: "Produit", sortable: true },
-    {
-      key: "stock",
-      label: "Stock actuel",
-      render: (value: unknown, row: Record<string, unknown>) => (
-        <span className={`font-semibold ${getStockLevelTextClass(Number(value), Number(row.stockMin))}`}>
+      render: (value: unknown) => (
+        <Badge variant={value === "Payé" ? "success" : value === "En attente" ? "warning" : "danger"}>
           {String(value)}
-        </span>
-      ),
-    },
-    { key: "stockMin", label: "Stock min", render: (value: unknown) => String(value) },
-    {
-      key: "statut",
-      label: "Statut",
-      render: (_: unknown, row: Record<string, unknown>) => (
-        <Badge variant={(row.stock as number) === 0 ? "danger" : "warning"}>
-          {(row.stock as number) === 0 ? "Rupture" : "Critique"}
         </Badge>
       ),
     },
+    { 
+      key: "created_at", 
+      label: "Date", 
+      sortable: true,
+      render: (v: unknown) => v ? new Date(v as string).toLocaleDateString() : "-"
+    },
   ];
 
-  const produitsCritiques = useMemo(() => {
-    return MOCK_PRODUCTS.filter((p) => p.stock <= p.stockMin).map((p) => ({
-      nom: p.nom,
-      stock: p.stock,
-      stockMin: p.stockMin,
-    }));
-  }, []);
+  const produitsCritiques = useMemo(() => products.filter((p) => p.stock <= p.stock_min).slice(0, 5), [products]);
 
   return (
     <div className="space-y-6">
-      {/* Welcome Banner for new users - shows if no favorites or recently viewed */}
       {showWelcomeBanner && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative overflow-hidden rounded-xl bg-gradient-to-r from-stockpro-navy via-stockpro-navy-mid to-stockpro-signal p-6 text-white"
-        >
-          {/* Bouton de fermeture explicite pour améliorer l'UX */}
-          <button
-            onClick={() => {
-              setWelcomeDismissed(true);
-              try {
-                localStorage.setItem(STOCKPRO_WELCOME_DISMISSED_KEY, "true");
-              } catch {
-                /* ignore */
-              }
-              showToast("Bannière fermée. Vous pouvez la réafficher dans Paramètres → Notifications.", "info");
-            }}
-            className="absolute top-3 right-3 p-1.5 rounded-full bg-white/20 hover:bg-white/30 transition-colors z-20"
-            title="Fermer cette bannière"
-            aria-label="Fermer la bannière de bienvenue"
-          >
-            <X className="w-4 h-4" />
-          </button>
+        <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="relative overflow-hidden rounded-xl bg-gradient-to-r from-stockpro-navy via-stockpro-navy-mid to-stockpro-signal p-6 text-white">
+          <button onClick={() => { setWelcomeDismissed(true); localStorage.setItem(STOCKPRO_WELCOME_DISMISSED_KEY, "true"); }} className="absolute top-3 right-3 p-1.5 rounded-full bg-white/20 hover:bg-white/30 z-20"><X className="w-4 h-4" /></button>
           <div className="relative z-10 pr-8">
             <h2 className="text-xl font-bold mb-2">Bienvenue sur StockPro Manager ! 🎉</h2>
-            <p className="text-white/90 mb-4">
-              Commencez par ajouter vos produits ou enregistrez votre première vente.
-            </p>
-            <div className="flex flex-wrap gap-3">
-              <Button
-                onClick={() => onNavigate("produits")}
-                className="bg-white text-stockpro-navy hover:bg-white/90"
-                size="sm"
-              >
-                <Package className="w-4 h-4 mr-2" />
-                Ajouter mes produits
-              </Button>
-              <Button
-                onClick={() => onNavigate("pos")}
-                variant="outline"
-                className="border-white text-white hover:bg-white/20"
-                size="sm"
-              >
-                <ShoppingCart className="w-4 h-4 mr-2" />
-                Faire une vente
-              </Button>
+            <p className="text-white/90 mb-4">Commencez par ajouter vos produits ou enregistrez votre première vente.</p>
+            <div className="flex gap-3">
+              <Button onClick={() => onNavigate("produits")} className="bg-white text-stockpro-navy hover:bg-white/90" size="sm"><Package className="w-4 h-4 mr-2" />Ajouter mes produits</Button>
+              <Button onClick={() => onNavigate("pos")} variant="outline" className="border-white text-white hover:bg-white/20" size="sm"><ShoppingCart className="w-4 h-4 mr-2" />Faire une vente</Button>
             </div>
           </div>
-          {/* Decorative elements */}
           <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-1/2 translate-x-1/2" />
-          <div className="absolute bottom-0 left-1/4 w-32 h-32 bg-white/5 rounded-full translate-y-1/2" />
         </motion.div>
       )}
 
-      {/* Alerts Section */}
-      {alerts.length > 0 && (
-        <div className="space-y-3">
-          {alerts.map((alert) => (
-            <Alert key={alert.id} variant={alert.type} onDismiss={() => dismissAlert(alert.id)}>
-              <span className="flex-1">{alert.message}</span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onNavigate(alert.action === "stock" ? "stock" : "achats")}
-              >
-                Voir
-              </Button>
-            </Alert>
-          ))}
-        </div>
-      )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KPICard title="CA du jour" value={formatCurrency(salesStats.caJour)} change={12} trend="up" icon={<Wallet className="w-6 h-6 text-white" />} iconBg="bg-stockpro-navy" onClick={() => onNavigate("rapports")} hint="Aujourd'hui" />
+        <KPICard title="Clients" value={clientCount} change={5} trend="up" icon={<Users className="w-6 h-6 text-white" />} iconBg="bg-stockpro-signal" onClick={() => onNavigate("clients")} hint="Actifs" />
+        <KPICard title="Stock total" value={stockStats.totalStock} change={-2} trend="down" icon={<Package className="w-6 h-6 text-white" />} iconBg="bg-stockpro-navy" onClick={() => onNavigate("produits")} hint="Articles" />
+        <KPICard title="Commandes" value={pendingOrders} change={0} trend="up" icon={<Truck className="w-6 h-6 text-white" />} iconBg="bg-stockpro-stock-low-fg" onClick={() => onNavigate("achats")} hint="En cours" />
+      </div>
 
-      {/* Quick Actions */}
-      <Card padding="sm" className="border-stockpro-navy/15 bg-gradient-to-r from-stockpro-page to-white dark:border-stockpro-signal/20 dark:from-stockpro-navy/20 dark:to-background/50">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h3 className="flex items-center gap-2 text-sm font-semibold text-stockpro-navy dark:text-stockpro-signal">
-              <Zap className="h-4 w-4 text-stockpro-stock-low-fg" />
-              Actions rapides
-            </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">Tâches fréquemment utilisées</p>
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onNavigate("pos")}
-              className="bg-card"
-            >
-              <ShoppingCart className="w-4 h-4 mr-1" />
-              Nouvelle vente
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onNavigate("produits")}
-              className="bg-card"
-            >
-              <Package className="w-4 h-4 mr-1" />
-              Ajouter produit
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onNavigate("clients")}
-              className="bg-card"
-            >
-              <Users className="w-4 h-4 mr-1" />
-              Nouveau client
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => onNavigate("rapports")}
-              className="bg-card"
-            >
-              <FileText className="w-4 h-4 mr-1" />
-              Rapport
-            </Button>
-          </div>
-        </div>
-      </Card>
-
-      {/* Favorites & Recently Viewed Section */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Favorite Products */}
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Heart className="w-5 h-5 text-stockpro-stock-error-fg" />
-              Produits favoris
-            </h3>
+            <h3 className="text-lg font-semibold flex items-center gap-2"><Heart className="w-5 h-5 text-stockpro-stock-error-fg" />Produits favoris</h3>
             <Badge variant="info">{favoriteProductsData.length}</Badge>
           </div>
-          {favoriteProductsData.length > 0 ? (
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {favoriteProductsData.slice(0, 5).map((product) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-stockpro-navy/10 dark:bg-stockpro-navy/25">
-                      <Package className="h-5 w-5 text-stockpro-navy dark:text-stockpro-signal" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{product.nom}</p>
-                      <p className="text-xs text-muted-foreground">{formatCurrency(product.prixVente)}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant={product.stock === 0 ? "danger" : product.stock <= product.stockMin ? "warning" : "success"}>
-                      {product.stock} en stock
-                    </Badge>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => onToggleFavorite?.(product.id)}
-                      className="p-1.5 rounded-lg text-stockpro-stock-error-fg hover:bg-stockpro-stock-error-bg dark:hover:bg-stockpro-stock-error-fg/12"
-                    >
-                      <Heart className="w-4 h-4 fill-current" />
-                    </motion.button>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <Heart className="w-12 h-12 text-muted-foreground/40 dark:text-muted-foreground/60 mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">Aucun produit favori</p>
-              <Button variant="ghost" size="sm" onClick={() => onNavigate("produits")} className="mt-2">
-                Ajouter des favoris
-              </Button>
-            </div>
-          )}
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {favoriteProductsData.slice(0, 5).map((p) => (
+              <div key={p.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-stockpro-navy/10"><Package className="w-5 h-5 text-stockpro-navy" /></div>
+                  <div><p className="text-sm font-medium">{p.nom}</p><p className="text-xs text-muted-foreground">{formatCurrency(p.prix_vente)}</p></div>
+                </div>
+                <Badge variant={p.stock === 0 ? "danger" : p.stock <= p.stock_min ? "warning" : "success"}>{p.stock} en stock</Badge>
+              </div>
+            ))}
+          </div>
         </Card>
 
-        {/* Recently Viewed Products */}
         <Card>
           <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <History className="w-5 h-5 text-muted-foreground" />
-              Récemment consultés
-            </h3>
-            <Badge variant="default">{recentlyViewedData.length}</Badge>
+            <h3 className="text-lg font-semibold flex items-center gap-2"><History className="w-5 h-5" />Récents</h3>
+            <Badge>{recentlyViewedData.length}</Badge>
           </div>
-          {recentlyViewedData.length > 0 ? (
-            <div className="space-y-2 max-h-48 overflow-y-auto">
-              {recentlyViewedData.slice(0, 5).map((product) => (
-                <motion.div
-                  key={product.id}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  onClick={() => {
-                    onViewProduct?.(product.id);
-                    onNavigate("produits");
-                  }}
-                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50 hover:bg-muted transition-colors cursor-pointer"
-                >
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-muted flex items-center justify-center">
-                      <Package className="w-5 h-5 text-muted-foreground" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-foreground">{product.nom}</p>
-                      <p className="text-xs text-muted-foreground">{product.categorie}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-semibold text-foreground">{formatCurrency(product.prixVente)}</p>
-                    <p className="text-xs text-muted-foreground">{product.stock} unités</p>
-                  </div>
-                </motion.div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <History className="w-12 h-12 text-muted-foreground/40 dark:text-muted-foreground/60 mx-auto mb-3" />
-              <p className="text-sm text-muted-foreground">Aucun produit consulté récemment</p>
-              <Button variant="ghost" size="sm" onClick={() => onNavigate("produits")} className="mt-2">
-                Parcourir les produits
-              </Button>
-            </div>
-          )}
+          <div className="space-y-2 max-h-48 overflow-y-auto">
+            {recentlyViewedData.slice(0, 5).map((p) => (
+              <div key={p.id} className="flex items-center justify-between p-3 rounded-lg bg-muted/50 cursor-pointer" onClick={() => { onViewProduct?.(p.id); onNavigate("produits"); }}>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 rounded-lg bg-muted"><Package className="w-5 h-5" /></div>
+                  <div><p className="text-sm font-medium">{p.nom}</p><p className="text-xs text-muted-foreground">{formatCurrency(p.prix_vente)}</p></div>
+                </div>
+                <p className="text-xs font-semibold">{p.stock} unités</p>
+              </div>
+            ))}
+          </div>
         </Card>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <KPICard
-          title="CA du jour"
-          value={formatCurrency(284500)}
-          change={12.4}
-          trend="up"
-          icon={<Wallet className="w-6 h-6 text-white" />}
-          iconBg="bg-stockpro-navy"
-          sparklineData={[180000, 220000, 195000, 250000, 284500]}
-          onClick={() => onNavigate("rapports")}
-          hint="Cliquez pour voir"
-        />
-        <KPICard
-          title="Ventes du mois"
-          value={formatCurrency(8342000)}
-          change={8.1}
-          trend="up"
-          icon={<TrendingUp className="w-6 h-6 text-white" />}
-          iconBg="bg-stockpro-signal"
-          sparklineData={[6.2, 6.8, 7.1, 7.5, 8.3]}
-          onClick={() => onNavigate("pos")}
-          hint="POS"
-        />
-        <KPICard
-          title="Produits en stock"
-          value={`${stockStats.totalStock.toLocaleString()} articles`}
-          change={-2.3}
-          trend="down"
-          icon={<Package className="w-6 h-6 text-white" />}
-          iconBg="bg-stockpro-navy"
-          onClick={() => onNavigate("produits")}
-          hint="Voir produits"
-        />
-        <KPICard
-          title="Clients actifs"
-          value="342"
-          change={5.7}
-          trend="up"
-          icon={<Users className="w-6 h-6 text-white" />}
-          iconBg="bg-stockpro-stock-low-fg"
-          onClick={() => onNavigate("clients")}
-          hint="Voir clients"
-        />
+      <Card>
+        <h3 className="text-lg font-semibold mb-4">Dernières transactions</h3>
+        <DataTable onToast={showToast} columns={transactionColumns} data={transactions.slice(0, 5)} title="Ventes" pageSize={5} isLoading={isLoading} />
+      </Card>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <Card>
+          <h3 className="text-lg font-semibold mb-4">Stock critique</h3>
+          <DataTable onToast={showToast} columns={[{ key: "nom", label: "Produit" }, { key: "stock", label: "Stock" }, { key: "stock_min", label: "Min" }]} data={produitsCritiques} title="Alertes" pageSize={5} isLoading={isLoading} />
+        </Card>
+
+        <Card>
+          <h3 className="text-lg font-semibold mb-4">Activité récente</h3>
+          <div className="space-y-4 max-h-80 overflow-y-auto">
+            {activityLogs.map((log) => (
+              <div key={log.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
+                <div className="p-2 rounded-lg bg-stockpro-navy/10"><BarChart3 className="w-4 h-4 text-stockpro-navy" /></div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium">{log.details}</p>
+                  <p className="text-xs text-muted-foreground">par {log.profile?.nom || "Système"}</p>
+                </div>
+                <span className="text-xs text-muted-foreground">{log.created_at ? new Date(log.created_at).toLocaleTimeString() : "-"}</span>
+              </div>
+            ))}
+          </div>
+        </Card>
       </div>
 
-      {/* Additional KPIs */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <motion.div
-          whileHover={{ scale: 1.02, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onNavigate("achats")}
-          className="cursor-pointer"
-        >
-          <Card className="flex items-center gap-4 hover:border-stockpro-navy/35 dark:hover:border-stockpro-signal/40 transition-all">
-            <div className="p-3 rounded-xl bg-stockpro-navy/10 dark:bg-stockpro-signal/12">
-              <ShoppingCart className="w-6 h-6 text-stockpro-navy dark:text-stockpro-signal" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Commandes en cours</p>
-              <p className="text-2xl font-bold text-foreground">12</p>
-            </div>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          whileHover={{ scale: 1.02, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onNavigate("stock", "rupture")}
-          className="cursor-pointer"
-        >
-          <Card className="flex items-center gap-4 transition-all hover:border-stockpro-stock-error-fg/40 dark:hover:border-stockpro-stock-error-fg/50">
-            <div className="rounded-xl bg-stockpro-stock-error-bg p-3 dark:bg-stockpro-stock-error-fg/15">
-              <AlertCircle className="h-6 w-6 animate-pulse text-stockpro-stock-error-fg" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Ruptures de stock</p>
-              <p className="text-2xl font-bold text-stockpro-stock-error-fg">{stockStats.rupture}</p>
-            </div>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          whileHover={{ scale: 1.02, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onNavigate("stock", "critique")}
-          className="cursor-pointer"
-        >
-          <Card className="flex items-center gap-4 transition-all hover:border-stockpro-stock-low-fg/40 dark:hover:border-stockpro-stock-low-fg/50">
-            <div className="rounded-xl bg-stockpro-stock-low-bg p-3 dark:bg-stockpro-stock-low-fg/15">
-              <AlertTriangle className="h-6 w-6 text-stockpro-stock-low-fg" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Stock critique</p>
-              <p className="text-2xl font-bold text-stockpro-stock-low-fg">{stockStats.critique}</p>
-            </div>
-          </Card>
-        </motion.div>
-
-        <motion.div
-          whileHover={{ scale: 1.02, y: -2 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={() => onNavigate("rapports")}
-          className="cursor-pointer"
-        >
-          <Card className="flex items-center gap-4 transition-all hover:border-stockpro-signal/40 dark:hover:border-stockpro-signal/50">
-            <div className="rounded-xl bg-stockpro-stock-ok-bg p-3 dark:bg-stockpro-stock-ok-fg/15">
-              <CreditCard className="h-6 w-6 text-stockpro-stock-ok-fg" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">CA annuel</p>
-              <p className="text-2xl font-bold text-foreground">96.8M</p>
-            </div>
-          </Card>
-        </motion.div>
-      </div>
-
-      {/* Charts Row 1 */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <h3 className="text-lg font-semibold text-foreground mb-4">Évolution des ventes (12 mois)</h3>
@@ -622,75 +313,17 @@ export const DashboardPage: React.FC<{
                     <stop offset="5%" stopColor="#1a2b6d" stopOpacity={0.8} />
                     <stop offset="95%" stopColor="#1a2b6d" stopOpacity={0} />
                   </linearGradient>
-                  <linearGradient id="colorAchats" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#6dc13a" stopOpacity={0.8} />
-                    <stop offset="95%" stopColor="#6dc13a" stopOpacity={0} />
-                  </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="mois" stroke="#94a3b8" fontSize={12} />
                 <YAxis stroke="#94a3b8" fontSize={12} tickFormatter={formatShortCurrency} />
-                <Tooltip
-                  formatter={(value: number) => [formatCurrency(value), ""]}
-                  contentStyle={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "8px" }}
-                />
+                <Tooltip formatter={(value: number) => [formatCurrency(value), ""]} />
                 <Legend />
                 <Area type="monotone" dataKey="ventes" name="Ventes" stroke="#1a2b6d" fillOpacity={1} fill="url(#colorVentes)" />
-                <Area type="monotone" dataKey="achats" name="Achats" stroke="#6dc13a" fillOpacity={1} fill="url(#colorAchats)" />
               </RechartsAreaChart>
             </ResponsiveContainer>
           </div>
         </Card>
-
-        <Card>
-          <h3 className="text-lg font-semibold text-foreground mb-4">Top 8 produits vendus</h3>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <RechartsBarChart data={TOP_PRODUITS} layout="vertical">
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis type="number" stroke="#94a3b8" fontSize={12} tickFormatter={formatShortCurrency} />
-                <YAxis dataKey="nom" type="category" stroke="#94a3b8" fontSize={11} width={120} />
-                <Tooltip
-                  formatter={(value: number) => [formatCurrency(value), "CA"]}
-                  contentStyle={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "8px" }}
-                />
-                <Bar dataKey="ca" name="CA" fill="#1a2b6d" radius={[0, 4, 4, 0]} />
-              </RechartsBarChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-      </div>
-
-      {/* Charts Row 2 */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <h3 className="text-lg font-semibold text-foreground mb-4">Répartition CA par catégorie</h3>
-          <div className="h-72">
-            <ResponsiveContainer width="100%" height="100%">
-              <RechartsPieChart>
-                <Pie
-                  data={REPARTITION_CA}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="valeur"
-                >
-                  {REPARTITION_CA.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.color} />
-                  ))}
-                </Pie>
-                <Tooltip
-                  formatter={(value: number) => [`${value}%`, "Part"]}
-                  contentStyle={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "8px" }}
-                />
-                <Legend />
-              </RechartsPieChart>
-            </ResponsiveContainer>
-          </div>
-        </Card>
-
         <Card>
           <h3 className="text-lg font-semibold text-foreground mb-4">Évolution du stock (30 jours)</h3>
           <div className="h-72">
@@ -699,107 +332,13 @@ export const DashboardPage: React.FC<{
                 <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
                 <XAxis dataKey="jour" stroke="#94a3b8" fontSize={12} />
                 <YAxis stroke="#94a3b8" fontSize={12} />
-                <Tooltip
-                  contentStyle={{ backgroundColor: "white", border: "1px solid #e2e8f0", borderRadius: "8px" }}
-                />
-                <Line type="monotone" dataKey="stock" name="Stock" stroke="#6dc13a" strokeWidth={2} dot={{ fill: "#6dc13a", strokeWidth: 2 }} />
+                <Tooltip />
+                <Line type="monotone" dataKey="stock" name="Stock" stroke="#6dc13a" strokeWidth={2} />
               </RechartsLineChart>
             </ResponsiveContainer>
-          </div>
-        </Card>
-      </div>
-
-      {/* Recent Transactions */}
-      <Card>
-        <h3 className="text-lg font-semibold text-foreground mb-4">Dernières transactions</h3>
-        <DataTable onToast={showToast}
-          columns={transactionColumns}
-          data={MOCK_TRANSACTIONS}
-          title="Dernières transactions"
-          pageSize={5}
-          actions={() => (
-            <div className="flex items-center justify-end gap-1">
-              <button className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted">
-                <Eye className="w-4 h-4" />
-              </button>
-              <button className="rounded-lg p-1.5 text-muted-foreground hover:bg-stockpro-signal/10 hover:text-stockpro-navy dark:hover:bg-stockpro-signal/15 dark:hover:text-stockpro-signal">
-                <Edit className="h-4 w-4" />
-              </button>
-              <button className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-stock-error-fg hover:bg-stockpro-stock-error-bg dark:hover:bg-stockpro-stock-error-fg/12">
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          )}
-        />
-      </Card>
-
-      {/* Bottom Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Stock Critique */}
-        <Card>
-          <h3 className="text-lg font-semibold text-foreground mb-4">Produits en stock critique</h3>
-          <DataTable onToast={showToast}
-            columns={stockCritiqueColumns}
-            data={produitsCritiques}
-            title="Produits en stock critique"
-            pageSize={5}
-            searchable={false}
-            exportOptions={false}
-            actions={() => (
-              <Button variant="primary" size="sm" onClick={() => onNavigate("achats")}>
-                Commander
-              </Button>
-            )}
-          />
-        </Card>
-
-        {/* Activity Timeline */}
-        <Card>
-          <h3 className="text-lg font-semibold text-foreground mb-4">Activité récente</h3>
-          <div className="space-y-4 max-h-80 overflow-y-auto">
-            {ACTIVITES_RECENTES.map((activity) => {
-              const iconMap: Record<string, React.ReactNode> = {
-                shopping: <ShoppingCart className="w-4 h-4" />,
-                stock: <Boxes className="w-4 h-4" />,
-                user: <User className="w-4 h-4" />,
-                truck: <Truck className="w-4 h-4" />,
-                edit: <Edit className="w-4 h-4" />,
-                chart: <BarChart3 className="w-4 h-4" />,
-                star: <Star className="w-4 h-4" />,
-                alert: <AlertCircle className="w-4 h-4" />,
-              };
-
-              const colorMap: Record<string, string> = {
-                shopping: "bg-stockpro-navy/10 text-stockpro-navy dark:bg-stockpro-navy/25 dark:text-stockpro-signal",
-                stock: "bg-stockpro-stock-low-bg text-stockpro-stock-low-fg dark:bg-stockpro-stock-low-fg/15 dark:text-stockpro-stock-low-fg",
-                user: "bg-stockpro-navy/10 text-stockpro-navy dark:bg-stockpro-signal/12 dark:text-stockpro-signal",
-                truck: "bg-stockpro-stock-ok-bg text-stockpro-stock-ok-fg dark:bg-stockpro-stock-ok-fg/15 dark:text-stockpro-stock-ok-fg",
-                edit: "bg-stockpro-navy-mid/15 text-stockpro-navy dark:bg-stockpro-navy-mid/22 dark:text-stockpro-signal",
-                chart: "bg-stockpro-stock-ok-bg text-stockpro-stock-ok-fg dark:bg-stockpro-stock-ok-fg/12 dark:text-stockpro-stock-ok-fg",
-                star: "bg-yellow-100 text-yellow-600 dark:bg-yellow-900/30 dark:text-yellow-400",
-                alert: "bg-stockpro-stock-error-bg text-stockpro-stock-error-fg dark:bg-stockpro-stock-error-fg/15 dark:text-stockpro-stock-error-fg",
-              };
-
-              return (
-                <div key={activity.id} className="flex items-start gap-3 p-3 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className={`p-2 rounded-lg ${colorMap[activity.icone]}`}>
-                    {iconMap[activity.icone]}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-foreground">{activity.action}</p>
-                    <p className="text-xs text-muted-foreground">par {activity.utilisateur}</p>
-                  </div>
-                  <span className="text-xs text-muted-foreground">{activity.heure}</span>
-                </div>
-              );
-            })}
           </div>
         </Card>
       </div>
     </div>
   );
 };
-
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-// 📦 PRODUITS PAGE
-// ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

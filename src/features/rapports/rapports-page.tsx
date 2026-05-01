@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   ArrowDown,
   ArrowUp,
@@ -11,16 +11,52 @@ import {
   Users,
   Wallet,
 } from "lucide-react";
-import { VENTES_MENSUELLES } from "@/data/stock-mock";
 import { formatCurrency } from "@/lib/format";
 import { Button, Card } from "@/components/ui";
 import { showToast } from "@/lib/app-toast";
 import { Select } from "@/components/stock-pro/primitives";
 import { RapportsCharts } from "@/components/charts/rapports-charts";
+import { SaleService } from "@/services/sale.service";
+import { Transaction } from "@/models/sale.model";
 
 export const RapportsPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState("ventes");
   const [periode, setPeriode] = useState("mois");
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    loadTransactions();
+  }, []);
+
+  const loadTransactions = async () => {
+    setIsLoading(true);
+    try {
+      const data = await SaleService.getAllTransactions();
+      setTransactions(data);
+    } catch (error) {
+      showToast("Erreur lors du chargement des rapports", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const monthlySummary = useMemo(() => {
+    const summary: Record<string, { mois: string, ventes: number, achats: number }> = {};
+    
+    // Group by month
+    transactions.forEach(t => {
+      if (!t.created_at) return;
+      const date = new Date(t.created_at);
+      const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      const monthLabel = date.toLocaleString('fr-FR', { month: 'long', year: 'numeric' });
+      
+      if (!summary[key]) summary[key] = { mois: monthLabel, ventes: 0, achats: 0 };
+      summary[key].ventes += t.total_ttc;
+    });
+
+    return Object.values(summary).sort((a, b) => b.mois.localeCompare(a.mois)).slice(0, 6);
+  }, [transactions]);
 
   const tabs = [
     { id: "ventes", label: "Ventes", icon: TrendingUp },
@@ -94,9 +130,9 @@ export const RapportsPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {VENTES_MENSUELLES.slice(-6).map((row, i) => {
+              {monthlySummary.map((row, i) => {
                 const marge = row.ventes - row.achats;
-                const prevMarge = i > 0 ? VENTES_MENSUELLES[VENTES_MENSUELLES.length - 6 + i - 1].ventes - VENTES_MENSUELLES[VENTES_MENSUELLES.length - 6 + i - 1].achats : marge;
+                const prevMarge = i < monthlySummary.length - 1 ? monthlySummary[i + 1].ventes - monthlySummary[i + 1].achats : marge;
                 const evolution = prevMarge > 0 ? ((marge - prevMarge) / prevMarge) * 100 : 0;
 
                 return (
@@ -119,13 +155,13 @@ export const RapportsPage: React.FC = () => {
               <tr className="bg-stockpro-navy/8 dark:bg-stockpro-signal/12 font-semibold">
                 <td className="px-4 py-3 text-sm text-stockpro-navy dark:text-stockpro-signal">Total</td>
                 <td className="px-4 py-3 text-sm text-right text-stockpro-navy dark:text-stockpro-signal">
-                  {formatCurrency(VENTES_MENSUELLES.reduce((sum, r) => sum + r.ventes, 0))}
+                  {formatCurrency(monthlySummary.reduce((sum, r) => sum + r.ventes, 0))}
                 </td>
                 <td className="px-4 py-3 text-sm text-right text-stockpro-navy dark:text-stockpro-signal">
-                  {formatCurrency(VENTES_MENSUELLES.reduce((sum, r) => sum + r.achats, 0))}
+                  {formatCurrency(monthlySummary.reduce((sum, r) => sum + r.achats, 0))}
                 </td>
                 <td className="px-4 py-3 text-sm text-right text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">
-                  {formatCurrency(VENTES_MENSUELLES.reduce((sum, r) => sum + r.ventes - r.achats, 0))}
+                  {formatCurrency(monthlySummary.reduce((sum, r) => sum + r.ventes - r.achats, 0))}
                 </td>
                 <td className="px-4 py-3 text-right">—</td>
               </tr>

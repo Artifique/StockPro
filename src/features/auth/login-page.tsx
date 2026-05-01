@@ -10,17 +10,23 @@ import {
   AlertTriangle,
   ChevronDown,
 } from "lucide-react";
-import { MOCK_USERS, type StockProUser } from "@/data/stock-mock";
+import { Profile } from "@/models/system.model";
 import { Button, Input } from "@/components/ui";
 import { showToast } from "@/lib/app-toast";
 import { Alert, Avatar } from "@/components/stock-pro/primitives";
+
+const DEMO_PROFILES: Profile[] = [
+  { id: "1", email: "admin@stockpro.com", role: "Super Admin", nom: "Karim Benali", avatar: "KB", color: "#1a2b6d", statut: "actif" },
+  { id: "2", email: "gerant@stockpro.com", role: "Gérant", nom: "Fatima Ndiaye", avatar: "FN", color: "#6dc13a", statut: "actif" },
+  { id: "3", email: "caisse@stockpro.com", role: "Caissier", nom: "Youssef Diallo", avatar: "YD", color: "#d93f3f", statut: "actif" },
+];
 
 /** Champs : fond clair, accent vert signal au focus (charte StockPro). */
 const fieldClass =
   "h-11 rounded-xl border-border bg-card text-[15px] text-foreground shadow-sm transition-[border-color,box-shadow] duration-200 placeholder:text-muted-foreground focus:border-stockpro-signal/60 focus:ring-2 focus:ring-stockpro-signal/25 dark:bg-card/80 dark:focus:border-stockpro-signal/50 dark:focus:ring-stockpro-signal/20";
 
 export const LoginPage: React.FC<{
-  onLogin: (user: StockProUser) => void;
+  onLogin: (user: Profile) => void;
 }> = ({ onLogin }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -94,7 +100,7 @@ export const LoginPage: React.FC<{
     return Object.keys(newErrors).length === 0;
   };
 
-  const persistUserPreference = useCallback((user: StockProUser) => {
+  const persistUserPreference = useCallback((user: Profile) => {
     if (rememberMe) {
       localStorage.setItem("stockpro_user", JSON.stringify(user));
     } else {
@@ -103,7 +109,7 @@ export const LoginPage: React.FC<{
   }, [rememberMe]);
 
   const handleQuickLogin = useCallback(
-    async (user: (typeof MOCK_USERS)[0]) => {
+    async (user: Profile) => {
       setLoading(true);
       setErrors({});
       try {
@@ -111,9 +117,9 @@ export const LoginPage: React.FC<{
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ userId: user.id }),
+          body: JSON.stringify({ userId: parseInt(user.id) }),
         });
-        const data = (await res.json()) as { user?: StockProUser; error?: string };
+        const data = (await res.json()) as { user?: Profile; error?: string };
         if (!mountedRef.current) return;
         if (!res.ok || !data.user) {
           setErrors({ general: data.error ?? "Connexion refusée" });
@@ -136,9 +142,9 @@ export const LoginPage: React.FC<{
     const onKey = (e: KeyboardEvent) => {
       if (!e.ctrlKey || e.shiftKey || e.altKey || e.metaKey) return;
       const n = parseInt(e.key, 10);
-      if (n >= 1 && n <= 5) {
+      if (n >= 1 && n <= DEMO_PROFILES.length) {
         e.preventDefault();
-        const u = MOCK_USERS[n - 1];
+        const u = DEMO_PROFILES[n - 1];
         if (u) void handleQuickLogin(u);
       }
     };
@@ -161,19 +167,10 @@ export const LoginPage: React.FC<{
         credentials: "include",
         body: JSON.stringify({ email: email.trim(), password }),
       });
-      const data = (await res.json()) as { user?: StockProUser; error?: string };
+      const data = (await res.json()) as { user?: Profile; error?: string };
       if (!mountedRef.current) return;
       if (!res.ok || !data.user) {
-        const emailExists = MOCK_USERS.some((u) => u.email.toLowerCase() === email.trim().toLowerCase());
-        if (res.status === 401) {
-          setErrors({
-            general: emailExists
-              ? "Mot de passe incorrect. Vérifiez votre saisie ou utilisez « Mot de passe oublié »."
-              : "Aucun compte trouvé avec cet email. Vérifiez votre adresse ou demandez un accès.",
-          });
-        } else {
-          setErrors({ general: data.error ?? "Erreur de connexion" });
-        }
+        setErrors({ general: data.error ?? "Erreur de connexion" });
         return;
       }
       persistUserPreference(data.user);
@@ -377,7 +374,7 @@ export const LoginPage: React.FC<{
                   </summary>
                   <div className="pt-3">
                     <div className="-mx-1 flex gap-1.5 overflow-x-auto px-1 pb-0.5 [scrollbar-width:none] sm:flex-wrap sm:justify-center sm:overflow-x-visible [&::-webkit-scrollbar]:hidden">
-                      {MOCK_USERS.map((user) => (
+                      {DEMO_PROFILES.map((user) => (
                         <button
                           key={user.id}
                           type="button"
@@ -386,7 +383,7 @@ export const LoginPage: React.FC<{
                           onClick={() => handleQuickLogin(user)}
                           className="flex shrink-0 items-center gap-1.5 rounded-lg border border-border bg-muted/60 py-1 pl-1 pr-2 text-left transition-[border-color,background-color,transform] hover:border-stockpro-signal/50 hover:bg-stockpro-signal/10 active:scale-[0.98] disabled:pointer-events-none disabled:opacity-55 dark:bg-card/60 dark:hover:border-stockpro-signal/40 dark:hover:bg-stockpro-signal/10"
                         >
-                          <Avatar initials={user.avatar} color={user.color} size="xs" />
+                          <Avatar initials={user.avatar || ""} color={user.color} size="xs" />
                           <span className="max-w-[5.75rem] truncate text-[11px] font-medium text-foreground">
                             {user.role}
                           </span>

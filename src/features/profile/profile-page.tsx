@@ -29,8 +29,11 @@ import { showToast } from "@/lib/app-toast";
 import { useDisclosure } from "@/hooks/use-disclosure";
 import { Avatar } from "@/components/stock-pro/primitives";
 
+import { Profile } from "@/models/system.model";
+import { SystemService } from "@/services/system.service";
+
 export const ProfilePage: React.FC<{
-  user: typeof MOCK_USERS[0];
+  user: Profile;
   onLogout: () => void;
 }> = ({ user, onLogout: _onLogout }) => {
   const [activeSection, setActiveSection] = useState("informations");
@@ -86,9 +89,17 @@ export const ProfilePage: React.FC<{
     { id: "activite", label: "Activité", icon: History },
   ];
 
-  const handleSaveProfile = () => {
-    showToast("Profil mis à jour avec succès", "success");
-    setIsEditing(false);
+  const handleSaveProfile = async () => {
+    try {
+      await SystemService.updateProfile(user.id, {
+        nom: profileData.nom,
+        email: profileData.email,
+      });
+      showToast("Profil mis à jour avec succès", "success");
+      setIsEditing(false);
+    } catch (error) {
+      showToast("Erreur lors de la mise à jour", "error");
+    }
   };
 
   const handleChangePassword = () => {

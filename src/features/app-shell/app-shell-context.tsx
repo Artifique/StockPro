@@ -9,12 +9,6 @@ import React, {
   useState,
 } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  MOCK_CLIENTS,
-  MOCK_FOURNISSEURS,
-  MOCK_PRODUCTS,
-  type StockProUser,
-} from "@/data/stock-mock";
 import { addLog } from "@/lib/app-logs";
 import { showToast } from "@/lib/app-toast";
 import { useDisclosure } from "@/hooks/use-disclosure";
@@ -26,10 +20,14 @@ import {
   type AppRouteId,
 } from "@/lib/stock-pro-routes";
 import type { DisclosureApi } from "@/hooks/use-disclosure";
+import { Profile } from "@/models/system.model";
+import { ProductService } from "@/services/product.service";
+import { ClientService } from "@/services/partner.service";
+import { SupplierService } from "@/services/partner.service";
 
 type AppShellSessionValue = {
-  user: StockProUser | null;
-  setUser: React.Dispatch<React.SetStateAction<StockProUser | null>>;
+  user: Profile | null;
+  setUser: React.Dispatch<React.SetStateAction<Profile | null>>;
   navigate: (id: string, filter?: string) => void;
   activeRoute: AppRouteId;
   favoriteProducts: number[];
@@ -62,7 +60,7 @@ const UIContext = createContext<AppShellUIValue | null>(null);
 export function AppShellProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [user, setUser] = useState<StockProUser | null>(null);
+  const [user, setUser] = useState<Profile | null>(null);
   const [darkMode, setDarkMode] = useState(false);
   const [language, setLanguage] = useState("fr");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -72,6 +70,10 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [favoriteProducts, setFavoriteProducts] = useState<number[]>([]);
   const [recentlyViewedProducts, setRecentlyViewedProducts] = useState<number[]>([]);
+  
+  const [allProducts, setAllProducts] = useState<any[]>([]);
+  const [allClients, setAllClients] = useState<any[]>([]);
+  const [allSuppliers, setAllSuppliers] = useState<any[]>([]);
 
   const activeRoute = pathnameToRouteId(pathname || "/dashboard");
 
@@ -83,80 +85,74 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
       const savedUser = localStorage.getItem("stockpro_user");
       if (savedUser) {
         try {
-          const userData = JSON.parse(savedUser) as StockProUser;
+          const userData = JSON.parse(savedUser) as Profile;
           if (!cancelled) setUser(userData);
           userResolved = true;
         } catch {
           localStorage.removeItem("stockpro_user");
         }
       }
+      
       if (!userResolved && !cancelled) {
         try {
           const res = await fetch("/api/auth/session", { credentials: "include" });
           if (res.ok) {
-            const data = (await res.json()) as { user: StockProUser | null };
+            const data = await res.json();
             if (data.user && !cancelled) setUser(data.user);
           }
-        } catch {
-          /* ignore */
-        }
+        } catch { /* ignore */ }
       }
 
+      try {
+        const [p, c, s] = await Promise.all([
+          ProductService.getAll(),
+          ClientService.getAll(),
+          SupplierService.getAll()
+        ]);
+        if (!cancelled) {
+          setAllProducts(p);
+          setAllClients(c);
+          setAllSuppliers(s);
+        }
+      } catch { /* ignore */ }
+
       const savedDarkMode = localStorage.getItem("stockpro_darkMode");
-      if (savedDarkMode !== null && !cancelled) {
-        setDarkMode(savedDarkMode === "true");
-      }
+      if (savedDarkMode !== null && !cancelled) setDarkMode(savedDarkMode === "true");
+      
       const savedSidebarCollapsed = localStorage.getItem("stockpro_sidebar_collapsed");
-      if (savedSidebarCollapsed !== null && !cancelled) {
-        setSidebarCollapsed(savedSidebarCollapsed === "true");
-      }
+      if (savedSidebarCollapsed !== null && !cancelled) setSidebarCollapsed(savedSidebarCollapsed === "true");
+      
       const savedFavorites = localStorage.getItem("stockpro_favorites");
-      if (savedFavorites) {
-        try {
-          if (!cancelled) setFavoriteProducts(JSON.parse(savedFavorites));
-        } catch {
-          localStorage.removeItem("stockpro_favorites");
-        }
+      if (savedFavorites && !cancelled) {
+        try { setFavoriteProducts(JSON.parse(savedFavorites)); } catch { localStorage.removeItem("stockpro_favorites"); }
       }
+      
       const savedRecentlyViewed = localStorage.getItem("stockpro_recently_viewed");
-      if (savedRecentlyViewed) {
-        try {
-          if (!cancelled) setRecentlyViewedProducts(JSON.parse(savedRecentlyViewed));
-        } catch {
-          localStorage.removeItem("stockpro_recently_viewed");
-        }
+      if (savedRecentlyViewed && !cancelled) {
+        try { setRecentlyViewedProducts(JSON.parse(savedRecentlyViewed)); } catch { localStorage.removeItem("stockpro_recently_viewed"); }
       }
+      
       if (!cancelled) setIsLoading(false);
     };
 
     void loadSavedData();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, []);
 
   useEffect(() => {
-    if (!isLoading) {
-      localStorage.setItem("stockpro_darkMode", darkMode.toString());
-    }
+    if (!isLoading) localStorage.setItem("stockpro_darkMode", darkMode.toString());
   }, [darkMode, isLoading]);
 
   useEffect(() => {
-    if (!isLoading) {
-      localStorage.setItem("stockpro_sidebar_collapsed", sidebarCollapsed.toString());
-    }
+    if (!isLoading) localStorage.setItem("stockpro_sidebar_collapsed", sidebarCollapsed.toString());
   }, [sidebarCollapsed, isLoading]);
 
   useEffect(() => {
-    if (!isLoading) {
-      localStorage.setItem("stockpro_favorites", JSON.stringify(favoriteProducts));
-    }
+    if (!isLoading) localStorage.setItem("stockpro_favorites", JSON.stringify(favoriteProducts));
   }, [favoriteProducts, isLoading]);
 
   useEffect(() => {
-    if (!isLoading) {
-      localStorage.setItem("stockpro_recently_viewed", JSON.stringify(recentlyViewedProducts));
-    }
+    if (!isLoading) localStorage.setItem("stockpro_recently_viewed", JSON.stringify(recentlyViewedProducts));
   }, [recentlyViewedProducts, isLoading]);
 
   const toggleFavorite = useCallback((productId: number) => {
@@ -180,34 +176,28 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
         return () => clearTimeout(t);
       }
     }
-    return undefined;
-  }, [user, onboardingModal.open]);
+  }, [user, onboardingModal]);
 
   const searchResults = useMemo(() => {
     if (!globalSearch.trim()) return [];
     const query = globalSearch.toLowerCase();
     const results: { type: string; items: unknown[] }[] = [];
-    const productResults = MOCK_PRODUCTS.filter(
-      (p) => p.nom.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query)
-    ).slice(0, 5);
+    
+    const productResults = allProducts.filter(p => p.nom.toLowerCase().includes(query) || p.sku.toLowerCase().includes(query)).slice(0, 5);
     if (productResults.length > 0) results.push({ type: "Produits", items: productResults });
-    const clientResults = MOCK_CLIENTS.filter(
-      (c) => c.nom.toLowerCase().includes(query) || c.email.toLowerCase().includes(query)
-    ).slice(0, 5);
+    
+    const clientResults = allClients.filter(c => c.nom.toLowerCase().includes(query) || (c.email && c.email.toLowerCase().includes(query))).slice(0, 5);
     if (clientResults.length > 0) results.push({ type: "Clients", items: clientResults });
-    const supplierResults = MOCK_FOURNISSEURS.filter(
-      (f) => f.nom.toLowerCase().includes(query) || f.contact.toLowerCase().includes(query)
-    ).slice(0, 3);
+    
+    const supplierResults = allSuppliers.filter(s => s.nom.toLowerCase().includes(query)).slice(0, 3);
     if (supplierResults.length > 0) results.push({ type: "Fournisseurs", items: supplierResults });
+    
     return results;
-  }, [globalSearch]);
+  }, [globalSearch, allProducts, allClients, allSuppliers]);
 
   useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    if (darkMode) document.documentElement.classList.add("dark");
+    else document.documentElement.classList.remove("dark");
   }, [darkMode]);
 
   const navigate = useCallback(
@@ -220,19 +210,12 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
   );
 
   const handleLogout = useCallback(async () => {
-    if (user) {
-      addLog("LOGOUT", user.nom, user.role, "Déconnexion", {});
-    }
-    try {
-      await fetch("/api/auth/logout", { method: "POST", credentials: "include" });
-    } catch {
-      /* ignore */
-    }
+    try { await fetch("/api/auth/logout", { method: "POST", credentials: "include" }); } catch { /* ignore */ }
     localStorage.removeItem("stockpro_user");
     setUser(null);
     router.push("/login");
     showToast("Déconnexion réussie", "success");
-  }, [user, router]);
+  }, [router]);
 
   const pageTitle = PAGE_TITLES[activeRoute] ?? "Dashboard";
 
@@ -250,18 +233,7 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
       handleLogout,
       pageTitle,
     }),
-    [
-      user,
-      navigate,
-      activeRoute,
-      favoriteProducts,
-      toggleFavorite,
-      addToRecentlyViewed,
-      recentlyViewedProducts,
-      isLoading,
-      handleLogout,
-      pageTitle,
-    ]
+    [user, navigate, activeRoute, favoriteProducts, toggleFavorite, addToRecentlyViewed, recentlyViewedProducts, isLoading, handleLogout, pageTitle]
   );
 
   const uiValue = useMemo<AppShellUIValue>(
@@ -279,15 +251,7 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
       searchResults,
       onboardingModal,
     }),
-    [
-      darkMode,
-      language,
-      sidebarCollapsed,
-      mobileMenuOpen,
-      globalSearch,
-      searchResults,
-      onboardingModal,
-    ]
+    [darkMode, language, sidebarCollapsed, mobileMenuOpen, globalSearch, searchResults, onboardingModal]
   );
 
   return (
@@ -299,16 +263,12 @@ export function AppShellProvider({ children }: { children: React.ReactNode }) {
 
 export function useAppShellSession() {
   const ctx = useContext(SessionContext);
-  if (!ctx) {
-    throw new Error("useAppShellSession must be used within AppShellProvider");
-  }
+  if (!ctx) throw new Error("useAppShellSession must be used within AppShellProvider");
   return ctx;
 }
 
 export function useAppShellUI() {
   const ctx = useContext(UIContext);
-  if (!ctx) {
-    throw new Error("useAppShellUI must be used within AppShellProvider");
-  }
+  if (!ctx) throw new Error("useAppShellUI must be used within AppShellProvider");
   return ctx;
 }

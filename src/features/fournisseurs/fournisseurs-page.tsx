@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ClipboardList,
   Eye,
@@ -12,16 +12,15 @@ import {
   Building,
   MapPin,
 } from "lucide-react";
-import {
-  CATEGORIES,
-  MOCK_COMMANDES,
-  MOCK_FOURNISSEURS,
-} from "@/data/stock-mock";
 import { formatCurrency } from "@/lib/format";
 import { Badge, Button, Card, DataTable, Input, Modal } from "@/components/ui";
 import { showToast } from "@/lib/app-toast";
 import { useDisclosure } from "@/hooks/use-disclosure";
 import { Select } from "@/components/stock-pro/primitives";
+import { SupplierService } from "@/services/partner.service";
+import { ProductService } from "@/services/product.service";
+import { Supplier } from "@/models/partner.model";
+import { Category } from "@/models/product.model";
 
 export const FournisseursPage: React.FC<{
   onNavigate?: (route: string, filter?: string) => void;
@@ -29,10 +28,33 @@ export const FournisseursPage: React.FC<{
   const newFournisseurModal = useDisclosure();
   const editFournisseurModal = useDisclosure();
   const detailsFournisseurModal = useDisclosure();
-  const [selectedFournisseur, setSelectedFournisseur] = useState<typeof MOCK_FOURNISSEURS[0] | null>(null);
-  const [editFournisseurData, setEditFournisseurData] = useState({
-    nom: "", contact: "", telephone: "", email: "", categorie: "", adresse: ""
-  });
+  
+  const [fournisseurs, setFournisseurs] = useState<Supplier[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [selectedFournisseur, setSelectedFournisseur] = useState<Supplier | null>(null);
+  
+  const [editFournisseurData, setEditFournisseurData] = useState<Partial<Supplier>>({});
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [f, c] = await Promise.all([
+        SupplierService.getAll(),
+        ProductService.getCategories()
+      ]);
+      setFournisseurs(f);
+      setCategories(c);
+    } catch (error) {
+      showToast("Erreur lors du chargement", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const columns = [
     {
@@ -46,19 +68,18 @@ export const FournisseursPage: React.FC<{
           </div>
           <div>
             <p className="font-medium text-foreground">{String(value)}</p>
-            <p className="text-xs text-muted-foreground">{String(row.contact)}</p>
+            <p className="text-xs text-muted-foreground">{String(row.contact_person || "")}</p>
           </div>
         </div>
       ),
     },
     { key: "telephone", label: "Téléphone", sortable: true },
     { key: "email", label: "Email", sortable: true },
-    { key: "categorie", label: "Catégorie", sortable: true },
-    {
-      key: "commandeTotal",
-      label: "CA Total",
+    { 
+      key: "category", 
+      label: "Catégorie", 
       sortable: true,
-      render: (value: unknown) => formatCurrency(value as number),
+      render: (value: unknown) => (value as Category)?.nom || "-"
     },
     {
       key: "statut",
@@ -70,6 +91,41 @@ export const FournisseursPage: React.FC<{
       ),
     },
   ];
+
+  const handleCreateSupplier = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const formData = new FormData(e.currentTarget);
+    try {
+      await SupplierService.create({
+        nom: formData.get("nom") as string,
+        contact_person: formData.get("contact") as string,
+        telephone: formData.get("telephone") as string,
+        email: formData.get("email") as string,
+        category_id: parseInt(formData.get("category_id") as string),
+        adresse: formData.get("adresse") as string,
+        statut: 'actif',
+        notes: null
+      });
+      showToast("Fournisseur créé avec succès !", "success");
+      newFournisseurModal.close();
+      loadData();
+    } catch (error) {
+      showToast("Erreur lors de la création", "error");
+    }
+  };
+
+  const handleUpdateSupplier = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedFournisseur) return;
+    try {
+      await SupplierService.update(selectedFournisseur.id, editFournisseurData);
+      showToast(`Fournisseur "${editFournisseurData.nom}" modifié avec succès`, "success");
+      editFournisseurModal.close();
+      loadData();
+    } catch (error) {
+      showToast("Erreur lors de la modification", "error");
+    }
+  };
 
   return (
     <div className="space-y-6">
