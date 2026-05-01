@@ -328,7 +328,7 @@ export const ProduitsPage: React.FC<{
       {/* Products Table */}
       <DataTable onToast={showToast}
         columns={columns}
-        data={filteredProduits.map((p) => ({ ...p, checkbox: null, statut: null }))}
+        data={filteredProduits.map((p) => ({ ...p, checkbox: null, statut: null })) as any[]}
         title="Liste des produits"
         pageSize={10}
         isLoading={isLoading}

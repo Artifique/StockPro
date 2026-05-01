@@ -194,11 +194,11 @@ export const StockPage: React.FC = () => {
       </div>
 
       {activeTab === "mouvements" && (
-        <DataTable onToast={showToast} columns={mouvementColumns} data={movements} title="Historique" pageSize={10} isLoading={isLoading} />
+        <DataTable onToast={showToast} columns={mouvementColumns} data={movements as any[]} title="Historique" pageSize={10} isLoading={isLoading} />
       )}
 
       {activeTab === "inventaire" && (
-        <DataTable onToast={showToast} columns={stockColumns} data={products} title="Inventaire" pageSize={10} isLoading={isLoading} />
+        <DataTable onToast={showToast} columns={stockColumns} data={products as any[]} title="Inventaire" pageSize={10} isLoading={isLoading} />
       )}
 
       {activeTab === "alertes" && (
@@ -226,7 +226,7 @@ export const StockPage: React.FC = () => {
             </Badge>
             <Button variant="outline" size="sm" onClick={() => { setAlertFilter(null); setActiveTab("alertes"); }}><ArrowLeft className="w-4 h-4 mr-1" /> Retour</Button>
           </div>
-          <DataTable onToast={showToast} columns={stockColumns} data={alertFilter === "rupture" ? products.filter(p => p.stock === 0) : products.filter(p => p.stock > 0 && p.stock <= p.stock_min)} title="Détails alertes" pageSize={10} isLoading={isLoading} />
+          <DataTable onToast={showToast} columns={stockColumns} data={(alertFilter === "rupture" ? products.filter(p => p.stock === 0) : products.filter(p => p.stock > 0 && p.stock <= p.stock_min)) as any[]} title="Détails alertes" pageSize={10} isLoading={isLoading} />
         </div>
       )}
 

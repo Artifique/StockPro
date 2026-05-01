@@ -4,12 +4,12 @@ import { useRouter } from "next/navigation";
 import { LoginPage } from "@/features/auth/login-page";
 import { addLog } from "@/lib/app-logs";
 import { showToast } from "@/lib/app-toast";
-import type { StockProUser } from "@/data/stock-mock";
+import { Profile } from "@/models/system.model";
 
 export default function LoginRoutePage() {
   const router = useRouter();
 
-  const handleLogin = (loggedInUser: StockProUser) => {
+  const handleLogin = (loggedInUser: Profile) => {
     addLog(
       "LOGIN",
       loggedInUser.nom,

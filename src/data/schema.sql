@@ -1,237 +1,264 @@
--- Schéma de base de données SQL pour StockPro
--- Compatible avec PostgreSQL / Supabase
+-- =====================================================
+-- 🔷 STOCKPRO - SCHEMA + SECURITY (SUPABASE READY)
+-- =====================================================
 
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- ⚙️ CONFIGURATION & EXTENSIONS
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- Activer l'extension pour les UUID si nécessaire
--- CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+-- 🔹 Extension UUID
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- 👥 UTILISATEURS & AUTHENTIFICATION
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
--- Table des profils utilisateurs (complète Supabase Auth)
-CREATE TABLE IF NOT EXISTS profiles (
+-- =====================================================
+-- 👥 PROFILES
+-- =====================================================
+CREATE TABLE profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT UNIQUE NOT NULL,
     role TEXT NOT NULL DEFAULT 'Caissier',
     nom TEXT NOT NULL,
     avatar TEXT,
     color TEXT DEFAULT '#1a2b6d',
-    statut TEXT NOT NULL DEFAULT 'actif',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    statut TEXT DEFAULT 'actif',
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- 📦 PRODUITS & STOCK
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- =====================================================
+-- 📦 CORE TABLES
+-- =====================================================
 
--- Table des catégories
-CREATE TABLE IF NOT EXISTS categories (
+CREATE TABLE categories (
     id SERIAL PRIMARY KEY,
     nom TEXT UNIQUE NOT NULL,
     color TEXT DEFAULT '#6dc13a',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Table des unités de mesure
-CREATE TABLE IF NOT EXISTS units (
+CREATE TABLE units (
     id SERIAL PRIMARY KEY,
     nom TEXT UNIQUE NOT NULL,
     abreviation TEXT UNIQUE NOT NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Table des produits
-CREATE TABLE IF NOT EXISTS products (
+CREATE TABLE products (
     id SERIAL PRIMARY KEY,
     nom TEXT NOT NULL,
     sku TEXT UNIQUE NOT NULL,
-    category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
-    prix_achat NUMERIC(15, 2) NOT NULL DEFAULT 0,
-    prix_vente NUMERIC(15, 2) NOT NULL DEFAULT 0,
-    stock INTEGER NOT NULL DEFAULT 0,
-    stock_min INTEGER NOT NULL DEFAULT 10,
-    unit_id INTEGER REFERENCES units(id) ON DELETE SET NULL,
+    category_id INT REFERENCES categories(id),
+    prix_achat NUMERIC DEFAULT 0,
+    prix_vente NUMERIC DEFAULT 0,
+    stock INT DEFAULT 0,
+    stock_min INT DEFAULT 10,
+    unit_id INT REFERENCES units(id),
     description TEXT,
-    tva NUMERIC(5, 2) DEFAULT 18,
-    image_url TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    tva NUMERIC DEFAULT 18,
+    created_at TIMESTAMPTZ DEFAULT now(),
+    updated_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Table des mouvements de stock
-CREATE TABLE IF NOT EXISTS stock_movements (
+CREATE TABLE stock_movements (
     id SERIAL PRIMARY KEY,
-    product_id INTEGER NOT NULL REFERENCES products(id) ON DELETE CASCADE,
-    type TEXT NOT NULL, -- 'Entrée', 'Sortie', 'Ajustement'
-    quantite INTEGER NOT NULL,
-    user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
-    motif TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    product_id INT REFERENCES products(id) ON DELETE CASCADE,
+    type TEXT,
+    quantite INT,
+    user_id UUID REFERENCES profiles(id),
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- 🤝 CLIENTS & FOURNISSEURS
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
--- Table des clients
-CREATE TABLE IF NOT EXISTS clients (
+CREATE TABLE clients (
     id SERIAL PRIMARY KEY,
-    nom TEXT NOT NULL,
+    nom TEXT,
     telephone TEXT,
     email TEXT,
-    adresse TEXT,
-    type TEXT DEFAULT 'Particulier', -- 'VIP', 'Grossiste', 'Détaillant', 'Particulier'
-    solde NUMERIC(15, 2) DEFAULT 0,
-    statut TEXT DEFAULT 'actif',
-    newsletter_opt_in BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    solde NUMERIC DEFAULT 0,
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Table des fournisseurs
-CREATE TABLE IF NOT EXISTS suppliers (
+CREATE TABLE suppliers (
     id SERIAL PRIMARY KEY,
-    nom TEXT NOT NULL,
-    contact_person TEXT,
+    nom TEXT,
     telephone TEXT,
-    email TEXT,
-    adresse TEXT,
-    category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
-    statut TEXT DEFAULT 'actif',
-    notes TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- 💰 VENTES & FACTURATION
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+-- =====================================================
+-- 💰 SALES
+-- =====================================================
 
--- Table des transactions (Ventes)
-CREATE TABLE IF NOT EXISTS transactions (
-    id TEXT PRIMARY KEY, -- Format TRX-XXX
-    client_id INTEGER REFERENCES clients(id) ON DELETE SET NULL,
-    total_ht NUMERIC(15, 2) NOT NULL DEFAULT 0,
-    total_tva NUMERIC(15, 2) NOT NULL DEFAULT 0,
-    discount_rate NUMERIC(5, 2) DEFAULT 0,
-    discount_amount NUMERIC(15, 2) DEFAULT 0,
-    total_ttc NUMERIC(15, 2) NOT NULL DEFAULT 0,
-    mode_paiement TEXT NOT NULL, -- 'Espèces', 'Carte', 'Mobile Money', 'Chèque', 'Virement', 'Crédit'
-    statut TEXT NOT NULL, -- 'Payé', 'En attente', 'Annulé'
-    user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+CREATE TABLE transactions (
+    id TEXT PRIMARY KEY,
+    client_id INT REFERENCES clients(id),
+    total_ttc NUMERIC,
+    statut TEXT,
+    user_id UUID REFERENCES profiles(id),
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- Table des lignes de transaction (Détails de vente)
-CREATE TABLE IF NOT EXISTS transaction_items (
+CREATE TABLE transaction_items (
     id SERIAL PRIMARY KEY,
     transaction_id TEXT REFERENCES transactions(id) ON DELETE CASCADE,
-    product_id INTEGER REFERENCES products(id) ON DELETE SET NULL,
-    quantite INTEGER NOT NULL,
-    prix_unitaire NUMERIC(15, 2) NOT NULL,
-    tva_rate NUMERIC(5, 2) DEFAULT 18,
-    total_ligne NUMERIC(15, 2) NOT NULL
+    product_id INT REFERENCES products(id),
+    quantite INT,
+    prix_unitaire NUMERIC
 );
 
--- Table des factures
-CREATE TABLE IF NOT EXISTS invoices (
-    id TEXT PRIMARY KEY, -- Format FAC-YYYY-XXX
-    client_id INTEGER REFERENCES clients(id) ON DELETE SET NULL,
-    transaction_id TEXT REFERENCES transactions(id) ON DELETE SET NULL,
-    montant_total NUMERIC(15, 2) NOT NULL,
-    statut TEXT NOT NULL, -- 'Payée', 'En attente', 'En retard', 'Annulée'
-    date_echeance TIMESTAMP WITH TIME ZONE,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
+-- =====================================================
+-- 🔔 SYSTEM
+-- =====================================================
 
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- 🔄 RETOURS & ÉCHANGES
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
--- Table des retours
-CREATE TABLE IF NOT EXISTS returns (
-    id TEXT PRIMARY KEY, -- Format RET-YYYY-XXX
-    client_id INTEGER REFERENCES clients(id) ON DELETE SET NULL,
-    product_id INTEGER REFERENCES products(id) ON DELETE SET NULL,
-    quantite INTEGER NOT NULL,
-    prix_unitaire NUMERIC(15, 2) NOT NULL,
-    montant_total NUMERIC(15, 2) NOT NULL,
-    type TEXT NOT NULL, -- 'retour', 'echange'
-    motif_id TEXT, -- ID du motif (ex: 'defectueux')
-    motif_description TEXT,
-    statut TEXT NOT NULL, -- 'demande', 'en_attente', 'valide', 'rembourse', 'echange', 'refuse', 'annule'
-    date_validation TIMESTAMP WITH TIME ZONE,
-    product_echange_id INTEGER REFERENCES products(id) ON DELETE SET NULL,
-    montant_rembourse NUMERIC(15, 2) DEFAULT 0,
-    processed_by UUID REFERENCES profiles(id) ON DELETE SET NULL,
-    notes TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- 📦 COMMANDES FOURNISSEURS
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
--- Table des commandes fournisseurs
-CREATE TABLE IF NOT EXISTS supplier_orders (
-    id TEXT PRIMARY KEY, -- Format CMD-XXX
-    supplier_id INTEGER REFERENCES suppliers(id) ON DELETE CASCADE,
-    montant_total NUMERIC(15, 2) NOT NULL,
-    statut TEXT NOT NULL, -- 'Reçue', 'En transit', 'En attente', 'Annulée'
-    expected_delivery_date TIMESTAMP WITH TIME ZONE,
-    notes TEXT,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
-);
-
--- Table des lignes de commande fournisseur
-CREATE TABLE IF NOT EXISTS supplier_order_items (
+CREATE TABLE notifications (
     id SERIAL PRIMARY KEY,
-    order_id TEXT REFERENCES supplier_orders(id) ON DELETE CASCADE,
-    product_id INTEGER REFERENCES products(id) ON DELETE SET NULL,
-    quantite INTEGER NOT NULL,
-    prix_unitaire_achat NUMERIC(15, 2) NOT NULL,
-    total_ligne NUMERIC(15, 2) NOT NULL
-);
-
--- Table des notifications système
-CREATE TABLE IF NOT EXISTS notifications (
-    id SERIAL PRIMARY KEY,
-    user_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-    title TEXT NOT NULL,
-    message TEXT NOT NULL,
-    type TEXT NOT NULL, -- 'info', 'warning', 'success', 'danger'
+    user_id UUID REFERENCES profiles(id),
+    message TEXT,
     is_read BOOLEAN DEFAULT FALSE,
-    metadata JSONB,
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- 📋 SYSTÈME DE LOGS & AUDIT
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
--- Table des journaux d'activité (Logs)
-CREATE TABLE IF NOT EXISTS activity_logs (
+CREATE TABLE activity_logs (
     id SERIAL PRIMARY KEY,
-    type TEXT NOT NULL, -- Ex: 'LOGIN', 'SALE_CREATE', etc.
-    category TEXT NOT NULL, -- Ex: 'auth', 'stock', etc.
-    user_id UUID REFERENCES profiles(id) ON DELETE SET NULL,
-    details TEXT,
-    ip_address TEXT,
-    metadata JSONB,
-    severity TEXT DEFAULT 'info',
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    user_id UUID,
+    action TEXT,
+    created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
--- ⚙️ PARAMÈTRES SYSTÈME
--- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-CREATE TABLE IF NOT EXISTS settings (
+CREATE TABLE settings (
     key TEXT PRIMARY KEY,
-    value JSONB NOT NULL,
-    updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    value JSONB
 );
+
+-- =====================================================
+-- 🔐 FUNCTION ROLE
+-- =====================================================
+
+CREATE OR REPLACE FUNCTION get_user_role()
+RETURNS TEXT
+LANGUAGE sql
+SECURITY DEFINER
+AS $$
+  SELECT role FROM profiles WHERE id = auth.uid();
+$$;
+
+-- =====================================================
+-- 🔐 TRIGGER AUTO PROFILE
+-- =====================================================
+
+CREATE OR REPLACE FUNCTION handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO profiles (id, email, nom)
+  VALUES (NEW.id, NEW.email, 'User');
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE TRIGGER on_auth_user_created
+AFTER INSERT ON auth.users
+FOR EACH ROW EXECUTE FUNCTION handle_new_user();
+
+-- =====================================================
+-- 🔐 ENABLE RLS
+-- =====================================================
+
+DO $$
+DECLARE t RECORD;
+BEGIN
+  FOR t IN SELECT tablename FROM pg_tables WHERE schemaname='public'
+  LOOP
+    EXECUTE 'ALTER TABLE ' || t.tablename || ' ENABLE ROW LEVEL SECURITY';
+  END LOOP;
+END $$;
+
+-- =====================================================
+-- 🔐 POLICIES
+-- =====================================================
+
+-- Profiles
+CREATE POLICY "profile_select"
+ON profiles FOR SELECT
+USING (auth.uid() = id OR get_user_role() = 'Admin');
+
+CREATE POLICY "profile_update"
+ON profiles FOR UPDATE
+USING (auth.uid() = id OR get_user_role() = 'Admin');
+
+-- Global read
+DO $$
+DECLARE t TEXT;
+BEGIN
+  FOR t IN SELECT unnest(ARRAY[
+    'categories','units','products','clients','suppliers'
+  ])
+  LOOP
+    EXECUTE format('
+      CREATE POLICY "%s_read"
+      ON %I FOR SELECT
+      USING (auth.role() = ''authenticated'');
+    ', t, t);
+  END LOOP;
+END $$;
+
+-- Admin / Manager CRUD
+DO $$
+DECLARE t TEXT;
+BEGIN
+  FOR t IN SELECT unnest(ARRAY[
+    'categories','units','products','clients','suppliers'
+  ])
+  LOOP
+    EXECUTE format('
+      CREATE POLICY "%s_insert"
+      ON %I FOR INSERT
+      WITH CHECK (get_user_role() IN (''Admin'',''Manager''));
+    ', t, t);
+
+    EXECUTE format('
+      CREATE POLICY "%s_update"
+      ON %I FOR UPDATE
+      USING (get_user_role() IN (''Admin'',''Manager''));
+    ', t, t);
+
+    EXECUTE format('
+      CREATE POLICY "%s_delete"
+      ON %I FOR DELETE
+      USING (get_user_role() = ''Admin'');
+    ', t, t);
+  END LOOP;
+END $$;
+
+-- Transactions
+CREATE POLICY "transactions_all"
+ON transactions FOR ALL
+USING (get_user_role() IN ('Admin','Manager','Caissier'));
+
+-- Transaction items
+CREATE POLICY "items_all"
+ON transaction_items FOR ALL
+USING (auth.role() = 'authenticated');
+
+-- Stock
+CREATE POLICY "stock_read"
+ON stock_movements FOR SELECT
+USING (auth.role() = 'authenticated');
+
+CREATE POLICY "stock_insert"
+ON stock_movements FOR INSERT
+WITH CHECK (get_user_role() IN ('Admin','Manager'));
+
+-- Notifications
+CREATE POLICY "notif_read"
+ON notifications FOR SELECT
+USING (auth.uid() = user_id);
+
+CREATE POLICY "notif_insert"
+ON notifications FOR INSERT
+WITH CHECK (true);
+
+-- Logs
+CREATE POLICY "logs_admin"
+ON activity_logs FOR SELECT
+USING (get_user_role() = 'Admin');
+
+-- =====================================================
+-- 🛠 SEED: Admin par défaut
+-- =====================================================
+-- NOTE: Remplacez '00000000-0000-0000-0000-000000000000' par l'UUID de l'utilisateur créé dans auth.users
+-- INSERT INTO profiles (id, email, role, nom) 
+-- VALUES ('00000000-0000-0000-0000-000000000000', 'admin@stockpro.com', 'Admin', 'Administrateur');

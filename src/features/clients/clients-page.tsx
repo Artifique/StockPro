@@ -17,7 +17,9 @@ import { showToast } from "@/lib/app-toast";
 import { useDisclosure } from "@/hooks/use-disclosure";
 import { Select, Avatar } from "@/components/stock-pro/primitives";
 import { ClientService } from "@/services/partner.service";
+import { SaleService } from "@/services/sale.service";
 import { Client } from "@/models/partner.model";
+import { Transaction } from "@/models/sale.model";
 
 export const ClientsPage: React.FC = () => {
   const clientDrawer = useDisclosure();
@@ -25,11 +27,32 @@ export const ClientsPage: React.FC = () => {
   const editClientModal = useDisclosure();
   
   const [clients, setClients] = useState<Client[]>([]);
+  const [recentSales, setRecentSales] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedClient, setSelectedClient] = useState<Client | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedType, setSelectedType] = useState("");
   const [editClientData, setEditClientData] = useState<Partial<Client>>({});
+
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    setIsLoading(true);
+    try {
+      const [data, sales] = await Promise.all([
+        ClientService.getAll(),
+        SaleService.getAllTransactions()
+      ]);
+      setClients(data);
+      setRecentSales(sales);
+    } catch (error) {
+      showToast("Erreur lors du chargement des données", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   // Form states for new client
   const [newClientNom, setNewClientNom] = useState("");
@@ -257,7 +280,7 @@ export const ClientsPage: React.FC = () => {
       {/* Clients Table */}
       <DataTable onToast={showToast}
         columns={columns}
-        data={filteredClients}
+        data={filteredClients as any[]}
         title="Liste des clients"
         pageSize={5}
         emptyMessage={
@@ -266,11 +289,11 @@ export const ClientsPage: React.FC = () => {
             : "Aucun client enregistré"
         }
         actions={(row) => {
-          const client = MOCK_CLIENTS.find((c) => c.nom === row.nom);
+          const client = clients.find((c) => c.nom === row.nom);
           return (
             <div className="flex items-center justify-end gap-1">
               <button
-                onClick={() => viewClientDetails(client!)}
+                onClick={() => viewClientDetails(client as any)}
                 className="p-1.5 rounded-lg text-muted-foreground hover:text-stockpro-navy dark:text-stockpro-signal hover:bg-stockpro-navy/8 dark:hover:bg-stockpro-signal/10"
                 title="Voir la fiche client"
               >
@@ -281,12 +304,12 @@ export const ClientsPage: React.FC = () => {
                 title="Modifier le client"
                 onClick={() => {
                   if (client) {
-                    setSelectedClient(client);
+                    setSelectedClient(client as any);
                     setEditClientData({
                       nom: client.nom,
                       telephone: client.telephone,
                       email: client.email,
-                      type: client.type,
+                      type: client.type as any,
                     });
                     editClientModal.open();
                   }
@@ -344,7 +367,9 @@ export const ClientsPage: React.FC = () => {
               {/* Stats */}
               <div className="grid grid-cols-2 gap-4">
                 <Card padding="sm" className="text-center">
-                  <p className="text-2xl font-bold text-foreground">{formatCurrency(selectedClient.caTotal)}</p>
+                  <p className="text-2xl font-bold text-foreground">
+                    {formatCurrency(recentSales.filter(s => s.client_id === selectedClient.id).reduce((sum, s) => sum + Number(s.total_ttc), 0))}
+                  </p>
                   <p className="text-xs text-muted-foreground">CA Total</p>
                 </Card>
                 <Card padding="sm" className="text-center">
@@ -359,13 +384,13 @@ export const ClientsPage: React.FC = () => {
               <div>
                 <h5 className="font-medium text-foreground mb-3">Dernières ventes</h5>
                 <div className="space-y-2">
-                  {MOCK_TRANSACTIONS.slice(0, 3).map((t) => (
+                  {recentSales.slice(0, 3).map((t) => (
                     <div key={t.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                       <div>
-                        <p className="text-sm font-medium text-foreground">{t.produit}</p>
-                        <p className="text-xs text-muted-foreground">{t.date}</p>
+                        <p className="text-sm font-medium text-foreground">Transaction #{t.id.slice(0,8)}</p>
+                        <p className="text-xs text-muted-foreground">{t.created_at ? new Date(t.created_at).toLocaleDateString() : ""}</p>
                       </div>
-                      <p className="font-semibold text-foreground">{formatCurrency(t.montant)}</p>
+                      <p className="font-semibold text-foreground">{formatCurrency(Number(t.total_ttc))}</p>
                     </div>
                   ))}
                 </div>
@@ -484,7 +509,7 @@ export const ClientsPage: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Téléphone</label>
               <Input
-                value={editClientData.telephone}
+                value={editClientData.telephone ?? ""}
                 onChange={(e) => setEditClientData({ ...editClientData, telephone: e.target.value })}
                 placeholder="+223 XX XX XX XX"
                 required
@@ -496,7 +521,7 @@ export const ClientsPage: React.FC = () => {
               <label className="block text-sm font-medium text-foreground mb-1">Email</label>
               <Input
                 type="email"
-                value={editClientData.email}
+                value={editClientData.email ?? ""}
                 onChange={(e) => setEditClientData({ ...editClientData, email: e.target.value })}
                 placeholder="email@exemple.com"
               />
@@ -504,8 +529,8 @@ export const ClientsPage: React.FC = () => {
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Type de client</label>
               <Select
-                value={editClientData.type}
-                onChange={(v) => setEditClientData({ ...editClientData, type: v })}
+                value={editClientData.type ?? ""}
+                onChange={(v) => setEditClientData({ ...editClientData, type: v as any })}
                 options={[
                   { value: "Particulier", label: "Particulier" },
                   { value: "Détaillant", label: "Détaillant" },

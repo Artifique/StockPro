@@ -3,6 +3,9 @@
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
+import { AppRouteId, routePath } from "@/lib/stock-pro-routes";
+import { useDisclosure } from "@/hooks/use-disclosure";
+import { showToast } from "@/lib/app-toast";
 import {
   Menu,
   Search,
@@ -18,8 +21,10 @@ import {
   Truck,
 } from "lucide-react";
 import { Profile } from "@/models/system.model";
+import { formatCurrency } from "@/lib/format";
 import { Product } from "@/models/product.model";
 import { Client, Supplier } from "@/models/partner.model";
+import { Avatar, NotificationPanel } from "@/components/stock-pro/primitives";
 
 export const Header: React.FC<{
   user: Profile;
@@ -155,7 +160,7 @@ export const Header: React.FC<{
               onClick={() => userMenu.toggle()}
               className="user-menu-button flex items-center gap-2 rounded-lg p-1.5 hover:bg-muted/80 dark:hover:bg-muted"
             >
-              <Avatar initials={user.avatar} color={user.color} size="sm" />
+              <Avatar initials={user.avatar || ""} color={user.color || "#ccc"} size="sm" />
               <ChevronDown className="w-4 h-4 text-muted-foreground hidden sm:block" />
             </button>
 

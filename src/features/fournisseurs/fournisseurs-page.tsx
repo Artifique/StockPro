@@ -21,6 +21,8 @@ import { SupplierService } from "@/services/partner.service";
 import { ProductService } from "@/services/product.service";
 import { Supplier } from "@/models/partner.model";
 import { Category } from "@/models/product.model";
+import { InventoryService } from "@/services/inventory.service";
+import { SupplierOrder } from "@/models/inventory.model";
 
 export const FournisseursPage: React.FC<{
   onNavigate?: (route: string, filter?: string) => void;
@@ -31,6 +33,7 @@ export const FournisseursPage: React.FC<{
   
   const [fournisseurs, setFournisseurs] = useState<Supplier[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
+  const [commandes, setCommandes] = useState<SupplierOrder[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedFournisseur, setSelectedFournisseur] = useState<Supplier | null>(null);
   
@@ -43,12 +46,14 @@ export const FournisseursPage: React.FC<{
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [f, c] = await Promise.all([
+      const [f, c, o] = await Promise.all([
         SupplierService.getAll(),
-        ProductService.getCategories()
+        ProductService.getCategories(),
+        InventoryService.getAllSupplierOrders()
       ]);
       setFournisseurs(f);
       setCategories(c);
+      setCommandes(o);
     } catch (error) {
       showToast("Erreur lors du chargement", "error");
     } finally {
@@ -144,24 +149,24 @@ export const FournisseursPage: React.FC<{
       {/* Stats */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="text-center">
-          <p className="text-3xl font-bold text-foreground">{MOCK_FOURNISSEURS.length}</p>
+          <p className="text-3xl font-bold text-foreground">{fournisseurs.length}</p>
           <p className="text-sm text-muted-foreground">Total fournisseurs</p>
         </Card>
         <Card className="text-center">
           <p className="text-3xl font-bold text-stockpro-stock-ok-fg dark:text-stockpro-stock-ok-fg">
-            {MOCK_FOURNISSEURS.filter((f) => f.statut === "actif").length}
+            {fournisseurs.filter((f) => f.statut === "actif").length}
           </p>
           <p className="text-sm text-muted-foreground">Actifs</p>
         </Card>
         <Card className="text-center">
           <p className="text-3xl font-bold text-stockpro-navy dark:text-stockpro-signal">
-            {formatCurrency(MOCK_FOURNISSEURS.reduce((sum, f) => sum + f.commandeTotal, 0))}
+            {formatCurrency(commandes.reduce((sum, o) => sum + o.montant_total, 0))}
           </p>
           <p className="text-sm text-muted-foreground">CA Total</p>
         </Card>
         <Card className="text-center">
           <p className="text-3xl font-bold text-stockpro-navy dark:text-stockpro-signal">
-            {new Set(MOCK_FOURNISSEURS.map((f) => f.categorie)).size}
+            {new Set(fournisseurs.map((f) => f.category_id)).size}
           </p>
           <p className="text-sm text-muted-foreground">Catégories</p>
         </Card>
@@ -170,11 +175,11 @@ export const FournisseursPage: React.FC<{
       {/* Table */}
       <DataTable onToast={showToast}
         columns={columns}
-        data={MOCK_FOURNISSEURS}
+        data={fournisseurs as any[]}
         title="Liste des fournisseurs"
         pageSize={5}
         actions={(row) => {
-          const fournisseur = MOCK_FOURNISSEURS.find((f) => f.nom === row.nom);
+          const fournisseur = fournisseurs.find((f) => f.nom === row.nom);
           return (
             <div className="flex items-center justify-end gap-1">
               <button
@@ -195,10 +200,10 @@ export const FournisseursPage: React.FC<{
                     setSelectedFournisseur(fournisseur);
                     setEditFournisseurData({
                       nom: fournisseur.nom,
-                      contact: fournisseur.contact,
+                      contact_person: fournisseur.contact_person as any,
                       telephone: fournisseur.telephone,
                       email: fournisseur.email,
-                      categorie: fournisseur.categorie,
+                      category_id: fournisseur.category_id as any, // Correction ici pour utiliser category_id
                       adresse: fournisseur.adresse,
                     });
                     editFournisseurModal.open();
@@ -258,7 +263,7 @@ export const FournisseursPage: React.FC<{
             <Select
               value=""
               onChange={() => { }}
-              options={CATEGORIES.map((c) => ({ value: c.nom, label: c.nom }))}
+              options={categories.map((c) => ({ value: c.nom, label: c.nom }))}
               placeholder="Sélectionner"
             />
           </div>
@@ -302,14 +307,14 @@ export const FournisseursPage: React.FC<{
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Contact</label>
               <Input
-                value={editFournisseurData.contact}
-                onChange={(e) => setEditFournisseurData({ ...editFournisseurData, contact: e.target.value })}
+                value={editFournisseurData.contact_person as any}
+                onChange={(e) => setEditFournisseurData({ ...editFournisseurData, contact_person: e.target.value })}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-foreground mb-1">Téléphone</label>
               <Input
-                value={editFournisseurData.telephone}
+                value={editFournisseurData.telephone ?? ""}
                 onChange={(e) => setEditFournisseurData({ ...editFournisseurData, telephone: e.target.value })}
               />
             </div>
@@ -318,23 +323,22 @@ export const FournisseursPage: React.FC<{
             <label className="block text-sm font-medium text-foreground mb-1">Email</label>
             <Input
               type="email"
-              value={editFournisseurData.email}
-              onChange={(e) => setEditFournisseurData({ ...editFournisseurData, email: e.target.value })}
+              value={editFournisseurData.email ?? ""}              onChange={(e) => setEditFournisseurData({ ...editFournisseurData, email: e.target.value })}
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Catégorie</label>
             <Select
-              value={editFournisseurData.categorie}
-              onChange={(v) => setEditFournisseurData({ ...editFournisseurData, categorie: v })}
-              options={CATEGORIES.map((c) => ({ value: c.nom, label: c.nom }))}
+              value={editFournisseurData.category_id as any}
+              onChange={(v) => setEditFournisseurData({ ...editFournisseurData, category_id: parseInt(v as string) })}
+              options={categories.map((c) => ({ value: c.nom, label: c.nom }))}
               placeholder="Sélectionner"
             />
           </div>
           <div>
             <label className="block text-sm font-medium text-foreground mb-1">Adresse</label>
             <textarea
-              value={editFournisseurData.adresse}
+              value={editFournisseurData.adresse ?? ""}
               onChange={(e) => setEditFournisseurData({ ...editFournisseurData, adresse: e.target.value })}
               rows={2}
               className="w-full px-4 py-2.5 rounded-lg border border-border bg-card text-foreground focus:outline-none focus:ring-2 focus:ring-stockpro-signal"
@@ -360,7 +364,7 @@ export const FournisseursPage: React.FC<{
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-foreground">{selectedFournisseur.nom}</h3>
-                <p className="text-muted-foreground">{selectedFournisseur.categorie}</p>
+                <p className="text-muted-foreground">{categories.find(c => c.id === selectedFournisseur.category_id)?.nom || "-"}</p>
                 <Badge variant={selectedFournisseur.statut === "actif" ? "success" : "default"} className="mt-2">
                   {selectedFournisseur.statut === "actif" ? "Actif" : "Inactif"}
                 </Badge>
@@ -373,7 +377,7 @@ export const FournisseursPage: React.FC<{
                   <User className="w-4 h-4 text-muted-foreground" />
                   <p className="text-sm text-muted-foreground">Contact</p>
                 </div>
-                <p className="font-medium text-foreground">{selectedFournisseur.contact}</p>
+                <p className="font-medium text-foreground">{selectedFournisseur.contact_person}</p>
               </div>
               <div className="p-4 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2 mb-1">
@@ -400,12 +404,14 @@ export const FournisseursPage: React.FC<{
 
             <div className="grid grid-cols-2 gap-4">
               <Card padding="sm" className="text-center">
-                <p className="text-2xl font-bold text-stockpro-navy dark:text-stockpro-signal">{formatCurrency(selectedFournisseur.commandeTotal)}</p>
+                <p className="text-2xl font-bold text-stockpro-navy dark:text-stockpro-signal">
+                  {formatCurrency(commandes.filter(c => c.supplier_id === selectedFournisseur.id).reduce((sum, c) => sum + c.montant_total, 0))}
+                </p>
                 <p className="text-xs text-muted-foreground">CA Total</p>
               </Card>
               <Card padding="sm" className="text-center">
                 <p className="text-2xl font-bold text-foreground">
-                  {MOCK_COMMANDES.filter((c) => c.fournisseur === selectedFournisseur.nom).length}
+                  {commandes.filter((c) => c.supplier_id === selectedFournisseur.id).length}
                 </p>
                 <p className="text-xs text-muted-foreground">Commandes</p>
               </Card>
@@ -415,14 +421,14 @@ export const FournisseursPage: React.FC<{
             <div>
               <h4 className="font-medium text-foreground mb-3">Dernières commandes</h4>
               <div className="space-y-2 max-h-48 overflow-y-auto">
-                {MOCK_COMMANDES.filter((c) => c.fournisseur === selectedFournisseur.nom).slice(0, 3).map((cmd) => (
+                {commandes.filter((c) => c.supplier_id === selectedFournisseur.id).slice(0, 3).map((cmd) => (
                   <div key={cmd.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
                     <div>
                       <p className="text-sm font-medium text-foreground">{cmd.id}</p>
-                      <p className="text-xs text-muted-foreground">{cmd.date} • {cmd.produits} articles</p>
+                      <p className="text-xs text-muted-foreground">{cmd.created_at ? new Date(cmd.created_at).toLocaleDateString() : "-"} • {cmd.items?.length || 0} articles</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-foreground">{formatCurrency(cmd.montant)}</p>
+                      <p className="font-semibold text-foreground">{formatCurrency(cmd.montant_total)}</p>
                       <Badge variant={cmd.statut === "Reçue" ? "success" : cmd.statut === "En transit" ? "info" : "warning"}>{cmd.statut}</Badge>
                     </div>
                   </div>
@@ -438,10 +444,10 @@ export const FournisseursPage: React.FC<{
                 detailsFournisseurModal.close();
                 setEditFournisseurData({
                   nom: selectedFournisseur.nom,
-                  contact: selectedFournisseur.contact,
+                  contact_person: selectedFournisseur.contact_person,
                   telephone: selectedFournisseur.telephone,
                   email: selectedFournisseur.email,
-                  categorie: selectedFournisseur.categorie,
+                  category_id: selectedFournisseur.category_id,
                   adresse: selectedFournisseur.adresse,
                 });
                 editFournisseurModal.open();

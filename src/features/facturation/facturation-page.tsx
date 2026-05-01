@@ -207,7 +207,7 @@ export const FacturationPage: React.FC = () => {
 
       <DataTable onToast={showToast}
         columns={columns}
-        data={filteredFactures}
+        data={filteredFactures as any[]}
         title="Liste des factures"
         pageSize={5}
         isLoading={isLoading}

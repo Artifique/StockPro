@@ -276,13 +276,13 @@ export const DashboardPage: React.FC<{
 
       <Card>
         <h3 className="text-lg font-semibold mb-4">Dernières transactions</h3>
-        <DataTable onToast={showToast} columns={transactionColumns} data={transactions.slice(0, 5)} title="Ventes" pageSize={5} isLoading={isLoading} />
+        <DataTable onToast={showToast} columns={transactionColumns} data={transactions.slice(0, 5) as any[]} title="Ventes" pageSize={5} />
       </Card>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
           <h3 className="text-lg font-semibold mb-4">Stock critique</h3>
-          <DataTable onToast={showToast} columns={[{ key: "nom", label: "Produit" }, { key: "stock", label: "Stock" }, { key: "stock_min", label: "Min" }]} data={produitsCritiques} title="Alertes" pageSize={5} isLoading={isLoading} />
+          <DataTable onToast={showToast} columns={[{ key: "nom", label: "Produit" }, { key: "stock", label: "Stock" }, { key: "stock_min", label: "Min" }]} data={produitsCritiques as any[]} title="Alertes" pageSize={5} />
         </Card>
 
         <Card>

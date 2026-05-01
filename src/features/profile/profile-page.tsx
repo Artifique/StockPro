@@ -46,8 +46,8 @@ export const ProfilePage: React.FC<{
 
   // Form states
   const [profileData, setProfileData] = useState({
-    nom: user.nom,
-    email: user.email,
+    nom: user.nom || "",
+    email: user.email || "",
     telephone: "+223 70 00 00 00",
     adresse: "Bamako, Mali",
     bio: "Gestionnaire de stock expérimenté",
@@ -142,7 +142,7 @@ export const ProfilePage: React.FC<{
         <div className="px-6 pb-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-4 -mt-12">
             <div className="relative">
-              <Avatar initials={user.avatar} color={user.color} size="lg" className="w-24 h-24 text-2xl ring-4 ring-white dark:ring-card" />
+              <Avatar initials={user.avatar || user.nom?.charAt(0) || "U"} color={user.color} size="lg" className="w-24 h-24 text-2xl ring-4 ring-white dark:ring-card" />
               <button
                 className="absolute bottom-0 right-0 rounded-full bg-card p-1.5 shadow-lg transition-colors hover:bg-muted"
                 title="Changer la photo"

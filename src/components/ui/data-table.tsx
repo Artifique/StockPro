@@ -38,6 +38,7 @@ type DataTableProps = {
   emptyMessage?: string;
   title?: string;
   onToast: (message: string, type: ToastType) => void;
+  isLoading?: boolean;
 };
 
 export function DataTable(props: DataTableProps) {
@@ -54,6 +55,7 @@ export function DataTable(props: DataTableProps) {
     emptyMessage = "Aucune donnée disponible",
     title = "Export",
     onToast,
+    isLoading = false,
   } = props;
 
   const [search, setSearch] = useState("");
@@ -272,7 +274,16 @@ export function DataTable(props: DataTableProps) {
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
-            {paginatedData.length === 0 ? (
+            {isLoading ? (
+              <tr>
+                <td colSpan={columns.length + (selectable ? 1 : 0) + (actions ? 1 : 0)} className="px-4 py-12">
+                  <div className="flex flex-col items-center justify-center text-center">
+                    <div className="w-8 h-8 rounded-full border-4 border-stockpro-navy border-t-transparent animate-spin mb-4" />
+                    <p className="text-muted-foreground font-medium">Chargement des données...</p>
+                  </div>
+                </td>
+              </tr>
+            ) : paginatedData.length === 0 ? (
               <tr>
                 <td colSpan={columns.length + (selectable ? 1 : 0) + (actions ? 1 : 0)} className="px-4 py-12">
                   <div className="flex flex-col items-center justify-center text-center">
