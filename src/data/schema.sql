@@ -308,7 +308,7 @@ ON activity_logs FOR SELECT
 USING (get_user_role() = 'Admin');
 
 -- =====================================================
--- 🛠 SEED: Création de l'Admin par défaut
+-- 🛠 SEED: RÉINITIALISATION TOTALE DE L'ADMIN
 -- =====================================================
 -- Email: admin@stockpro.com | Password: adminpassword123
 
@@ -316,25 +316,40 @@ DO $$
 DECLARE
   admin_id UUID := '00000000-0000-0000-0000-000000000000';
 BEGIN
-  -- 1. Création de l'utilisateur dans Auth (si inexistant)
-  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'admin@stockpro.com') THEN
-    INSERT INTO auth.users (
-      instance_id, id, aud, role, email, encrypted_password, 
-      email_confirmed_at, raw_app_meta_data, raw_user_meta_data, 
-      created_at, updated_at, confirmation_token, email_change, 
-      email_change_token_new, recovery_token
-    )
-    VALUES (
-      '00000000-0000-0000-0000-000000000000', admin_id, 'authenticated', 'authenticated', 
-      'admin@stockpro.com', crypt('adminpassword123', gen_salt('bf')), 
-      now(), '{"provider":"email","providers":["email"]}', 
-      '{"full_name":"Administrateur StockPro"}', 
-      now(), now(), '', '', '', ''
-    );
-  END IF;
+  -- 1. Nettoyage préventif pour éviter les conflits de mot de passe
+  DELETE FROM auth.users WHERE email = 'admin@stockpro.com';
+  DELETE FROM public.profiles WHERE id = admin_id;
 
-  -- 2. On s'assure que le profil a bien le rôle Admin
-  UPDATE public.profiles 
-  SET role = 'Admin' 
-  WHERE email = 'admin@stockpro.com';
+  -- 2. Création propre de l'utilisateur dans auth.users
+  INSERT INTO auth.users (
+    instance_id, id, aud, role, email, encrypted_password, 
+    email_confirmed_at, 
+    raw_app_meta_data, 
+    raw_user_meta_data, 
+    is_super_admin,
+    created_at, updated_at,
+    last_sign_in_at
+  )
+  VALUES (
+    '00000000-0000-0000-0000-000000000000', admin_id, 'authenticated', 'authenticated', 
+    'admin@stockpro.com', crypt('adminpassword123', gen_salt('bf')), 
+    now(), 
+    '{"provider":"email","providers":["email"]}', 
+    '{"full_name":"Administrateur StockPro"}', 
+    false,
+    now(), now(),
+    now()
+  );
+
+  -- 3. Création ou mise à jour forcée du profil associé
+  -- On utilise ON CONFLICT pour éviter l'erreur si le trigger a déjà créé le profil
+  INSERT INTO public.profiles (id, email, nom, role)
+  VALUES (admin_id, 'admin@stockpro.com', 'Administrateur StockPro', 'Admin')
+  ON CONFLICT (id) DO UPDATE 
+  SET 
+    email = EXCLUDED.email, 
+    nom = EXCLUDED.nom, 
+    role = EXCLUDED.role,
+    updated_at = now();
+
 END $$;

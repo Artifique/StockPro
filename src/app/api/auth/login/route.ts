@@ -28,6 +28,7 @@ export async function POST(request: Request) {
   });
 
   if (error || !data.user) {
+    console.error("Erreur de connexion Supabase:", error);
     return NextResponse.json(
       { error: "Identifiants incorrects ou accès refusé" },
       { status: 401 }
