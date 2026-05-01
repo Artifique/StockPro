@@ -1,18 +1,26 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
-import { getDemoUserById } from "@/server/demo-auth";
-import { STOCKPRO_SESSION_COOKIE } from "@/lib/auth-session";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET() {
-  const jar = await cookies();
-  const raw = jar.get(STOCKPRO_SESSION_COOKIE)?.value;
-  if (!raw) {
+  const supabase = await createClient();
+  
+  // 1. Get the authenticated user from Supabase
+  const { data: { user }, error: authError } = await supabase.auth.getUser();
+
+  if (authError || !user) {
     return NextResponse.json({ user: null });
   }
-  const id = parseInt(raw, 10);
-  if (Number.isNaN(id) || id < 1) {
+
+  // 2. Fetch the corresponding profile
+  const { data: profile, error: profileError } = await supabase
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .single();
+
+  if (profileError || !profile) {
     return NextResponse.json({ user: null });
   }
-  const user = getDemoUserById(id);
-  return NextResponse.json({ user });
+
+  return NextResponse.json({ user: profile });
 }

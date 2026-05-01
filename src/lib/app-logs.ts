@@ -1,11 +1,27 @@
-"use client";
+export const LOG_TYPES = {
+  STOCK: "Stock",
+  AUTH: "Authentification",
+  SALE: "Vente",
+  PURCHASE: "Achat",
+  SYSTEM: "Système",
+  LOGIN: "Connexion"
+} as const;
 
-import { LOG_TYPES, MOCK_LOGS } from "@/data/stock-mock";
+export interface AppLog {
+  id: number;
+  type: keyof typeof LOG_TYPES;
+  timestamp: string;
+  user: string;
+  userRole: string;
+  details: string;
+  ip: string;
+  metadata: Record<string, unknown>;
+}
 
 // Fonction centralisée de logging (appelée par toutes les actions)
-let logIdCounter = MOCK_LOGS.length;
-const logListeners: Set<(logs: typeof MOCK_LOGS) => void> = new Set();
-let currentLogs: typeof MOCK_LOGS = [...MOCK_LOGS];
+let logIdCounter = 0;
+const logListeners: Set<(logs: AppLog[]) => void> = new Set();
+let currentLogs: AppLog[] = [];
 
 export const addLog = (
   type: keyof typeof LOG_TYPES,
@@ -56,7 +72,7 @@ export const addLogWithCurrentUser = (
 };
 
 export const getLogs = () => [...currentLogs];
-export const subscribeToLogs = (listener: (logs: typeof MOCK_LOGS) => void) => {
+export const subscribeToLogs = (listener: (logs: AppLog[]) => void) => {
   logListeners.add(listener);
   return () => {
     logListeners.delete(listener);

@@ -16,9 +16,7 @@ import { showToast } from "@/lib/app-toast";
 import { Alert, Avatar } from "@/components/stock-pro/primitives";
 
 const DEMO_PROFILES: Profile[] = [
-  { id: "1", email: "admin@stockpro.com", role: "Super Admin", nom: "Karim Benali", avatar: "KB", color: "#1a2b6d", statut: "actif" },
-  { id: "2", email: "gerant@stockpro.com", role: "Gérant", nom: "Fatima Ndiaye", avatar: "FN", color: "#6dc13a", statut: "actif" },
-  { id: "3", email: "caisse@stockpro.com", role: "Caissier", nom: "Youssef Diallo", avatar: "YD", color: "#d93f3f", statut: "actif" },
+  { id: "00000000-0000-0000-0000-000000000000", email: "admin@stockpro.com", role: "Admin", nom: "Administrateur", avatar: "AD", color: "#1a2b6d", statut: "actif" },
 ];
 
 /** Champs : fond clair, accent vert signal au focus (charte StockPro). */

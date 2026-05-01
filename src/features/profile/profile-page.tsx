@@ -20,9 +20,6 @@ import {
   Smartphone,
   History,
 } from "lucide-react";
-import {
-  MOCK_USERS,
-} from "@/data/stock-mock";
 import { downloadCsvFile } from "@/lib/export-csv";
 import { Badge, Button, Card, Input, Modal } from "@/components/ui";
 import { showToast } from "@/lib/app-toast";

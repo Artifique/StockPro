@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import { STOCKPRO_SESSION_COOKIE } from "@/lib/auth-session";
-
-const PUBLIC_PATHS = new Set(["/login"]);
+import { updateSession } from "@/lib/supabase/middleware";
+import { createClient } from "@/lib/supabase/server";
 
 const PROTECTED_SEGMENTS = new Set([
   "dashboard",
@@ -25,35 +24,31 @@ function isProtectedPath(pathname: string): boolean {
   return PROTECTED_SEGMENTS.has(seg);
 }
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
+  // Update session for Supabase
+  const response = await updateSession(request);
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/api/") || pathname.startsWith("/_next")) {
-    return NextResponse.next();
+  if (pathname.startsWith("/api/") || pathname.startsWith("/_next") || pathname.includes(".")) {
+    return response;
   }
 
-  if (PUBLIC_PATHS.has(pathname)) {
-    const session = request.cookies.get(STOCKPRO_SESSION_COOKIE)?.value;
-    if (session && pathname === "/login") {
-      const url = request.nextUrl.clone();
-      url.pathname = "/dashboard";
-      return NextResponse.redirect(url);
+  // Get session
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (pathname === "/login") {
+    if (user) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
-    return NextResponse.next();
+    return response;
   }
 
-  if (!isProtectedPath(pathname)) {
-    return NextResponse.next();
+  if (isProtectedPath(pathname) && !user) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  const session = request.cookies.get(STOCKPRO_SESSION_COOKIE)?.value;
-  if (!session) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
-  }
-
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {

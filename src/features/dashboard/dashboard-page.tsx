@@ -36,11 +36,9 @@ import {
   ResponsiveContainer,
   Cell,
 } from "recharts";
-import {
-  REPARTITION_CA,
-  STOCK_EVOLUTION,
-  VENTES_MENSUELLES,
-} from "@/data/stock-mock";
+const REPARTITION_CA = [{ name: "N/A", valeur: 0, color: "#1a2b6d" }];
+const STOCK_EVOLUTION = [{ jour: "1", stock: 0 }];
+const VENTES_MENSUELLES = [{ mois: "Jan", ventes: 0 }];
 import { formatCurrency, formatShortCurrency } from "@/lib/format";
 import { Badge, Button, Card, DataTable } from "@/components/ui";
 import { showToast } from "@/lib/app-toast";

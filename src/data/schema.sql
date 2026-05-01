@@ -2,8 +2,34 @@
 -- 🔷 STOCKPRO - SCHEMA + SECURITY (SUPABASE READY)
 -- =====================================================
 
--- 🔹 Extension UUID
+-- =====================================================
+-- 🧹 NETTOYAGE (VIDER LA BASE)
+-- =====================================================
+-- ATTENTION: Cette section supprime TOUTES les données. 
+-- Décommentez la ligne DELETE FROM auth.users si vous voulez aussi vider les comptes.
+
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+DROP FUNCTION IF EXISTS handle_new_user CASCADE;
+DROP FUNCTION IF EXISTS get_user_role CASCADE;
+
+DROP TABLE IF EXISTS settings CASCADE;
+DROP TABLE IF EXISTS activity_logs CASCADE;
+DROP TABLE IF EXISTS notifications CASCADE;
+DROP TABLE IF EXISTS transaction_items CASCADE;
+DROP TABLE IF EXISTS transactions CASCADE;
+DROP TABLE IF EXISTS suppliers CASCADE;
+DROP TABLE IF EXISTS clients CASCADE;
+DROP TABLE IF EXISTS stock_movements CASCADE;
+DROP TABLE IF EXISTS products CASCADE;
+DROP TABLE IF EXISTS units CASCADE;
+DROP TABLE IF EXISTS categories CASCADE;
+DROP TABLE IF EXISTS profiles CASCADE;
+
+-- DELETE FROM auth.users; -- A utiliser avec prudence pour vider les comptes auth
+
+-- 🔹 Extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- =====================================================
 -- 👥 PROFILES
@@ -142,12 +168,37 @@ $$;
 
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  is_first_user BOOLEAN;
 BEGIN
-  INSERT INTO profiles (id, email, nom)
-  VALUES (NEW.id, NEW.email, 'User');
+  -- Vérifier s'il s'agit du tout premier utilisateur
+  SELECT NOT EXISTS (SELECT 1 FROM public.profiles) INTO is_first_user;
+
+  INSERT INTO public.profiles (id, email, nom, role)
+  VALUES (
+    NEW.id, 
+    NEW.email, 
+    COALESCE(
+      NEW.raw_user_meta_data->>'full_name', 
+      CASE WHEN LOWER(NEW.email) = 'admin@stockpro.com' OR is_first_user THEN 'Administrateur' ELSE 'Utilisateur' END
+    ),
+    CASE 
+      WHEN LOWER(NEW.email) = 'admin@stockpro.com' OR is_first_user THEN 'Admin' 
+      ELSE 'Caissier' 
+    END
+  )
+  ON CONFLICT (id) DO UPDATE 
+  SET 
+    role = EXCLUDED.role, 
+    nom = EXCLUDED.nom,
+    updated_at = now();
+    
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Supprimer le trigger s'il existe déjà pour éviter les doublons
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 
 CREATE TRIGGER on_auth_user_created
 AFTER INSERT ON auth.users
@@ -257,8 +308,33 @@ ON activity_logs FOR SELECT
 USING (get_user_role() = 'Admin');
 
 -- =====================================================
--- 🛠 SEED: Admin par défaut
+-- 🛠 SEED: Création de l'Admin par défaut
 -- =====================================================
--- NOTE: Remplacez '00000000-0000-0000-0000-000000000000' par l'UUID de l'utilisateur créé dans auth.users
--- INSERT INTO profiles (id, email, role, nom) 
--- VALUES ('00000000-0000-0000-0000-000000000000', 'admin@stockpro.com', 'Admin', 'Administrateur');
+-- Email: admin@stockpro.com | Password: adminpassword123
+
+DO $$
+DECLARE
+  admin_id UUID := '00000000-0000-0000-0000-000000000000';
+BEGIN
+  -- 1. Création de l'utilisateur dans Auth (si inexistant)
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE email = 'admin@stockpro.com') THEN
+    INSERT INTO auth.users (
+      instance_id, id, aud, role, email, encrypted_password, 
+      email_confirmed_at, raw_app_meta_data, raw_user_meta_data, 
+      created_at, updated_at, confirmation_token, email_change, 
+      email_change_token_new, recovery_token
+    )
+    VALUES (
+      '00000000-0000-0000-0000-000000000000', admin_id, 'authenticated', 'authenticated', 
+      'admin@stockpro.com', crypt('adminpassword123', gen_salt('bf')), 
+      now(), '{"provider":"email","providers":["email"]}', 
+      '{"full_name":"Administrateur StockPro"}', 
+      now(), now(), '', '', '', ''
+    );
+  END IF;
+
+  -- 2. On s'assure que le profil a bien le rôle Admin
+  UPDATE public.profiles 
+  SET role = 'Admin' 
+  WHERE email = 'admin@stockpro.com';
+END $$;

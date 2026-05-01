@@ -15,7 +15,17 @@ import {
   XAxis,
   YAxis,
 } from "recharts";
-import { REPARTITION_CA, TOP_PRODUITS, VENTES_MENSUELLES } from "@/data/stock-mock";
+const VENTES_MENSUELLES = [
+  { mois: "Jan", ventes: 0 },
+  { mois: "Fév", ventes: 0 },
+  { mois: "Mar", ventes: 0 },
+];
+const REPARTITION_CA = [
+  { name: "Ventes", valeur: 0, color: "#1a2b6d" },
+];
+const TOP_PRODUITS = [
+  { nom: "N/A", ca: 0 },
+];
 import { formatCurrency, formatShortCurrency } from "@/lib/format";
 import { Card } from "@/components/ui";
 
