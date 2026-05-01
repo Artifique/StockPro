@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # STOCK Pro
 
 Application Next.js (gestion de stock).
@@ -26,3 +27,7 @@ Voir **[docs/dev.md](docs/dev.md)** : libérer le port sous Windows ou lancer `p
 | `pnpm run build` | Build production |
 | `pnpm run lint` | ESLint |
 | `pnpm run typecheck` | Vérification TypeScript |
+=======
+# StockPro
+Gestion de stock
+>>>>>>> 01d55d6565058f1ab840684d008310eb297590e3
