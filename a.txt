@@ -1,2 +1,40 @@
-mail: agrilends@gmail.com
-pwd: Agrilend123
+10:15:05.280 Running build in Washington, D.C., USA (East) – iad1
+10:15:05.281 Build machine configuration: 2 cores, 8 GB
+10:15:05.292 Cloning github.com/Artifique/StockPro (Branch: main, Commit: 0bbcfbd)
+10:15:05.293 Skipping build cache, deployment was triggered without cache.
+10:15:05.960 Cloning completed: 668.000ms
+10:15:06.431 Running "vercel build"
+10:15:07.167 Vercel CLI 51.6.1
+10:15:07.812 Installing dependencies...
+10:15:09.477 npm error code ERESOLVE
+10:15:09.478 npm error ERESOLVE could not resolve
+10:15:09.478 npm error
+10:15:09.480 npm error While resolving: @testing-library/react@14.3.1
+10:15:09.480 npm error Found: react@19.2.5
+10:15:09.480 npm error node_modules/react
+10:15:09.480 npm error   react@"^19.2.5" from the root project
+10:15:09.481 npm error   peerOptional react@"^18.0.0 || ^19.0.0" from framer-motion@12.38.0
+10:15:09.481 npm error   node_modules/framer-motion
+10:15:09.481 npm error     framer-motion@"^12.23.2" from the root project
+10:15:09.481 npm error   7 more (lucide-react, next, react-dom, react-smooth, ...)
+10:15:09.482 npm error
+10:15:09.482 npm error Could not resolve dependency:
+10:15:09.482 npm error peer react@"^18.0.0" from @testing-library/react@14.3.1
+10:15:09.482 npm error node_modules/@testing-library/react
+10:15:09.482 npm error   dev @testing-library/react@"^14.2.1" from the root project
+10:15:09.482 npm error
+10:15:09.483 npm error Conflicting peer dependency: react@18.3.1
+10:15:09.483 npm error node_modules/react
+10:15:09.483 npm error   peer react@"^18.0.0" from @testing-library/react@14.3.1
+10:15:09.483 npm error   node_modules/@testing-library/react
+10:15:09.483 npm error     dev @testing-library/react@"^14.2.1" from the root project
+10:15:09.484 npm error
+10:15:09.484 npm error Fix the upstream dependency conflict, or retry
+10:15:09.484 npm error this command with --force or --legacy-peer-deps
+10:15:09.484 npm error to accept an incorrect (and potentially broken) dependency resolution.
+10:15:09.485 npm error
+10:15:09.485 npm error
+10:15:09.485 npm error For a full report see:
+10:15:09.486 npm error /vercel/.npm/_logs/2026-05-06T10_15_08_058Z-eresolve-report.txt
+10:15:09.486 npm error A complete log of this run can be found in: /vercel/.npm/_logs/2026-05-06T10_15_08_058Z-debug-0.log
+10:15:09.519 Error: Command "npm install" exited with 1

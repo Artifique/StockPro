@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev -p 3000",
     "dev:3001": "next dev -p 3001",
-    "build": "next build && node scripts/copy-standalone-assets.mjs",
+    "build": "npx next build && node scripts/copy-standalone-assets.mjs",
     "start": "NODE_ENV=production node .next/standalone/server.js",
     "lint": "eslint .",
     "knip": "knip",
@@ -28,8 +28,8 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/node": "25.6.0",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
     "eslint": "^9",
     "eslint-config-next": "^16.1.1",
     "eslint-plugin-unused-imports": "^4.4.1",
@@ -41,7 +41,7 @@
     "jest": "^29.7.0",
     "@types/jest": "^29.5.12",
     "jest-environment-jsdom": "^29.7.0",
-    "@testing-library/react": "^14.2.1",
+    "@testing-library/react": "^16.3.2",
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/user-event": "^14.5.2"
   }
