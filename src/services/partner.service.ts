@@ -34,8 +34,11 @@ export const ClientService = {
 
 export const SupplierService = {
   async getAll(): Promise<Supplier[]> {
-    const { data, error } = await supabase.from('suppliers').select('*, category:categories(*)');
-    if (error) throw error;
+    const { data, error } = await supabase.from('suppliers').select('*');
+    if (error) {
+      console.error("Error fetching suppliers:", error);
+      throw error;
+    }
     return data || [];
   },
 

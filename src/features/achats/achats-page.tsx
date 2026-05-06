@@ -21,20 +21,30 @@ import { useEffect, useCallback } from "react";
 import { InventoryService } from "@/services/inventory.service";
 import { SupplierService } from "@/services/partner.service";
 import { ProductService } from "@/services/product.service";
-import { SupplierOrder } from "@/models/inventory.model";
+import { Minus } from "lucide-react";
 import { Supplier } from "@/models/partner.model";
 import { Product } from "@/models/product.model";
-import { Minus } from "lucide-react";
+
+// Temporairement désactivé car la table SupplierOrder n'existe pas dans le schéma
+// interface TemporaireCommande {
+//   id: string;
+//   supplier_id: number;
+//   montant_total: number;
+//   statut: 'Reçue' | 'En transit' | 'En attente' | 'Annulée';
+//   created_at?: string;
+//   supplier?: Supplier;
+//   items?: any[]; // ou un type temporaire si nécessaire
+// }
 
 export const AchatsPage: React.FC = () => {
   const newCommandeModal = useDisclosure();
   const commandeDetailsModal = useDisclosure();
   const productSelectModal = useDisclosure();
-  const [selectedCommande, setSelectedCommande] = useState<SupplierOrder | null>(null);
+  const [selectedCommande, setSelectedCommande] = useState<any | null>(null); // Utilisé 'any' temporairement
   const [filterStatut, setFilterStatut] = useState("");
   const [orderLines, setOrderLines] = useState<{ product: Product; quantity: number; prixAchat: number }[]>([]);
   const [searchProduct, setSearchProduct] = useState("");
-  const [commandes, setCommandes] = useState<SupplierOrder[]>([]);
+  const [commandes, setCommandes] = useState<any[]>([]); // Utilisé 'any[]' temporairement
   const [fournisseurs, setFournisseurs] = useState<Supplier[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,12 +52,12 @@ export const AchatsPage: React.FC = () => {
   const loadData = useCallback(async () => {
     setIsLoading(true);
     try {
-      const [cmds, supps, prods] = await Promise.all([
-        InventoryService.getAllSupplierOrders(),
+      const [supps, prods] = await Promise.all([
+        // InventoryService.getAllSupplierOrders(), // Temporairement désactivé
         SupplierService.getAll(),
         ProductService.getAll()
       ]);
-      setCommandes(cmds);
+      setCommandes([]); // Pas de commandes pour l'instant
       setFournisseurs(supps);
       setProducts(prods);
     } catch (err) {
@@ -72,7 +82,8 @@ export const AchatsPage: React.FC = () => {
   };
 
   const stats = useMemo(() => {
-    const total = commandes.reduce((sum, c) => sum + c.montant_total, 0);
+    // Adapter pour fonctionner avec des commandes de type 'any[]' ou tableau vide
+    const total = commandes.reduce((sum, c) => sum + (c.montant_total || 0), 0);
     const enAttente = commandes.filter((c) => c.statut === "En attente" || c.statut === "En transit").length;
     const recues = commandes.filter((c) => c.statut === "Reçue").length;
     return { total, enAttente, recues };

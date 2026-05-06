@@ -1,12 +1,10 @@
 -- =====================================================
--- 🔷 STOCKPRO - SCHEMA + SECURITY (SUPABASE READY)
+-- 🔷 STOCKPRO - FULL CLEAN + FIXED + ADMIN READY
 -- =====================================================
 
 -- =====================================================
--- 🧹 NETTOYAGE (VIDER LA BASE)
+-- 🧹 CLEAN OLD STRUCTURE
 -- =====================================================
--- ATTENTION: Cette section supprime TOUTES les données. 
--- Décommentez la ligne DELETE FROM auth.users si vous voulez aussi vider les comptes.
 
 DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 DROP FUNCTION IF EXISTS handle_new_user CASCADE;
@@ -25,15 +23,17 @@ DROP TABLE IF EXISTS units CASCADE;
 DROP TABLE IF EXISTS categories CASCADE;
 DROP TABLE IF EXISTS profiles CASCADE;
 
--- DELETE FROM auth.users; -- A utiliser avec prudence pour vider les comptes auth
+-- =====================================================
+-- 🔧 EXTENSIONS
+-- =====================================================
 
--- 🔹 Extensions
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- =====================================================
--- 👥 PROFILES
+-- 👤 PROFILES
 -- =====================================================
+
 CREATE TABLE profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email TEXT UNIQUE NOT NULL,
@@ -105,10 +105,6 @@ CREATE TABLE suppliers (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
--- =====================================================
--- 💰 SALES
--- =====================================================
-
 CREATE TABLE transactions (
     id TEXT PRIMARY KEY,
     client_id INT REFERENCES clients(id),
@@ -126,10 +122,6 @@ CREATE TABLE transaction_items (
     prix_unitaire NUMERIC
 );
 
--- =====================================================
--- 🔔 SYSTEM
--- =====================================================
-
 CREATE TABLE notifications (
     id SERIAL PRIMARY KEY,
     user_id UUID REFERENCES profiles(id),
@@ -145,32 +137,13 @@ CREATE TABLE activity_logs (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
-
 CREATE TABLE settings (
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    key TEXT NOT NULL,
-    value TEXT,
-    created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
-    updated_at TIMESTAMPTZ DEFAULT now() NOT NULL,
-    CONSTRAINT settings_pkey PRIMARY KEY (user_id, key)
+    key TEXT PRIMARY KEY,
+    value JSONB
 );
 
--- Policies for settings table
-CREATE POLICY "Users can view their own settings."
-ON settings FOR SELECT
-USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can insert their own settings."
-ON settings FOR INSERT
-WITH CHECK (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own settings."
-ON settings FOR UPDATE
-USING (auth.uid() = user_id);
-
-
 -- =====================================================
--- 🔐 FUNCTION ROLE
+-- 🔐 ROLE FUNCTION SAFE
 -- =====================================================
 
 CREATE OR REPLACE FUNCTION get_user_role()
@@ -178,11 +151,14 @@ RETURNS TEXT
 LANGUAGE sql
 SECURITY DEFINER
 AS $$
-  SELECT role FROM profiles WHERE id = auth.uid();
+  SELECT COALESCE(
+    (SELECT role FROM profiles WHERE id = auth.uid()),
+    'Caissier'
+  );
 $$;
 
 -- =====================================================
--- 🔐 TRIGGER AUTO PROFILE
+-- 🔥 AUTO PROFILE CREATION (FIXED + ADMIN EMAIL)
 -- =====================================================
 
 CREATE OR REPLACE FUNCTION handle_new_user()
@@ -190,41 +166,48 @@ RETURNS TRIGGER AS $$
 DECLARE
   is_first_user BOOLEAN;
 BEGIN
-  -- Vérifier s'il s'agit du tout premier utilisateur
   SELECT NOT EXISTS (SELECT 1 FROM public.profiles) INTO is_first_user;
 
-  INSERT INTO public.profiles (id, email, nom, role)
+  INSERT INTO public.profiles (
+    id,
+    email,
+    nom,
+    role
+  )
   VALUES (
-    NEW.id, 
-    NEW.email, 
+    NEW.id,
+    NEW.email,
     COALESCE(
-      NEW.raw_user_meta_data->>'full_name', 
-      CASE WHEN LOWER(NEW.email) = 'admin@stockpro.com' OR is_first_user THEN 'Administrateur' ELSE 'Utilisateur' END
+      NEW.raw_user_meta_data->>'full_name',
+      split_part(NEW.email, '@', 1)
     ),
-    CASE 
-      WHEN LOWER(NEW.email) = 'admin@stockpro.com' OR is_first_user THEN 'Admin' 
-      ELSE 'Caissier' 
+    CASE
+      WHEN is_first_user THEN 'Admin'
+      WHEN LOWER(NEW.email) = 'fombadaouda72@gmail.com' THEN 'Admin'
+      ELSE 'Caissier'
     END
   )
-  ON CONFLICT (id) DO UPDATE 
-  SET 
-    role = EXCLUDED.role, 
+  ON CONFLICT (id) DO UPDATE
+  SET
+    email = EXCLUDED.email,
     nom = EXCLUDED.nom,
+    role = EXCLUDED.role,
     updated_at = now();
-    
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Supprimer le trigger s'il existe déjà pour éviter les doublons
-DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+-- =====================================================
+-- 🔥 TRIGGER
+-- =====================================================
 
 CREATE TRIGGER on_auth_user_created
 AFTER INSERT ON auth.users
 FOR EACH ROW EXECUTE FUNCTION handle_new_user();
 
 -- =====================================================
--- 🔐 ENABLE RLS
+-- 🔐 RLS ENABLE
 -- =====================================================
 
 DO $$
@@ -237,10 +220,9 @@ BEGIN
 END $$;
 
 -- =====================================================
--- 🔐 POLICIES
+-- 🔐 POLICIES (PROFILES)
 -- =====================================================
 
--- Profiles
 CREATE POLICY "profile_select"
 ON profiles FOR SELECT
 USING (auth.uid() = id OR get_user_role() = 'Admin');
@@ -249,13 +231,14 @@ CREATE POLICY "profile_update"
 ON profiles FOR UPDATE
 USING (auth.uid() = id OR get_user_role() = 'Admin');
 
--- Global read
+-- =====================================================
+-- 🔐 BASIC READ POLICIES
+-- =====================================================
+
 DO $$
 DECLARE t TEXT;
 BEGIN
-  FOR t IN SELECT unnest(ARRAY[
-    'categories','units','products','clients','suppliers'
-  ])
+  FOR t IN SELECT unnest(ARRAY['categories','units','products','clients','suppliers'])
   LOOP
     EXECUTE format('
       CREATE POLICY "%s_read"
@@ -265,110 +248,42 @@ BEGIN
   END LOOP;
 END $$;
 
--- Admin / Manager CRUD
+-- =====================================================
+-- 🔐 ADMIN / MANAGER RULES
+-- =====================================================
+
 DO $$
 DECLARE t TEXT;
 BEGIN
-  FOR t IN SELECT unnest(ARRAY[
-    'categories','units','products','clients','suppliers'
-  ])
+  FOR t IN SELECT unnest(ARRAY['categories','units','products','clients','suppliers'])
   LOOP
-    EXECUTE format('
-      CREATE POLICY "%s_insert"
-      ON %I FOR INSERT
-      WITH CHECK (get_user_role() IN (''Admin'',''Manager''));
-    ', t, t);
-
-    EXECUTE format('
-      CREATE POLICY "%s_update"
-      ON %I FOR UPDATE
-      USING (get_user_role() IN (''Admin'',''Manager''));
-    ', t, t);
-
-    EXECUTE format('
-      CREATE POLICY "%s_delete"
-      ON %I FOR DELETE
-      USING (get_user_role() = ''Admin'');
-    ', t, t);
+    EXECUTE format('CREATE POLICY "%s_insert" ON %I FOR INSERT WITH CHECK (get_user_role() IN (''Admin'',''Manager''));', t, t);
+    EXECUTE format('CREATE POLICY "%s_update" ON %I FOR UPDATE USING (get_user_role() IN (''Admin'',''Manager''));', t, t);
+    EXECUTE format('CREATE POLICY "%s_delete" ON %I FOR DELETE USING (get_user_role() = ''Admin'');', t, t);
   END LOOP;
 END $$;
 
--- Transactions
+-- =====================================================
+-- 🔐 TRANSACTIONS POLICY
+-- =====================================================
+
 CREATE POLICY "transactions_all"
 ON transactions FOR ALL
 USING (get_user_role() IN ('Admin','Manager','Caissier'));
 
--- Transaction items
-CREATE POLICY "items_all"
-ON transaction_items FOR ALL
-USING (auth.role() = 'authenticated');
-
--- Stock
-CREATE POLICY "stock_read"
-ON stock_movements FOR SELECT
-USING (auth.role() = 'authenticated');
-
-CREATE POLICY "stock_insert"
-ON stock_movements FOR INSERT
-WITH CHECK (get_user_role() IN ('Admin','Manager'));
-
--- Notifications
-CREATE POLICY "notif_read"
-ON notifications FOR SELECT
-USING (auth.uid() = user_id);
-
-CREATE POLICY "notif_insert"
-ON notifications FOR INSERT
-WITH CHECK (true);
-
--- Logs
-CREATE POLICY "logs_admin"
-ON activity_logs FOR SELECT
-USING (get_user_role() = 'Admin');
-
 -- =====================================================
--- 🛠 SEED: RÉINITIALISATION TOTALE DE L'ADMIN
+-- 🚨 PROFILE REPAIR (IMPORTANT FIX)
 -- =====================================================
--- Email: admin@stockpro.com | Password: adminpassword123
 
-DO $$
-DECLARE
-  admin_id UUID := '00000000-0000-0000-0000-000000000000';
-BEGIN
-  -- 1. Nettoyage préventif pour éviter les conflits de mot de passe
-  DELETE FROM auth.users WHERE email = 'admin@stockpro.com';
-  DELETE FROM public.profiles WHERE id = admin_id;
-
-  -- 2. Création propre de l'utilisateur dans auth.users
-  INSERT INTO auth.users (
-    instance_id, id, aud, role, email, encrypted_password,
-    email_confirmed_at,
-    raw_app_meta_data,
-    raw_user_meta_data,
-    is_super_admin,
-    created_at, updated_at,
-    last_sign_in_at
-  )
-  VALUES (
-    '00000000-0000-0000-0000-000000000000', admin_id, 'authenticated', 'authenticated',
-    'agrilends@gmail.com', crypt('Agrilend123', gen_salt('bf')),
-    now(),
-    '{"provider":"email","providers":["email"]}',
-    '{"full_name":"Administrateur StockPro"}',
-    false,
-    now(), now(),
-    now()
-  );
-
-  -- 3. Création ou mise à jour forcée du profil associé
-  -- On utilise ON CONFLICT pour éviter l'erreur si le trigger a déjà créé le profil
-  INSERT INTO public.profiles (id, email, nom, role)
-  VALUES (admin_id, 'agrilends@gmail.com', 'Administrateur StockPro', 'Admin')
-  ON CONFLICT (id) DO UPDATE
-  SET
-    email = EXCLUDED.email,
-    nom = EXCLUDED.nom,
-    role = EXCLUDED.role,
-    updated_at = now();
-
-  END $$;
+INSERT INTO public.profiles (id, email, nom, role)
+SELECT
+  au.id,
+  au.email,
+  COALESCE(au.raw_user_meta_data->>'full_name', 'User'),
+  CASE
+    WHEN LOWER(au.email) = 'fombadaouda72@gmail.com' THEN 'Admin'
+    ELSE 'Caissier'
+  END
+FROM auth.users au
+LEFT JOIN profiles p ON p.id = au.id
+WHERE p.id IS NULL;

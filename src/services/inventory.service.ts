@@ -1,17 +1,18 @@
 import { supabase } from "@/lib/supabase/client";
-import { SupplierOrder, SupplierOrderItem, Return } from "@/models/inventory.model";
+import { Return } from "@/models/inventory.model";
 
 export const InventoryService = {
   // Supplier Orders
-  async getAllSupplierOrders(): Promise<SupplierOrder[]> {
-    const { data, error } = await supabase
-      .from('supplier_orders')
-      .select('*, supplier:suppliers(nom)')
-      .order('created_at', { ascending: false });
-    if (error) throw error;
-    return data || [];
+  async getAllSupplierOrders(): Promise<any[]> {
+    // La table 'supplier_orders' n'existe pas dans le schéma actuel.
+    // Retourne un tableau vide pour éviter les erreurs 404.
+    // Cette fonction devra être mise à jour une fois la table 'supplier_orders' ajoutée.
+    console.warn("Attempted to fetch supplier orders, but 'supplier_orders' table does not exist in schema. Returning empty array.");
+    return [];
   },
 
+  /*
+  // Temporairement désactivé car la table 'supplier_orders' n'existe pas dans le schéma actuel.
   async createSupplierOrder(order: Omit<SupplierOrder, 'created_at' | 'supplier' | 'items'>, items: Omit<SupplierOrderItem, 'id' | 'order_id' | 'product'>[]): Promise<SupplierOrder> {
     const { data: ord, error: ordError } = await supabase.from('supplier_orders').insert(order).select().single();
     if (ordError) throw ordError;
@@ -22,6 +23,7 @@ export const InventoryService = {
 
     return ord;
   },
+  */
 
   // Returns
   async getAllReturns(): Promise<Return[]> {

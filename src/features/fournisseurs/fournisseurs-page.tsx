@@ -22,7 +22,17 @@ import { ProductService } from "@/services/product.service";
 import { Supplier } from "@/models/partner.model";
 import { Category } from "@/models/product.model";
 import { InventoryService } from "@/services/inventory.service";
-import { SupplierOrder } from "@/models/inventory.model";
+
+// Type temporaire pour remplacer SupplierOrder
+interface SupplierOrderTemp {
+  id: string;
+  supplier_id: number;
+  montant_total: number;
+  statut: string;
+  items?: any[];
+  created_at?: string;
+  supplier?: Supplier;
+}
 
 export const FournisseursPage: React.FC<{
   onNavigate?: (route: string, filter?: string) => void;
@@ -33,7 +43,7 @@ export const FournisseursPage: React.FC<{
   
   const [fournisseurs, setFournisseurs] = useState<Supplier[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
-  const [commandes, setCommandes] = useState<SupplierOrder[]>([]);
+  const [commandes, setCommandes] = useState<SupplierOrderTemp[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedFournisseur, setSelectedFournisseur] = useState<Supplier | null>(null);
   
@@ -46,14 +56,13 @@ export const FournisseursPage: React.FC<{
   const loadData = async () => {
     setIsLoading(true);
     try {
-      const [f, c, o] = await Promise.all([
+      const [f, c] = await Promise.all([
         SupplierService.getAll(),
         ProductService.getCategories(),
-        InventoryService.getAllSupplierOrders()
       ]);
       setFournisseurs(f);
       setCategories(c);
-      setCommandes(o);
+      setCommandes([]);
     } catch (error) {
       showToast("Erreur lors du chargement", "error");
     } finally {
@@ -405,7 +414,7 @@ export const FournisseursPage: React.FC<{
             <div className="grid grid-cols-2 gap-4">
               <Card padding="sm" className="text-center">
                 <p className="text-2xl font-bold text-stockpro-navy dark:text-stockpro-signal">
-                  {formatCurrency(commandes.filter(c => c.supplier_id === selectedFournisseur.id).reduce((sum, c) => sum + c.montant_total, 0))}
+                  {formatCurrency(commandes.filter((c: any) => c.supplier_id === selectedFournisseur.id).reduce((sum, c: any) => sum + (c.montant_total || 0), 0))}
                 </p>
                 <p className="text-xs text-muted-foreground">CA Total</p>
               </Card>
