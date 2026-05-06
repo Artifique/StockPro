@@ -20,7 +20,7 @@ Cette erreur signifie que le **port 3000 est déjà utilisé** (souvent par une 
    Get-Process -Id <PID>
    ```
 
-3. Arrêter le processus (ou fermer simplement l’ancien terminal où `pnpm dev` tournait encore) :
+3. Arrêter le processus (ou fermer simplement l’ancien terminal où `npm dev` tournait encore) :
 
    ```powershell
    Stop-Process -Id <PID> -Force
@@ -29,7 +29,7 @@ Cette erreur signifie que le **port 3000 est déjà utilisé** (souvent par une 
 4. Relancer le serveur :
 
    ```bash
-   pnpm dev
+   npm dev
    ```
 
 ### Option B — Utiliser un autre port sans tuer le processus existant
@@ -37,7 +37,7 @@ Cette erreur signifie que le **port 3000 est déjà utilisé** (souvent par une 
 Le script `dev:3001` démarre Next sur le **port 3001** :
 
 ```bash
-pnpm run dev:3001
+npm run dev:3001
 ```
 
 Ouvrir l’app sur **http://localhost:3001**.

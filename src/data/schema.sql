@@ -145,10 +145,29 @@ CREATE TABLE activity_logs (
     created_at TIMESTAMPTZ DEFAULT now()
 );
 
+
 CREATE TABLE settings (
-    key TEXT PRIMARY KEY,
-    value JSONB
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    key TEXT NOT NULL,
+    value TEXT,
+    created_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+    updated_at TIMESTAMPTZ DEFAULT now() NOT NULL,
+    CONSTRAINT settings_pkey PRIMARY KEY (user_id, key)
 );
+
+-- Policies for settings table
+CREATE POLICY "Users can view their own settings."
+ON settings FOR SELECT
+USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert their own settings."
+ON settings FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update their own settings."
+ON settings FOR UPDATE
+USING (auth.uid() = user_id);
+
 
 -- =====================================================
 -- 🔐 FUNCTION ROLE
@@ -322,20 +341,20 @@ BEGIN
 
   -- 2. Création propre de l'utilisateur dans auth.users
   INSERT INTO auth.users (
-    instance_id, id, aud, role, email, encrypted_password, 
-    email_confirmed_at, 
-    raw_app_meta_data, 
-    raw_user_meta_data, 
+    instance_id, id, aud, role, email, encrypted_password,
+    email_confirmed_at,
+    raw_app_meta_data,
+    raw_user_meta_data,
     is_super_admin,
     created_at, updated_at,
     last_sign_in_at
   )
   VALUES (
-    '00000000-0000-0000-0000-000000000000', admin_id, 'authenticated', 'authenticated', 
-    'admin@stockpro.com', crypt('adminpassword123', gen_salt('bf')), 
-    now(), 
-    '{"provider":"email","providers":["email"]}', 
-    '{"full_name":"Administrateur StockPro"}', 
+    '00000000-0000-0000-0000-000000000000', admin_id, 'authenticated', 'authenticated',
+    'agrilends@gmail.com', crypt('Agrilend123', gen_salt('bf')),
+    now(),
+    '{"provider":"email","providers":["email"]}',
+    '{"full_name":"Administrateur StockPro"}',
     false,
     now(), now(),
     now()
@@ -344,12 +363,12 @@ BEGIN
   -- 3. Création ou mise à jour forcée du profil associé
   -- On utilise ON CONFLICT pour éviter l'erreur si le trigger a déjà créé le profil
   INSERT INTO public.profiles (id, email, nom, role)
-  VALUES (admin_id, 'admin@stockpro.com', 'Administrateur StockPro', 'Admin')
-  ON CONFLICT (id) DO UPDATE 
-  SET 
-    email = EXCLUDED.email, 
-    nom = EXCLUDED.nom, 
+  VALUES (admin_id, 'agrilends@gmail.com', 'Administrateur StockPro', 'Admin')
+  ON CONFLICT (id) DO UPDATE
+  SET
+    email = EXCLUDED.email,
+    nom = EXCLUDED.nom,
     role = EXCLUDED.role,
     updated_at = now();
 
-END $$;
+  END $$;

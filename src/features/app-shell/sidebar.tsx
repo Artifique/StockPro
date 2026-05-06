@@ -42,7 +42,8 @@ export const Sidebar: React.FC<{
     { id: "facturation", label: "Facturation", icon: FileText, roles: ["Super Admin", "Gérant", "Comptable"] },
     { id: "retours", label: "Retours & Échanges", icon: RefreshCw, roles: ["Super Admin", "Gérant", "Caissier", "Responsable Stock"] },
     { id: "rapports", label: "Rapports", icon: BarChart3, roles: ["Super Admin", "Gérant", "Comptable"] },
-    { id: "parametres", label: "Paramètres", icon: Settings, roles: ["Super Admin", "Gérant"] },
+    { id: "parametres-utilisateur", label: "Paramètres Utilisateur", icon: Settings, roles: ["Super Admin", "Gérant"] },
+    { id: "admin-settings", label: "Paramètres Admin", icon: Settings, roles: ["Super Admin"] }, // Nouvelle entrée
   ];
 
   const menuItems = allMenuItems.filter((item) => item.roles.includes(user.role));

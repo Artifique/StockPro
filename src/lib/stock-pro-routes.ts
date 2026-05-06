@@ -9,7 +9,8 @@ export const APP_ROUTE_IDS = [
   "facturation",
   "retours",
   "rapports",
-  "parametres",
+  "parametres-utilisateur",
+  "admin-settings", // Nouvelle entrée
   "profil",
 ] as const;
 
@@ -26,7 +27,8 @@ const ROUTE_PATHS: Record<AppRouteId, string> = {
   facturation: "/facturation",
   retours: "/retours",
   rapports: "/rapports",
-  parametres: "/parametres",
+  "parametres-utilisateur": "/parametres-utilisateur",
+  "admin-settings": "/admin/settings", // Nouvelle entrée
   profil: "/profil",
 };
 
@@ -54,6 +56,7 @@ export const PAGE_TITLES: Record<AppRouteId, string> = {
   facturation: "Facturation",
   retours: "Retours & Échanges",
   rapports: "Rapports",
-  parametres: "Paramètres",
+  "parametres-utilisateur": "Paramètres Utilisateur",
+  "admin-settings": "Paramètres Admin", // Nouvelle entrée
   profil: "Mon profil",
 };
